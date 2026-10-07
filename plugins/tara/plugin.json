@@ -1,0 +1,16 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "tara",
+  "version": "0.1.0",
+  "description": "Tara (public preview): discover and retrieve bounded expression slices from the public Tahoe-100M dataset through your own agent.",
+  "author": {
+    "name": "Tahoe Bio"
+  },
+  "repository": "https://github.com/tahoebio/tahoe-public-plugins",
+  "keywords": [
+    "tahoe-100m",
+    "single-cell",
+    "gene-expression",
+    "agent-plugin"
+  ]
+}
