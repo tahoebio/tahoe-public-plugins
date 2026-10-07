@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
+
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Validate repository
+        run: uv run python scripts/validate.py
+
+      - name: Run offline tests
+        run: uv run pytest
+
+      - name: Build release archive
+        run: uv run python scripts/package.py --out dist
