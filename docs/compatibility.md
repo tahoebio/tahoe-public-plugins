@@ -2,25 +2,25 @@
 
 > Only tested combinations are claimed. No untested cross-host claims.
 
-## Tested host
+## Tested hosts
 
-**Codex CLI** — the only host claimed. The install command in `docs/install.md`
-and the steps in `docs/install-verification.md` target it. The exact tested
-version and date are recorded here once the clean-machine check passes; until
-then no version is claimed.
+**Codex CLI** and **Claude Code** — the only hosts claimed. The install paths in
+`docs/install.md` and the steps in `docs/install-verification.md` target them.
+The exact tested versions and date are recorded here once the clean-machine
+checks pass; until then no version is claimed.
 
 No other client is claimed.
 
 ## Requirements
 
-- The Codex CLI.
+- The Codex CLI or Claude Code.
 - A GitHub account for sign-in.
 - No Databricks account or credentials are required.
 
 ## Not claimed
 
-- Any host other than the Codex CLI.
-- Cross-host support.
+- Any host other than the Codex CLI and Claude Code.
+- Cross-host support beyond those two.
 - Offline data access.
 - Any client that does not implement the documented sign-in flow.
 

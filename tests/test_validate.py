@@ -14,23 +14,16 @@ def _write(root, rel, payload):
     path.write_text(json.dumps(payload, indent=2) + "\n")
 
 
-def _real_plugin_manifest() -> dict:
-    return common.load_json(common.plugin_dir() / "plugin.json")
-
-
-def _real_catalog() -> dict:
-    return common.load_json(common.REPO_ROOT / common.MARKETPLACE_PATHS[0])
-
-
-def _write_catalog(root, catalog):
-    for rel in common.MARKETPLACE_PATHS:
-        _write(root, rel, catalog)
+def _real(rel: str) -> dict:
+    return common.load_json(common.REPO_ROOT / rel)
 
 
 @pytest.fixture
 def root(tmp_path):
-    _write(tmp_path, f"plugins/{common.PLUGIN_NAME}/plugin.json", _real_plugin_manifest())
-    _write_catalog(tmp_path, _real_catalog())
+    _write(tmp_path, common.PLUGIN_MANIFEST_REL, _real(common.PLUGIN_MANIFEST_REL))
+    _write(tmp_path, common.CLAUDE_ADAPTER_REL, _real(common.CLAUDE_ADAPTER_REL))
+    for rel in common.MARKETPLACE_PATHS:
+        _write(tmp_path, rel, _real(rel))
     return tmp_path
 
 
@@ -39,41 +32,58 @@ def test_valid_root_passes(root):
 
 
 def test_rejects_licence_field(root):
-    manifest = _real_plugin_manifest()
+    manifest = _real(common.PLUGIN_MANIFEST_REL)
     manifest["license"] = "MIT"
-    _write(root, f"plugins/{common.PLUGIN_NAME}/plugin.json", manifest)
+    _write(root, common.PLUGIN_MANIFEST_REL, manifest)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 
 
 def test_rejects_wrong_plugin_name(root):
-    manifest = _real_plugin_manifest()
+    manifest = _real(common.PLUGIN_MANIFEST_REL)
     manifest["name"] = "not-the-plugin"
-    _write(root, f"plugins/{common.PLUGIN_NAME}/plugin.json", manifest)
+    _write(root, common.PLUGIN_MANIFEST_REL, manifest)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 
 
 def test_rejects_version_on_catalog_entry(root):
-    catalog = _real_catalog()
+    catalog = _real(common.CODEX_CATALOG_REL)
     catalog["plugins"][0]["version"] = "1.2.3"
-    _write_catalog(root, catalog)
+    _write(root, common.CODEX_CATALOG_REL, catalog)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 
 
-def test_rejects_catalog_drift(root):
-    catalog = _real_catalog()
-    catalog["interface"]["displayName"] = "Something Else"
-    _write(root, common.MARKETPLACE_PATHS[1], catalog)
+def test_rejects_claude_catalog_without_an_owner(root):
+    catalog = _real(common.CLAUDE_CATALOG_REL)
+    del catalog["owner"]
+    _write(root, common.CLAUDE_CATALOG_REL, catalog)
+    with pytest.raises(common.RepoError):
+        validate.validate_manifests(root)
+
+
+def test_rejects_catalogs_disagreeing_on_source(root):
+    # The two catalogs have different shapes but must agree on identity/source.
+    catalog = _real(common.CLAUDE_CATALOG_REL)
+    catalog["plugins"][0]["source"] = "./plugins/elsewhere"
+    _write(root, common.CLAUDE_CATALOG_REL, catalog)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 
 
 def test_rejects_source_path_escaping_root(root):
-    catalog = _real_catalog()
+    catalog = _real(common.CODEX_CATALOG_REL)
     catalog["plugins"][0]["source"] = "./../outside"
-    _write_catalog(root, catalog)
+    _write(root, common.CODEX_CATALOG_REL, catalog)
+    with pytest.raises(common.RepoError):
+        validate.validate_manifests(root)
+
+
+def test_rejects_claude_adapter_with_the_wrong_endpoint(root):
+    adapter = _real(common.CLAUDE_ADAPTER_REL)
+    adapter["mcpServers"][common.MCP_SERVER_NAME]["url"] = "https://example.com/mcp"
+    _write(root, common.CLAUDE_ADAPTER_REL, adapter)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 
@@ -83,17 +93,13 @@ def test_rejects_missing_layout_path(tmp_path):
         validate.validate_layout(tmp_path)
 
 
-def _real_mcp_config() -> dict:
-    return common.load_json(common.REPO_ROOT / common.MCP_CONFIG_REL)
-
-
 def test_accepts_the_real_mcp_config(root):
-    _write(root, common.MCP_CONFIG_REL, _real_mcp_config())
+    _write(root, common.MCP_CONFIG_REL, _real(common.MCP_CONFIG_REL))
     validate.validate_mcp_config(root)
 
 
 def test_rejects_wrong_mcp_server_name(root):
-    config = _real_mcp_config()
+    config = _real(common.MCP_CONFIG_REL)
     config["mcpServers"] = {"tara": config["mcpServers"][common.MCP_SERVER_NAME]}
     _write(root, common.MCP_CONFIG_REL, config)
     with pytest.raises(common.RepoError):
@@ -101,7 +107,7 @@ def test_rejects_wrong_mcp_server_name(root):
 
 
 def test_rejects_wrong_mcp_endpoint(root):
-    config = _real_mcp_config()
+    config = _real(common.MCP_CONFIG_REL)
     config["mcpServers"][common.MCP_SERVER_NAME]["url"] = "https://example.com/mcp"
     _write(root, common.MCP_CONFIG_REL, config)
     with pytest.raises(common.RepoError):
@@ -109,7 +115,7 @@ def test_rejects_wrong_mcp_endpoint(root):
 
 
 def test_rejects_mcp_credentials(root):
-    config = _real_mcp_config()
+    config = _real(common.MCP_CONFIG_REL)
     config["mcpServers"][common.MCP_SERVER_NAME]["headers"] = {
         "Authorization": "Bearer example"
     }
@@ -121,7 +127,7 @@ def test_rejects_mcp_credentials(root):
 def test_rejects_version_mismatch(tmp_path):
     _write(
         tmp_path,
-        f"plugins/{common.PLUGIN_NAME}/plugin.json",
+        common.PLUGIN_MANIFEST_REL,
         {
             "$schema": common.load_schema("plugin")["$id"],
             "name": common.PLUGIN_NAME,

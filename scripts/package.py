@@ -2,10 +2,11 @@
 
     uv run python scripts/package.py --out dist
 
-The archive contains the plugin payload (``plugins/tara/``) and nothing else.
-Symlinks, hidden paths and generated output are refused rather than skipped. The
-built archive is scanned for internal residue and secrets and is discarded if
-any are found. A SHA-256 checksum is written next to the archive.
+The archive contains exactly the allowlisted plugin manifest files and nothing
+else. A listed path that is missing, symlinked, escaping or generated is refused
+rather than skipped. The built archive is scanned for internal residue and
+secrets and is discarded if any are found. A SHA-256 checksum is written next to
+the archive.
 """
 
 from __future__ import annotations

@@ -1,17 +1,12 @@
 {
   "name": "tahoe-public",
-  "interface": {
-    "displayName": "Tahoe Bio Plugins"
+  "owner": {
+    "name": "Tahoe Bio"
   },
   "plugins": [
     {
       "name": "tara",
-      "source": "./plugins/tara",
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Research"
+      "source": "./plugins/tara"
     }
   ]
 }

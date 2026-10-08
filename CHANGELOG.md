@@ -39,3 +39,21 @@ Initial repository skeleton.
   can no longer pull files in from outside the checkout.
 - Validation fails when history cannot be read in full (no repository, or a
   shallow clone).
+
+### Thin plugin (no guidance payload)
+
+- The plugin now ships connection manifests only: the portable Codex pair
+  (`plugin.json`, `mcp.json`), a native Claude manifest
+  (`plugins/tara/.claude-plugin/plugin.json`) and two catalogs — the Codex
+  catalog and an owner-bearing Claude catalog.
+- The `skills/` payload is gone. Scientific guidance is served by the service at
+  runtime and is not distributed as files here.
+- Catalogs are no longer required to be byte-identical; each host's shape is
+  validated, and the two must agree on identity and on the plugin directory
+  they resolve.
+- The release archive is an explicit allowlist of manifest files (dotfiles
+  included), not a directory prefix.
+- Install docs lead with the plugin marketplace path for Codex and Claude, with
+  the one-prompt variant and a direct `mcp add` as an advanced fallback.
+- Data is CC0; guidance is proprietary and served at runtime. The licence
+  remains a placeholder pending S11.

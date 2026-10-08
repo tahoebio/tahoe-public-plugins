@@ -12,11 +12,11 @@ secrets. CI checks out the full history so the history scan covers every commit.
 
 ## Packaging
 
-`scripts/package.py` builds the release archive from approved tracked files
-only. It refuses escaping symlinks, hidden paths and generated output rather
-than skipping them, scans the built archive for internal residue and secrets
-and discards it if any are found, then writes a SHA-256 checksum next to the
-archive.
+`scripts/package.py` builds the release archive from an explicit allowlist of
+plugin manifest files — nothing else. A listed path that is missing, symlinked,
+escaping or generated is refused rather than skipped; the built archive is
+scanned for internal residue and secrets and discarded if any are found; a
+SHA-256 checksum is written next to the archive.
 
 ## Publication
 

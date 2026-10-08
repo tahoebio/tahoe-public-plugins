@@ -27,18 +27,27 @@ MARKETPLACE_DISPLAY_NAME = "Tahoe Bio Plugins"
 #: ``tara`` names a different, internal service.
 MCP_SERVER_NAME = "tahoe-public"
 MCP_ENDPOINT = "https://tara.tahoebio.io/mcp"
+
+#: Plugin-root files. The portable manifest and MCP config are what Codex
+#: reads; the native adapter is Claude's own manifest, with MCP inline.
+PLUGIN_MANIFEST_REL = f"plugins/{PLUGIN_NAME}/plugin.json"
 MCP_CONFIG_REL = f"plugins/{PLUGIN_NAME}/mcp.json"
-MARKETPLACE_PATHS = (
-    ".agents/plugins/marketplace.json",
-    ".claude-plugin/marketplace.json",
-)
+CLAUDE_ADAPTER_REL = f"plugins/{PLUGIN_NAME}/.claude-plugin/plugin.json"
+
+#: Repository catalogs. The two hosts use different shapes, so these are not
+#: byte-identical; they must agree on identity and source instead.
+CODEX_CATALOG_REL = ".agents/plugins/marketplace.json"
+CLAUDE_CATALOG_REL = ".claude-plugin/marketplace.json"
+MARKETPLACE_PATHS = (CODEX_CATALOG_REL, CLAUDE_CATALOG_REL)
 INSTALLATION_POLICIES = frozenset(
     {"AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"}
 )
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 
-#: Only files under these prefixes may enter a release archive.
-ARCHIVE_ALLOWLIST = (f"plugins/{PLUGIN_NAME}/",)
+#: The exact files that make up the release archive. An explicit list, not a
+#: directory prefix: the plugin ships connection manifests and nothing else.
+#: Dotfiles are permitted only by being named here.
+ARCHIVE_ALLOWLIST = (PLUGIN_MANIFEST_REL, MCP_CONFIG_REL, CLAUDE_ADAPTER_REL)
 
 GENERATED_DIRS = frozenset(
     {
@@ -63,9 +72,9 @@ REQUIRED_LAYOUT = (
     ".gitignore",
     ".agents/plugins/marketplace.json",
     ".claude-plugin/marketplace.json",
-    f"plugins/{PLUGIN_NAME}/plugin.json",
+    PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
-    f"plugins/{PLUGIN_NAME}/skills/{PLUGIN_NAME}/SKILL.md",
+    CLAUDE_ADAPTER_REL,
     "docs/install.md",
     "docs/install-verification.md",
     "docs/public-tool-contract.md",
@@ -395,10 +404,6 @@ def scan_history(root: Path = REPO_ROOT) -> list[dict]:
     return findings
 
 
-def _is_hidden(rel: str) -> bool:
-    return any(part.startswith(".") for part in Path(rel).parts)
-
-
 def _is_generated(rel: str) -> bool:
     parts = Path(rel).parts
     if any(part in GENERATED_DIRS for part in parts):
@@ -426,19 +431,20 @@ def _resolved_member(root: Path, rel: str) -> Path:
 
 
 def collect_archive_members(root: Path, rel_paths: list[str]) -> list[str]:
-    """Select archive members, refusing anything unsafe or out of scope."""
+    """Return the allowlisted manifest files, refusing unsafe or missing ones.
+
+    The archive is an exact list, so an unlisted file — hidden or not — is
+    simply excluded; only the named manifests are checked for safety.
+    """
+    tracked = set(rel_paths)
     members: list[str] = []
-    for rel in sorted(rel_paths):
-        if not rel.startswith(ARCHIVE_ALLOWLIST):
-            continue
-        if _is_hidden(rel):
-            raise PackagingError(f"refusing to package hidden path: {rel}")
+    for rel in sorted(ARCHIVE_ALLOWLIST):
+        if rel not in tracked:
+            raise PackagingError(f"allowlisted file is not tracked: {rel}")
         if _is_generated(rel):
             raise PackagingError(f"refusing to package generated path: {rel}")
         _resolved_member(root, rel)
         members.append(rel)
-    if not members:
-        raise PackagingError("no allowlisted files to package")
     return members
 
 
