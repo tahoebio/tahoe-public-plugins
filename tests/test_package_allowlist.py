@@ -1,5 +1,7 @@
 """Packaging: approved tracked files only, loud rejection of symlinks/hidden/generated."""
 
+import shutil
+
 import pytest
 
 from helpers import commit_all, git_repo, j
@@ -110,3 +112,29 @@ def test_build_release_refuses_an_archive_with_residue(tmp_path):
     with pytest.raises(common.ResidueError):
         package.build_release(repo, out)
     assert not (out / "tara-1.0.0.zip").exists()
+
+
+def test_build_release_refuses_a_binary_member(tmp_path):
+    repo = git_repo(tmp_path)
+    _write(repo, "plugins/tara/plugin.json", '{"name": "tara", "version": "1.0.0"}\n')
+    (repo / "plugins" / "tara" / "asset.bin").write_bytes(b"\xff\xfe")
+    commit_all(repo)
+    with pytest.raises(common.ResidueError):
+        package.build_release(repo, repo / "dist")
+
+
+def test_build_release_refuses_a_symlinked_parent_directory(tmp_path):
+    # Only the final member is checked for symlink-ness by the old code; a
+    # symlinked *parent* directory would package files from outside the
+    # checkout. Every component must be checked.
+    repo = git_repo(tmp_path / "repo")
+    _write(repo, "plugins/tara/plugin.json", '{"name": "tara", "version": "1.0.0"}\n')
+    commit_all(repo)
+
+    outside = tmp_path / "outside"
+    _write(outside, "plugin.json", '{"name": "tara", "version": "9.9.9"}\n')
+    shutil.rmtree(repo / "plugins" / "tara")
+    (repo / "plugins" / "tara").symlink_to(outside)
+
+    with pytest.raises(common.PackagingError):
+        package.build_release(repo, repo / "dist")

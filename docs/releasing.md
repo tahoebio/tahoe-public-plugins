@@ -1,6 +1,7 @@
 # Releasing
 
-> **Stub.** The release process is finalised with the release (R6).
+> Validation, packaging and the leak scans are in place. Publication itself is
+> still blocked (see below).
 
 ## Validation
 

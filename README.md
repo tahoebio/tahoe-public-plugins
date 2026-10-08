@@ -6,8 +6,10 @@ The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
 plugin is **Tara**, which lets a computational researcher discover and retrieve
 bounded slices of the public Tahoe-100M dataset from their own agent.
 
-> **Status: private preview.** Nothing here is published, supported or licensed,
-> and the Tara plugin does not yet connect to a live service.
+> **Status: private preview.** Nothing here is published, supported or licensed.
+> The plugin ships the `tahoe-public` server endpoint; the clean-machine install
+> and sign-in have not yet been verified end to end (see
+> `docs/install-verification.md`).
 
 ## Layout
 

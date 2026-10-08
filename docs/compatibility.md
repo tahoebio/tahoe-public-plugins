@@ -1,12 +1,13 @@
 # Compatibility
 
-> **Stub.** Only tested combinations are claimed. No untested cross-host claims.
+> Only tested combinations are claimed. No untested cross-host claims.
 
 ## Tested host
 
 **Codex CLI** — the only host claimed. The install command in `docs/install.md`
 and the steps in `docs/install-verification.md` target it. The exact tested
-version and date are recorded here once the clean-machine check passes.
+version and date are recorded here once the clean-machine check passes; until
+then no version is claimed.
 
 No other client is claimed.
 

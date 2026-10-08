@@ -114,7 +114,11 @@ def validate_versions(root: Path = common.REPO_ROOT) -> None:
 
 
 def validate_residue(root: Path = common.REPO_ROOT) -> None:
-    """Scan the working tree and the full git history for residue and secrets."""
+    """Scan the working tree and the full git history for residue and secrets.
+
+    Fails rather than reporting clean when the history cannot be read in full.
+    """
+    common.require_full_history(root)
     findings = common.scan_repo(root=root) + common.scan_history(root=root)
     if findings:
         raise common.ResidueError(

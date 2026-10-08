@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from helpers import commit_all, git_repo, shallow_clone
 from scripts import common, validate
 
 
@@ -131,6 +132,21 @@ def test_rejects_version_mismatch(tmp_path):
     (tmp_path / "CHANGELOG.md").write_text("## 9.9.9\n")
     with pytest.raises(common.RepoError):
         validate.validate_versions(tmp_path)
+
+
+def test_rejects_a_root_with_no_history(tmp_path):
+    # A scan that cannot read history must fail, not report clean.
+    with pytest.raises(common.RepoError):
+        validate.validate_residue(tmp_path)
+
+
+def test_rejects_shallow_history(tmp_path):
+    source = git_repo(tmp_path / "source")
+    (source / "note.md").write_text("hello\n")
+    commit_all(source)
+    shallow = shallow_clone(source, tmp_path / "shallow")
+    with pytest.raises(common.RepoError):
+        validate.validate_residue(shallow)
 
 
 def test_real_repo_passes_validation():

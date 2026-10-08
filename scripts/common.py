@@ -1,7 +1,8 @@
 """Shared helpers for validation, residue scanning and packaging.
 
-Scans are textual and operate on tracked files only. Nothing here reads, writes
-or prints credentials.
+Scans are textual: they cover tracked files, the built archive and git history,
+and report content that cannot be read as text rather than skipping it. Nothing
+here reads, writes or prints credentials.
 """
 
 from __future__ import annotations
@@ -76,14 +77,6 @@ REQUIRED_LAYOUT = (
     ".github/workflows/ci.yml",
 )
 
-#: This module defines the patterns below, so it necessarily contains their
-#: literals. It is excluded from scanning by resolved-path identity — a narrow,
-#: reviewable exclusion rather than a per-line suppression that could hide a
-#: real secret anywhere. The same exclusion applies to the history scan, for the
-#: same reason.
-_SCANNER_MODULE = Path(__file__).resolve()
-
-
 class RepoError(Exception):
     """A repository invariant was violated."""
 
@@ -97,22 +90,23 @@ class ResidueError(RepoError):
 
 
 def _frag(*parts: str) -> str:
-    """Join fragments so a sensitive name is never contiguous in source.
+    """Join fragments so no forbidden literal is contiguous in source.
 
-    This pattern table is a tracked, public file. Names that must not appear in
-    the public repo (internal repos, a non-public dataset, an excluded table, a
-    person, commercial-tier wording) are assembled at import time so the file
-    does not itself contain the strings the scanner looks for.
+    This pattern table is a tracked, public file. Every literal it looks for —
+    internal names (repos, a non-public dataset, an excluded table, a person,
+    commercial-tier wording) and generic shapes (object-store URIs, volume
+    paths) — is assembled at import time, so this file contains none of them and
+    is scanned like any other file.
     """
     return "".join(parts)
 
 
-# Internal residue that must never reach a public artifact. Sensitive names are
-# assembled from fragments; generic shapes (secrets, object-store URIs, volume
-# paths, host-id shapes) are written literally.
+# Internal residue that must never reach a public artifact. Every pattern is
+# assembled from fragments so this file contains no contiguous forbidden
+# literal, and is therefore scanned like any other file rather than excluded.
 FORBIDDEN_PATTERNS = [
-    ("internal-object-store-uri", re.compile(r"s3" "://")),
-    ("internal-volume-path", re.compile(r"/Vol" "umes/")),
+    ("internal-object-store-uri", re.compile(_frag("s3", "://"))),
+    ("internal-volume-path", re.compile(_frag("/Vol", "umes/"))),
     ("private-service-repo", re.compile(_frag("tahoe-public", "-mcp"))),
     ("internal-mcp-repo", re.compile(_frag("tara", "-mcp"))),
     ("excluded-table-name", re.compile(_frag("tx1", "_embeddings"))),
@@ -185,15 +179,23 @@ def tracked_files(root: Path = REPO_ROOT) -> list[str]:
     return sorted(line for line in result.stdout.splitlines() if line)
 
 
+def _match_line(line: str) -> list[tuple[str, str]]:
+    """Return ``(category, label)`` for every pattern that matches ``line``."""
+    return [
+        (category, label)
+        for category, patterns in _PATTERN_GROUPS
+        for label, regex in patterns
+        if regex.search(line)
+    ]
+
+
 def scan_text(text: str) -> list[tuple[str, str, int, str]]:
     """Return ``(category, label, line_number, line)`` for every finding."""
-    findings: list[tuple[str, str, int, str]] = []
-    for lineno, line in enumerate(text.splitlines(), start=1):
-        for category, patterns in _PATTERN_GROUPS:
-            for label, regex in patterns:
-                if regex.search(line):
-                    findings.append((category, label, lineno, line.strip()))
-    return findings
+    return [
+        (category, label, lineno, line.strip())
+        for lineno, line in enumerate(text.splitlines(), start=1)
+        for category, label in _match_line(line)
+    ]
 
 
 def _finding(
@@ -205,8 +207,13 @@ def _finding(
         "category": category,
         "label": label,
         "line": lineno,
-        "text": line,
+        "text": line.strip(),
     }
+
+
+def _unscannable(source: str, path: str) -> dict:
+    """A member that cannot be read as text is reported, never skipped."""
+    return _finding(source, path, "unscannable", "unscannable-file", 0, "")
 
 
 def _scan_lines(
@@ -215,8 +222,8 @@ def _scan_lines(
     """Scan ``(line_number, text)`` pairs from one file and build findings."""
     findings: list[dict] = []
     for lineno, text in numbered_lines:
-        for category, label, _, line in scan_text(text):
-            findings.append(_finding(source, path, category, label, lineno, line))
+        for category, label in _match_line(text):
+            findings.append(_finding(source, path, category, label, lineno, text))
     return findings
 
 
@@ -236,12 +243,12 @@ def scan_repo(
     paths = tracked_files(root) if rel_paths is None else rel_paths
     findings: list[dict] = []
     for rel in paths:
-        path = root / rel
         try:
-            if path.resolve() == _SCANNER_MODULE:
-                continue
-            text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+            text = (root / rel).read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            findings.append(_unscannable("worktree", rel))
+            continue
+        except OSError:
             continue
         findings.extend(_scan_lines("worktree", rel, enumerate(text.splitlines(), 1)))
     return findings
@@ -254,7 +261,8 @@ def scan_archive(path: Path) -> list[dict]:
         for name in archive.namelist():
             try:
                 text = archive.read(name).decode("utf-8")
-            except (UnicodeDecodeError, KeyError):
+            except UnicodeDecodeError:
+                findings.append(_unscannable("archive", name))
                 continue
             findings.extend(
                 _scan_lines("archive", name, enumerate(text.splitlines(), 1))
@@ -270,56 +278,75 @@ _HISTORY_MESSAGE_END = "@@message-end@@"
 _HUNK_HEADER = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 
 
-def _is_git_repo(root: Path) -> bool:
-    result = subprocess.run(
-        ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
-        capture_output=True,
-        text=True,
+def _git_output(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", "-C", str(root), *args], capture_output=True, text=True
     )
+
+
+def _is_git_repo(root: Path) -> bool:
+    result = _git_output(root, "rev-parse", "--is-inside-work-tree")
     return result.returncode == 0 and result.stdout.strip() == "true"
 
 
-def _scanner_exclusion(root: Path) -> list[str]:
-    """Pathspec excluding the scanner module, relative to ``root`` if it holds it."""
-    try:
-        rel = _SCANNER_MODULE.relative_to(Path(root).resolve()).as_posix()
-    except ValueError:
-        return []
-    return [f":(exclude){rel}"]
+def require_full_history(root: Path = REPO_ROOT) -> None:
+    """Raise unless ``root`` carries the full history the scan needs.
+
+    A scan that cannot read history must fail rather than report clean.
+    """
+    if not _is_git_repo(root):
+        raise RepoError("history scan requires a git repository")
+    shallow = _git_output(root, "rev-parse", "--is-shallow-repository")
+    if shallow.stdout.strip() == "true":
+        raise RepoError(
+            "history scan requires the full history; this is a shallow clone"
+        )
 
 
-def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str]]:
-    """Yield ``(path, line_number, text)`` for added lines and commit messages.
+def _diff_path(line: str) -> str:
+    """Return the ``b/`` path from a ``diff --git a/… b/…`` line."""
+    _, _, tail = line.partition(" b/")
+    return tail
 
-    Commit messages are as public as the diff, so they are scanned too, under a
-    ``commit <sha>`` path.
+
+def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | None]]:
+    """Yield ``(path, line_number, text)`` for everything a history scan reads.
+
+    Covers added lines, commit messages (as public as the diff, so scanned under
+    a ``commit <sha>`` path) and binary-change notices, for which ``text`` is
+    ``None`` — a binary member cannot be read as text and is reported, not
+    skipped.
     """
     path = ""
     lineno = 0
     in_message = False
+    in_hunk = False
     for raw in stream:
         line = raw.rstrip("\n")
         if line.startswith(_HISTORY_COMMIT):
-            in_message = True
+            in_message, in_hunk = True, False
             path = f"commit {line[len(_HISTORY_COMMIT) :][:12]}"
             lineno = 0
             continue
         if in_message:
             if line == _HISTORY_MESSAGE_END:
-                in_message = False
-                path = ""
+                in_message, path = False, ""
                 continue
             lineno += 1
             yield path, lineno, line
             continue
-        if line.startswith("+++ b/"):
-            path = line[len("+++ b/") :]
-            continue
         header = _HUNK_HEADER.match(line)
         if header:
-            lineno = int(header.group(1))
+            lineno, in_hunk = int(header.group(1)), True
             continue
-        if line.startswith("+++") or line.startswith("---"):
+        if line.startswith("diff --git "):
+            in_hunk, path = False, _diff_path(line)
+            continue
+        if not in_hunk:
+            if line.startswith("+++ b/"):
+                path = line[len("+++ b/") :]
+            elif line.startswith("Binary files ") and line.endswith(" differ"):
+                yield path, 0, None
             continue
         if line.startswith("+"):
             yield path, lineno, line[1:]
@@ -329,10 +356,11 @@ def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str]]:
 
 
 def scan_history(root: Path = REPO_ROOT) -> list[dict]:
-    """Scan every line added and every commit message in git history.
+    """Scan every line added, every commit message and every binary change.
 
-    Returns ``[]`` when ``root`` is not a git repository. The scanner module is
-    excluded by path for the same reason the working-tree scan excludes it.
+    Uses ``--all``, so on a developer machine this also covers local branches
+    and stashes, not only the branch being built. Returns ``[]`` when ``root``
+    is not a git repository.
     """
     if not _is_git_repo(root):
         return []
@@ -347,19 +375,20 @@ def scan_history(root: Path = REPO_ROOT) -> list[dict]:
         "--all",
         "-p",
         "--no-color",
-        f"--format={_HISTORY_COMMIT}%H%n%B{_HISTORY_MESSAGE_END}",
+        f"--format={_HISTORY_COMMIT}%H%n%B%n{_HISTORY_MESSAGE_END}",
         "--",
         ".",
-        *_scanner_exclusion(root),
     ]
-    with subprocess.Popen(
-        command, stdout=subprocess.PIPE, text=True
-    ) as process:
+    with subprocess.Popen(command, stdout=subprocess.PIPE, text=True) as process:
         lines = _scannable_lines(process.stdout)
         findings: list[dict] = []
         for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
+            entries = list(group)
+            if any(text is None for _, _, text in entries):
+                findings.append(_unscannable("history", path))
+                continue
             findings.extend(
-                _scan_lines("history", path, ((ln, tx) for _, ln, tx in group))
+                _scan_lines("history", path, ((ln, tx) for _, ln, tx in entries))
             )
     if process.returncode:
         raise RepoError(f"git log failed while scanning history ({process.returncode})")
@@ -377,19 +406,36 @@ def _is_generated(rel: str) -> bool:
     return any(part.endswith(GENERATED_SUFFIXES) for part in parts)
 
 
+def _resolved_member(root: Path, rel: str) -> Path:
+    """Resolve ``rel`` under ``root``, refusing symlinks and escapes.
+
+    Every component is checked, not only the final one: a symlinked *parent*
+    directory would otherwise let a member resolve to a file outside the
+    checkout.
+    """
+    root_resolved = Path(root).resolve()
+    current = root_resolved
+    for part in Path(rel).parts:
+        current = current / part
+        if current.is_symlink():
+            raise PackagingError(f"refusing to package symlinked path: {rel}")
+    resolved = current.resolve()
+    if not resolved.is_relative_to(root_resolved):
+        raise PackagingError(f"refusing to package path outside the root: {rel}")
+    return resolved
+
+
 def collect_archive_members(root: Path, rel_paths: list[str]) -> list[str]:
     """Select archive members, refusing anything unsafe or out of scope."""
     members: list[str] = []
     for rel in sorted(rel_paths):
         if not rel.startswith(ARCHIVE_ALLOWLIST):
             continue
-        path = root / rel
-        if path.is_symlink():
-            raise PackagingError(f"refusing to package symlink: {rel}")
         if _is_hidden(rel):
             raise PackagingError(f"refusing to package hidden path: {rel}")
         if _is_generated(rel):
             raise PackagingError(f"refusing to package generated path: {rel}")
+        _resolved_member(root, rel)
         members.append(rel)
     if not members:
         raise PackagingError("no allowlisted files to package")
