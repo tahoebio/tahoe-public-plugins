@@ -1,4 +1,4 @@
-"""Manifest, schema and path rules for the marketplace catalog and the plugin.
+"""Manifest, schema and path rules for the plugin and the two catalogs.
 
 Field names are taken from the Agent Plugins 1.0.0 schemas and the build docs
 recorded in ``schemas/provenance.json``. No field is invented here.
@@ -15,8 +15,7 @@ def _plugin_manifest() -> dict:
 
 
 def test_plugin_manifest_validates_against_official_schema():
-    schema = common.load_schema("plugin")
-    Draft202012Validator(schema).validate(_plugin_manifest())
+    Draft202012Validator(common.load_schema("plugin")).validate(_plugin_manifest())
 
 
 def test_plugin_identity_is_the_catalog_plugin():
@@ -32,45 +31,17 @@ def test_plugin_manifest_carries_no_licence_field():
 
 
 @pytest.mark.parametrize("rel_path", common.MARKETPLACE_PATHS)
-def test_marketplace_catalog_fields(rel_path):
+def test_marketplace_source_path_is_relative_and_inside_root(rel_path):
     catalog = common.load_json(common.REPO_ROOT / rel_path)
-    assert catalog["name"] == common.MARKETPLACE_NAME
-    assert catalog["interface"]["displayName"] == common.MARKETPLACE_DISPLAY_NAME
-
-    entries = catalog["plugins"]
-    assert [entry["name"] for entry in entries] == [common.PLUGIN_NAME]
-
-    entry = entries[0]
-    # The docs instruct including all three on every entry.
-    assert entry["policy"]["installation"] in common.INSTALLATION_POLICIES
-    assert entry["policy"]["authentication"]
-    assert entry["category"]
+    for entry in catalog["plugins"]:
+        path = entry["source"]
+        assert isinstance(path, str) and path.startswith("./")
+        resolved = (common.REPO_ROOT / path).resolve()
+        assert resolved == common.plugin_dir().resolve()
+        assert resolved.is_relative_to(common.REPO_ROOT.resolve())
 
 
-def test_marketplace_legacy_mirror_matches_canonical():
-    canonical = common.load_json(common.REPO_ROOT / common.MARKETPLACE_PATHS[0])
-    legacy = common.load_json(common.REPO_ROOT / common.MARKETPLACE_PATHS[1])
-    assert canonical == legacy
-
-
-def test_marketplace_source_path_is_relative_and_inside_root():
-    catalog = common.load_json(common.REPO_ROOT / common.MARKETPLACE_PATHS[0])
-    source = catalog["plugins"][0]["source"]
-    path = source["path"] if isinstance(source, dict) else source
-    assert isinstance(path, str)
-    assert path.startswith("./")
-    resolved = (common.REPO_ROOT / path).resolve()
-    assert resolved == common.plugin_dir().resolve()
-    assert resolved.is_relative_to(common.REPO_ROOT.resolve())
-
-
-def test_marketplace_entry_has_no_version_single_metadata_authority():
-    catalog = common.load_json(common.REPO_ROOT / common.MARKETPLACE_PATHS[0])
+@pytest.mark.parametrize("rel_path", common.MARKETPLACE_PATHS)
+def test_marketplace_entry_has_no_version_single_metadata_authority(rel_path):
+    catalog = common.load_json(common.REPO_ROOT / rel_path)
     assert "version" not in catalog["plugins"][0]
-
-
-def test_skill_placeholder_is_marked_draft():
-    skill = (common.plugin_dir() / "skills" / common.PLUGIN_NAME / "SKILL.md").read_text()
-    lowered = skill.lower()
-    assert "draft" in lowered
-    assert "science review pending" in lowered

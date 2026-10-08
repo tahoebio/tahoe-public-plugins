@@ -1,0 +1,11 @@
+{
+  "name": "tara",
+  "version": "0.1.0",
+  "description": "Discover and retrieve bounded slices of the public Tahoe-100M dataset from your own agent.",
+  "mcpServers": {
+    "tahoe-public": {
+      "type": "http",
+      "url": "https://tara.tahoebio.io/mcp"
+    }
+  }
+}

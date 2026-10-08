@@ -1,22 +1,27 @@
 # Compatibility
 
-> **Stub.** Only tested combinations are claimed. No untested cross-host claims.
+> Only tested combinations are claimed. No untested cross-host claims.
 
-## Tested host
+## Tested hosts
 
-To be recorded after the first host smoke test. No host is claimed as supported
-until it has been tested end to end against the live service.
+**Codex CLI** and **Claude Code** — the only hosts claimed. The install paths in
+`docs/install.md` and the steps in `docs/install-verification.md` target them.
+The exact tested versions and date are recorded here once the clean-machine
+checks pass; until then no version is claimed.
+
+No other client is claimed.
 
 ## Requirements
 
-- An agent host that supports the Agent Plugins marketplace format.
+- The Codex CLI or Claude Code.
 - A GitHub account for sign-in.
 - No Databricks account or credentials are required.
 
 ## Not claimed
 
-- Cross-host support.
+- Any host other than the Codex CLI and Claude Code.
+- Cross-host support beyond those two.
 - Offline data access.
-- Any client that does not implement the documented authentication flow.
+- Any client that does not implement the documented sign-in flow.
 
 Claims are added only with evidence: a tested host, a version, and a date.
