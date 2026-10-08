@@ -4,19 +4,23 @@
 
 ## Tested host
 
-To be recorded after the first host smoke test. No host is claimed as supported
-until it has been tested end to end against the live service.
+**Codex CLI** — the only host claimed. The install command in `docs/install.md`
+and the steps in `docs/install-verification.md` target it. The exact tested
+version and date are recorded here once the clean-machine check passes.
+
+No other client is claimed.
 
 ## Requirements
 
-- An agent host that supports the Agent Plugins marketplace format.
+- The Codex CLI.
 - A GitHub account for sign-in.
 - No Databricks account or credentials are required.
 
 ## Not claimed
 
+- Any host other than the Codex CLI.
 - Cross-host support.
 - Offline data access.
-- Any client that does not implement the documented authentication flow.
+- Any client that does not implement the documented sign-in flow.
 
 Claims are added only with evidence: a tested host, a version, and a date.

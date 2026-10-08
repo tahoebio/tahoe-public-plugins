@@ -82,6 +82,41 @@ def test_rejects_missing_layout_path(tmp_path):
         validate.validate_layout(tmp_path)
 
 
+def _real_mcp_config() -> dict:
+    return common.load_json(common.REPO_ROOT / common.MCP_CONFIG_REL)
+
+
+def test_accepts_the_real_mcp_config(root):
+    _write(root, common.MCP_CONFIG_REL, _real_mcp_config())
+    validate.validate_mcp_config(root)
+
+
+def test_rejects_wrong_mcp_server_name(root):
+    config = _real_mcp_config()
+    config["mcpServers"] = {"tara": config["mcpServers"][common.MCP_SERVER_NAME]}
+    _write(root, common.MCP_CONFIG_REL, config)
+    with pytest.raises(common.RepoError):
+        validate.validate_mcp_config(root)
+
+
+def test_rejects_wrong_mcp_endpoint(root):
+    config = _real_mcp_config()
+    config["mcpServers"][common.MCP_SERVER_NAME]["url"] = "https://example.com/mcp"
+    _write(root, common.MCP_CONFIG_REL, config)
+    with pytest.raises(common.RepoError):
+        validate.validate_mcp_config(root)
+
+
+def test_rejects_mcp_credentials(root):
+    config = _real_mcp_config()
+    config["mcpServers"][common.MCP_SERVER_NAME]["headers"] = {
+        "Authorization": "Bearer example"
+    }
+    _write(root, common.MCP_CONFIG_REL, config)
+    with pytest.raises(common.RepoError):
+        validate.validate_mcp_config(root)
+
+
 def test_rejects_version_mismatch(tmp_path):
     _write(
         tmp_path,

@@ -15,7 +15,7 @@ bounded slices of the public Tahoe-100M dataset from their own agent.
 |------|---------|
 | `.agents/plugins/marketplace.json` | Marketplace catalog (canonical). |
 | `.claude-plugin/marketplace.json` | Marketplace catalog (legacy-compatible mirror). |
-| `plugins/tara/` | The Tara plugin: manifest and skill. |
+| `plugins/tara/` | The Tara plugin: manifest, MCP config and skill. |
 | `docs/` | Public documentation. |
 | `schemas/` | Vendored Agent Plugins schemas used by the offline tests. |
 | `scripts/` | Validation and packaging tooling. |
@@ -30,9 +30,14 @@ uv run python scripts/validate.py
 uv run python scripts/package.py --out dist
 ```
 
-## Licensing — named blocker
+## Licence — placeholder, not a decision
 
-There is **no LICENSE file**. The software, documentation, dataset and
-trademark rights are distinct and are not yet decided. Nothing here may be
-published or redistributed, and no licence may be assumed, until that decision
-is recorded. See `docs/data-and-licensing.md`.
+> **No licence has been chosen.** This is a deliberate placeholder, not an
+> oversight and not a choice.
+
+There is **no LICENSE file and no `license` field** anywhere in this
+repository. The software, documentation, dataset and trademark rights are
+distinct and are not yet decided. Nothing here may be published or
+redistributed, and no licence may be assumed, until that decision is recorded.
+The decision is tracked as a named publication blocker. See
+`docs/data-and-licensing.md`.

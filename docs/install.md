@@ -1,23 +1,41 @@
 # Install
 
-> **Stub.** The install flow is finalised with the release (R6).
+Tara runs as a remote MCP server named `tahoe-public`. Install it with one
+command, from the tested host below.
 
-## Status
+## Tested host: Codex CLI
 
-The Tara plugin does **not yet** connect to a live service. This repository ships
-no active server configuration, so installing the plugin will not reach a data
-endpoint. The service endpoint is added only once the host is real; until then
-the connection is **pending** and installation is incomplete by design.
+The only host claimed as tested is the Codex CLI. No other client is claimed
+(see `docs/compatibility.md`).
 
-No stand-in endpoint is shipped. A missing deployment configuration must fail
-clearly rather than appear to work.
+## Install
 
-## Steps (to be completed)
+```sh
+codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp
+```
 
-1. Add the Tahoe Bio Plugins marketplace.
-2. Install the `tara` plugin.
-3. Sign in through the documented host.
-4. Run the first-use example against the public dataset.
+This single command registers the server and starts the sign-in flow: Codex
+opens a browser for GitHub sign-in. Approve the consent screen; the credential
+is stored by Codex, and no token is copied by hand.
 
-The exact commands are added once the service host exists and the first-use
-example has been tested end to end.
+> **Codex "Run without daemon" dialog.** Codex may present a **Run without
+> daemon** prompt the first time it uses this server. Continue without a daemon:
+> `tahoe-public` is a remote HTTPS endpoint, so there is nothing to run locally.
+
+## Verify
+
+```sh
+codex mcp list
+```
+
+`tahoe-public` should be listed. Then ask the agent to list the available
+dataset releases; a successful call confirms the connection and the signed-in
+account. The full step-by-step verification is in
+`docs/install-verification.md`.
+
+## Configuration shipped by the plugin
+
+The plugin declares the same server in `plugins/tara/mcp.json`: a single
+`streamable-http` server named `tahoe-public` pointing at
+`https://tara.tahoebio.io/mcp`, with no embedded credentials. Authentication is
+handled by the sign-in flow above.

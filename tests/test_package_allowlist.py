@@ -2,7 +2,8 @@
 
 import pytest
 
-from scripts import common
+from helpers import commit_all, git_repo, j
+from scripts import common, package
 
 
 def _write(root, rel, content="x\n"):
@@ -92,3 +93,20 @@ def test_repo_archive_is_exactly_the_plugin_payload():
     members = common.collect_archive_members(common.REPO_ROOT, common.tracked_files())
     assert members
     assert all(member.startswith(common.ARCHIVE_ALLOWLIST) for member in members)
+
+
+def test_repo_archive_has_no_residue(tmp_path):
+    archive, _ = package.build_release(common.REPO_ROOT, tmp_path)
+    assert common.scan_archive(archive) == []
+
+
+def test_build_release_refuses_an_archive_with_residue(tmp_path):
+    repo = git_repo(tmp_path)
+    _write(repo, "plugins/tara/plugin.json", '{"name": "tara", "version": "1.0.0"}\n')
+    _write(repo, "plugins/tara/note.md", j("s3", "://bucket/key") + "\n")
+    commit_all(repo)
+
+    out = repo / "dist"
+    with pytest.raises(common.ResidueError):
+        package.build_release(repo, out)
+    assert not (out / "tara-1.0.0.zip").exists()

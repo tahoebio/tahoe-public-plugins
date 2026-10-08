@@ -1,8 +1,9 @@
 """Validate the public repository.
 
-Checks the manifests against the vendored Agent Plugins schemas, enforces the
-layout and version invariants, and scans tracked files for internal residue and
-secrets. Run from the repository root:
+Checks the manifests and the MCP configuration against the vendored Agent
+Plugins schemas, enforces the layout and version invariants, and scans the
+working tree and the full git history for internal residue and secrets. Run
+from the repository root:
 
     uv run python scripts/validate.py
 """
@@ -80,11 +81,24 @@ def validate_layout(root: Path = common.REPO_ROOT) -> None:
     if missing:
         raise common.RepoError("missing layout paths: " + ", ".join(missing))
 
-    if (common.plugin_dir(root) / "mcp.json").exists():
+
+def validate_mcp_config(root: Path = common.REPO_ROOT) -> None:
+    config = common.load_json(root / common.MCP_CONFIG_REL)
+    Draft202012Validator(common.load_schema("mcp")).validate(config)
+
+    servers = config["mcpServers"]
+    if list(servers) != [common.MCP_SERVER_NAME]:
         raise common.RepoError(
-            "mcp.json must be absent until the service host exists; a missing "
-            "deployment configuration must fail clearly"
+            f"{common.MCP_CONFIG_REL}: expected exactly one server named "
+            f"{common.MCP_SERVER_NAME!r}"
         )
+    server = servers[common.MCP_SERVER_NAME]
+    if server.get("type") != "streamable-http":
+        raise common.RepoError("mcp server must be streamable-http")
+    if server.get("url") != common.MCP_ENDPOINT:
+        raise common.RepoError(f"mcp server url must be {common.MCP_ENDPOINT!r}")
+    if "headers" in server or "env" in server:
+        raise common.RepoError("mcp.json must not carry credentials")
 
 
 def validate_versions(root: Path = common.REPO_ROOT) -> None:
@@ -100,18 +114,18 @@ def validate_versions(root: Path = common.REPO_ROOT) -> None:
 
 
 def validate_residue(root: Path = common.REPO_ROOT) -> None:
-    findings = common.scan_repo(root=root)
+    """Scan the working tree and the full git history for residue and secrets."""
+    findings = common.scan_repo(root=root) + common.scan_history(root=root)
     if findings:
-        detail = "\n".join(
-            f"  {finding['path']}:{finding['line']}: {finding['label']}"
-            for finding in findings
+        raise common.ResidueError(
+            "forbidden residue or secrets found:\n" + common.format_findings(findings)
         )
-        raise common.ResidueError("forbidden residue or secrets found:\n" + detail)
 
 
 def validate_all(root: Path = common.REPO_ROOT) -> None:
     validate_manifests(root)
     validate_layout(root)
+    validate_mcp_config(root)
     validate_versions(root)
     validate_residue(root)
 

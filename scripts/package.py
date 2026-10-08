@@ -3,8 +3,9 @@
     uv run python scripts/package.py --out dist
 
 The archive contains the plugin payload (``plugins/tara/``) and nothing else.
-Symlinks, hidden paths and generated output are refused rather than skipped. A
-SHA-256 checksum is written next to the archive.
+Symlinks, hidden paths and generated output are refused rather than skipped. The
+built archive is scanned for internal residue and secrets and is discarded if
+any are found. A SHA-256 checksum is written next to the archive.
 """
 
 from __future__ import annotations
@@ -27,6 +28,14 @@ def build_release(
     archive = common.build_archive(
         root, members, destination / f"{common.PLUGIN_NAME}-{version}.zip"
     )
+
+    findings = common.scan_archive(archive)
+    if findings:
+        archive.unlink(missing_ok=True)
+        raise common.ResidueError(
+            "the built archive contains forbidden residue or secrets:\n"
+            + common.format_findings(findings)
+        )
     return archive, common.write_checksum(archive)
 
 

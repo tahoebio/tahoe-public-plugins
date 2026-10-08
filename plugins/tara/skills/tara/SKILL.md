@@ -22,9 +22,9 @@ from their own agent:
 
 ## Status
 
-- The service connection is **not yet available**. This plugin does not ship an
-  active server configuration until the service host exists, so installation
-  alone will not reach a data endpoint.
+- The plugin ships one remote server, `tahoe-public` (`streamable-http`), with
+  no embedded credentials. Sign-in is through the Codex CLI; see
+  `docs/install.md`.
 - Scientific wording and the accepted first-use example are pending review.
 
 ## Principles

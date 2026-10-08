@@ -7,19 +7,26 @@ or prints credentials.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import re
 import subprocess
 import zipfile
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_DIR = REPO_ROOT / "schemas"
 
-#: Single source of truth for the marketplace and plugin identity.
+#: Single source of truth for the marketplace, plugin and remote-server identity.
 PLUGIN_NAME = "tara"
 MARKETPLACE_NAME = "tahoe-public"
 MARKETPLACE_DISPLAY_NAME = "Tahoe Bio Plugins"
+#: The remote MCP server is named for the public service, never for the plugin:
+#: ``tara`` names a different, internal service.
+MCP_SERVER_NAME = "tahoe-public"
+MCP_ENDPOINT = "https://tara.tahoebio.io/mcp"
+MCP_CONFIG_REL = f"plugins/{PLUGIN_NAME}/mcp.json"
 MARKETPLACE_PATHS = (
     ".agents/plugins/marketplace.json",
     ".claude-plugin/marketplace.json",
@@ -56,8 +63,10 @@ REQUIRED_LAYOUT = (
     ".agents/plugins/marketplace.json",
     ".claude-plugin/marketplace.json",
     f"plugins/{PLUGIN_NAME}/plugin.json",
+    MCP_CONFIG_REL,
     f"plugins/{PLUGIN_NAME}/skills/{PLUGIN_NAME}/SKILL.md",
     "docs/install.md",
+    "docs/install-verification.md",
     "docs/public-tool-contract.md",
     "docs/compatibility.md",
     "docs/data-and-licensing.md",
@@ -70,7 +79,8 @@ REQUIRED_LAYOUT = (
 #: This module defines the patterns below, so it necessarily contains their
 #: literals. It is excluded from scanning by resolved-path identity — a narrow,
 #: reviewable exclusion rather than a per-line suppression that could hide a
-#: real secret anywhere.
+#: real secret anywhere. The same exclusion applies to the history scan, for the
+#: same reason.
 _SCANNER_MODULE = Path(__file__).resolve()
 
 
@@ -186,6 +196,39 @@ def scan_text(text: str) -> list[tuple[str, str, int, str]]:
     return findings
 
 
+def _finding(
+    source: str, path: str, category: str, label: str, lineno: int, line: str
+) -> dict:
+    return {
+        "source": source,
+        "path": path,
+        "category": category,
+        "label": label,
+        "line": lineno,
+        "text": line,
+    }
+
+
+def _scan_lines(
+    source: str, path: str, numbered_lines: Iterable[tuple[int, str]]
+) -> list[dict]:
+    """Scan ``(line_number, text)`` pairs from one file and build findings."""
+    findings: list[dict] = []
+    for lineno, text in numbered_lines:
+        for category, label, _, line in scan_text(text):
+            findings.append(_finding(source, path, category, label, lineno, line))
+    return findings
+
+
+def format_findings(findings: Iterable[dict]) -> str:
+    """Render findings as indented ``[source] path:line: label`` lines."""
+    return "\n".join(
+        f"  [{finding['source']}] {finding['path']}:{finding['line']}: "
+        f"{finding['label']}"
+        for finding in findings
+    )
+
+
 def scan_repo(
     root: Path = REPO_ROOT, rel_paths: list[str] | None = None
 ) -> list[dict]:
@@ -200,16 +243,126 @@ def scan_repo(
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        for category, label, lineno, line in scan_text(text):
-            findings.append(
-                {
-                    "path": rel,
-                    "category": category,
-                    "label": label,
-                    "line": lineno,
-                    "text": line,
-                }
+        findings.extend(_scan_lines("worktree", rel, enumerate(text.splitlines(), 1)))
+    return findings
+
+
+def scan_archive(path: Path) -> list[dict]:
+    """Scan the text members of a built zip archive for residue and secrets."""
+    findings: list[dict] = []
+    with zipfile.ZipFile(path) as archive:
+        for name in archive.namelist():
+            try:
+                text = archive.read(name).decode("utf-8")
+            except (UnicodeDecodeError, KeyError):
+                continue
+            findings.extend(
+                _scan_lines("archive", name, enumerate(text.splitlines(), 1))
             )
+    return findings
+
+
+#: Commit headers and the end of a commit message carry markers that no diff
+#: line can produce (added lines start with ``+``), so an added line of exactly
+#: 40 hex characters is never mistaken for a commit header.
+_HISTORY_COMMIT = "@@commit@@"
+_HISTORY_MESSAGE_END = "@@message-end@@"
+_HUNK_HEADER = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
+
+
+def _is_git_repo(root: Path) -> bool:
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0 and result.stdout.strip() == "true"
+
+
+def _scanner_exclusion(root: Path) -> list[str]:
+    """Pathspec excluding the scanner module, relative to ``root`` if it holds it."""
+    try:
+        rel = _SCANNER_MODULE.relative_to(Path(root).resolve()).as_posix()
+    except ValueError:
+        return []
+    return [f":(exclude){rel}"]
+
+
+def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str]]:
+    """Yield ``(path, line_number, text)`` for added lines and commit messages.
+
+    Commit messages are as public as the diff, so they are scanned too, under a
+    ``commit <sha>`` path.
+    """
+    path = ""
+    lineno = 0
+    in_message = False
+    for raw in stream:
+        line = raw.rstrip("\n")
+        if line.startswith(_HISTORY_COMMIT):
+            in_message = True
+            path = f"commit {line[len(_HISTORY_COMMIT) :][:12]}"
+            lineno = 0
+            continue
+        if in_message:
+            if line == _HISTORY_MESSAGE_END:
+                in_message = False
+                path = ""
+                continue
+            lineno += 1
+            yield path, lineno, line
+            continue
+        if line.startswith("+++ b/"):
+            path = line[len("+++ b/") :]
+            continue
+        header = _HUNK_HEADER.match(line)
+        if header:
+            lineno = int(header.group(1))
+            continue
+        if line.startswith("+++") or line.startswith("---"):
+            continue
+        if line.startswith("+"):
+            yield path, lineno, line[1:]
+            lineno += 1
+        elif line.startswith(" "):
+            lineno += 1
+
+
+def scan_history(root: Path = REPO_ROOT) -> list[dict]:
+    """Scan every line added and every commit message in git history.
+
+    Returns ``[]`` when ``root`` is not a git repository. The scanner module is
+    excluded by path for the same reason the working-tree scan excludes it.
+    """
+    if not _is_git_repo(root):
+        return []
+
+    command = [
+        "git",
+        "-C",
+        str(root),
+        "-c",
+        "core.quotePath=false",
+        "log",
+        "--all",
+        "-p",
+        "--no-color",
+        f"--format={_HISTORY_COMMIT}%H%n%B{_HISTORY_MESSAGE_END}",
+        "--",
+        ".",
+        *_scanner_exclusion(root),
+    ]
+    with subprocess.Popen(
+        command, stdout=subprocess.PIPE, text=True
+    ) as process:
+        lines = _scannable_lines(process.stdout)
+        findings: list[dict] = []
+        for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
+            findings.extend(
+                _scan_lines("history", path, ((ln, tx) for _, ln, tx in group))
+            )
+    if process.returncode:
+        raise RepoError(f"git log failed while scanning history ({process.returncode})")
     return findings
 
 

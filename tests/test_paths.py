@@ -1,4 +1,4 @@
-"""Repository layout and the "no active MCP config yet" guard."""
+"""Repository layout, the shipped MCP endpoint, and the install docs."""
 
 from scripts import common
 
@@ -13,17 +13,25 @@ def test_plugin_root_keeps_expected_directories():
         assert (common.plugin_dir() / rel).is_dir()
 
 
-def test_no_active_mcp_config_until_host_exists():
-    # An mcp.json pointing at a stand-in host would let install "succeed"
-    # against a service that does not exist. It must be absent until the host
-    # is real; missing deployment config must fail clearly instead.
-    assert not (common.plugin_dir() / "mcp.json").exists()
+def test_mcp_config_points_at_the_public_host():
+    # The host exists, so the plugin ships an active server configuration. It
+    # must point only at the approved public endpoint — never a stand-in host.
+    config = common.load_json(common.REPO_ROOT / common.MCP_CONFIG_REL)
+    assert config["mcpServers"][common.MCP_SERVER_NAME]["url"] == common.MCP_ENDPOINT
 
 
-def test_install_docs_state_connection_is_pending():
-    install = (common.REPO_ROOT / "docs" / "install.md").read_text().lower()
-    assert "not yet" in install or "pending" in install
-    assert "placeholder" not in install
+def test_install_docs_give_the_single_codex_command():
+    install = (common.REPO_ROOT / "docs" / "install.md").read_text()
+    assert (
+        "codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp" in install
+    )
+    assert "daemon" in install.lower()
+
+
+def test_install_docs_claim_codex_as_the_only_tested_host():
+    compatibility = (common.REPO_ROOT / "docs" / "compatibility.md").read_text().lower()
+    assert "codex" in compatibility
+    assert "not claimed" in compatibility
 
 
 def test_skill_frontmatter_has_name_and_description():
