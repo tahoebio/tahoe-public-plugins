@@ -61,12 +61,24 @@ def test_every_relative_link_resolves_inside_the_skill_dir():
             assert resolved.is_relative_to(skill_dir), f"{rel}: escapes skill dir"
 
 
-def test_every_tool_the_skill_names_is_on_the_public_contract():
+def test_every_tool_the_skill_names_is_known_or_marked_coming_soon():
     known = common.known_tools()
+    planned = common.planned_tools()
     assert known, "the tool contract table must list the live tools"
+    assert not (known & planned)
     for rel, body in _skill_texts().items():
         for name in common.tool_shaped_mentions(body):
-            assert name in known, f"{rel}: names a tool not on the contract: {name}"
+            if name in known:
+                continue
+            assert name in planned, f"{rel}: names a tool not on the contract: {name}"
+            assert common.names_coming_soon(body, name), (
+                f"{rel}: {name} is not marked as not yet served"
+            )
+
+
+def test_the_sql_tool_is_declared_live():
+    assert "run_sql" in common.known_tools()
+    assert "run_sql" not in common.planned_tools()
 
 
 def test_no_locator_path_or_cell_code_tokens_in_the_skill():

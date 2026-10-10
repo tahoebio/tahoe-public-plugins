@@ -15,6 +15,7 @@ MANIFESTS = {
     "plugins/tara/skills/tara/references/analysis-guidelines.md": "# Guidelines\n",
     "plugins/tara/skills/tara/references/data-catalog.md": "# Catalog\n",
     "plugins/tara/skills/tara/references/tool-routing.md": "# Routing\n",
+    "plugins/tara/skills/tara/references/sql-guidance.md": "# SQL\n",
 }
 
 

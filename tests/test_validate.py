@@ -182,9 +182,12 @@ def _write_skill(root, *, skill_md: str = _VALID_SKILL_MD) -> None:
     contract = root / common.TOOL_CONTRACT_REL
     contract.parent.mkdir(parents=True, exist_ok=True)
     contract.write_text(
-        "| Tool | Purpose |\n|------|---------|\n"
+        "## Tools\n\n| Tool | Purpose |\n|------|---------|\n"
         "| `list_releases` | Releases. |\n"
-        "| `get_expression_slice` | Slices. |\n",
+        "| `get_expression_slice` | Slices. |\n"
+        "| `run_sql` | SQL. |\n\n"
+        "## Not yet served\n\n| Tool | Purpose |\n|------|---------|\n"
+        "| `run_planned` | Planned. |\n",
         encoding="utf-8",
     )
 
@@ -233,5 +236,20 @@ def test_skill_validator_rejects_a_tool_absent_from_the_contract(tmp_path):
 
 def test_skill_validator_rejects_a_locator_token(tmp_path):
     _write_skill(tmp_path, skill_md=_VALID_SKILL_MD + "\nSee `a.b.c` for the table.\n")
+    with pytest.raises(common.RepoError):
+        validate.validate_skill(tmp_path)
+
+
+def test_skill_validator_accepts_a_planned_tool_behind_the_marker(tmp_path):
+    _write_skill(
+        tmp_path,
+        skill_md=_VALID_SKILL_MD
+        + "\n`run_planned` is available once the server advertises it.\n",
+    )
+    validate.validate_skill(tmp_path)
+
+
+def test_skill_validator_rejects_a_planned_tool_without_the_marker(tmp_path):
+    _write_skill(tmp_path, skill_md=_VALID_SKILL_MD + "\nCall `run_planned(...)`.\n")
     with pytest.raises(common.RepoError):
         validate.validate_skill(tmp_path)

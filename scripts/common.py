@@ -49,15 +49,27 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 _FRONTMATTER_RE = re.compile(r"\A---\n(?P<body>.*?)\n---\n", re.DOTALL)
 #: A tool-contract table row whose first cell is a backticked tool name.
 _TOOL_CONTRACT_CELL_RE = re.compile(r"^\|\s*`([a-z][a-z0-9_]*)`\s*\|")
+#: A level-2 heading, delimiting a section of the tool-contract doc.
+_SECTION_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
+#: The tool-contract sections: the live surface, and the not-yet-served one.
+_LIVE_TOOLS_SECTION = "Tools"
+_PLANNED_TOOLS_SECTION = "Not yet served"
+#: The phrase that must sit beside a not-yet-served tool's name in shipped text,
+#: so a planned tool can never read as live.
+COMING_SOON_MARKER = "available once the server advertises"
 _BACKTICK_RE = re.compile(r"`([a-z][a-z0-9_]*)[^`]*`")
 #: A backticked tool CALL: an identifier followed by ``(`` before the closing
 #: backtick, e.g. `` `health()` ``.
 _CALL_RE = re.compile(r"`([a-z][a-z0-9_]*)\s*\(")
-#: A backticked token that names a tool by shape: a read verb, or one of the two
-#: control tools. Keeps the mention check from flagging a column such as
-#: ``cancel_handle`` or a unit such as ``cpm_log1p``.
-_TOOL_SHAPED_RE = re.compile(r"^(?:get|list|search|resolve|health)_[a-z0-9_]+$")
-_CONTROL_TOOL_RE = re.compile(r"^(?:cancel|send)_(?:execution|feedback)$")
+#: A backticked token that names a tool: a read verb, the SQL tool, the two
+#: control tools, or ``health``. Keeps the mention check from flagging a column
+#: such as ``cancel_handle``, a unit such as ``cpm_log1p`` or a SQL function such
+#: as ``array_contains``.
+_TOOL_NAME_RE = re.compile(
+    r"^(?:get|list|search|resolve|run)_[a-z0-9_]+$"
+    r"|^(?:cancel|send)_(?:execution|feedback)$"
+    r"|^health$"
+)
 #: A three-part dotted locator (catalog.schema.table). The first segment must
 #: start like an identifier, so a DOI such as ``10.1101/2025.02.20.639398`` is
 #: not mistaken for one.
@@ -75,6 +87,7 @@ REFERENCE_RELS = (
     f"{SKILL_DIR_REL}/references/analysis-guidelines.md",
     f"{SKILL_DIR_REL}/references/data-catalog.md",
     f"{SKILL_DIR_REL}/references/tool-routing.md",
+    f"{SKILL_DIR_REL}/references/sql-guidance.md",
 )
 SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
 
@@ -241,6 +254,22 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     return fields
 
 
+def _tool_contract_rows(text: str, heading: str) -> frozenset[str]:
+    """Tool names in the table under ``heading`` of the tool-contract doc."""
+    sections = list(_SECTION_RE.finditer(text))
+    for index, match in enumerate(sections):
+        if match.group(1).strip() != heading:
+            continue
+        end = sections[index + 1].start() if index + 1 < len(sections) else len(text)
+        body = text[match.end() : end]
+        return frozenset(
+            row.group(1)
+            for line in body.splitlines()
+            if (row := _TOOL_CONTRACT_CELL_RE.match(line))
+        )
+    return frozenset()
+
+
 def known_tools(root: Path = REPO_ROOT) -> frozenset[str]:
     """The live public tool names, read from the tool-contract table.
 
@@ -248,11 +277,16 @@ def known_tools(root: Path = REPO_ROOT) -> frozenset[str]:
     mention check and the docs cannot drift apart.
     """
     text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
-    return frozenset(
-        match.group(1)
-        for line in text.splitlines()
-        if (match := _TOOL_CONTRACT_CELL_RE.match(line))
-    )
+    return _tool_contract_rows(text, _LIVE_TOOLS_SECTION)
+
+
+def planned_tools(root: Path = REPO_ROOT) -> frozenset[str]:
+    """Tools the contract lists as not yet served.
+
+    A skill may name one only beside the coming-soon marker, and never as live.
+    """
+    text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
+    return _tool_contract_rows(text, _PLANNED_TOOLS_SECTION)
 
 
 def backticked_tokens(text: str) -> list[str]:
@@ -267,17 +301,17 @@ def backticked_tokens(text: str) -> list[str]:
 def tool_shaped_mentions(text: str) -> set[str]:
     """Backticked tokens that name a tool: a call, or a verb-shaped name.
 
-    A call is a backticked identifier followed by ``(``; a verb-shaped name
-    starts with a read verb or is one of the two control tools. This catches a
-    named-but-absent tool without flagging a result field (``cancel_handle``) or
-    a unit (``cpm_log1p``).
+    A name is tool-shaped when it starts with a read verb, is the SQL tool, is one
+    of the two control tools, or is ``health``; a call is such a name followed by
+    ``(``. This catches a named-but-absent tool without flagging a result field
+    (``cancel_handle``), a unit (``cpm_log1p``) or a SQL function
+    (``array_contains``).
     """
     shaped = {
-        token
-        for token in backticked_tokens(text)
-        if _TOOL_SHAPED_RE.match(token) or _CONTROL_TOOL_RE.match(token)
+        token for token in backticked_tokens(text) if _TOOL_NAME_RE.match(token)
     }
-    return shaped | set(_CALL_RE.findall(text))
+    calls = {name for name in _CALL_RE.findall(text) if _TOOL_NAME_RE.match(name)}
+    return shaped | calls
 
 
 def locator_tokens(text: str) -> list[str]:
@@ -297,6 +331,17 @@ def relative_links(text: str) -> list[str]:
         for target in _MARKDOWN_LINK_RE.findall(text)
         if not target.startswith(("http://", "https://", "mailto:"))
     ]
+
+
+def names_coming_soon(text: str, name: str) -> bool:
+    """True when some line names ``name`` and carries the coming-soon marker.
+
+    A not-yet-served tool may appear in shipped text only beside this marker, so
+    it can never read as live.
+    """
+    return any(
+        name in line and COMING_SOON_MARKER in line for line in text.splitlines()
+    )
 
 
 def load_schema(name: str) -> dict:
