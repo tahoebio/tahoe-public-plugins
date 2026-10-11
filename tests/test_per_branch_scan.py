@@ -121,3 +121,56 @@ def test_sweep_does_not_fail_on_a_clean_repository(tmp_path, capsys):
     assert sweep_branches.main(["--root", str(repo)]) == 0
     assert "origin/base" in capsys.readouterr().out
 
+
+def test_sweep_fails_loudly_when_it_finds_no_branches(tmp_path, capsys):
+    from scripts import sweep_branches
+
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+
+    # No remote-tracking refs: reporting "0/0 branches clean" would be a silent
+    # pass, so the sweep must fail instead.
+    assert sweep_branches.main(["--root", str(repo)]) == 1
+    assert "no remote branches" in capsys.readouterr().err
+
+
+def test_a_merged_parent_commit_is_still_scanned(tmp_path):
+    # A side commit that the merge resolution reverts (an "ours" merge) is still
+    # in HEAD's ancestry. Path-history simplification would drop it; the scan
+    # must not.
+    repo = git_repo(tmp_path)
+    base = _base_branch(repo)
+    _commit(repo, "note.md", "base\n", "base")
+    _git(repo, "checkout", "-q", "-b", "side")
+    _commit(repo, "note.md", _offending(), "side adds the offence")
+    _git(repo, "checkout", "-q", base)
+    _commit(repo, "note.md", "base v2\n", "base v2")
+    _git(repo, "merge", "-q", "-s", "ours", "side", "-m", "merge side (ours)")
+
+    # The offence is not in the working tree, but it is in HEAD's ancestry.
+    assert j("s3", "://") not in (repo / "note.md").read_text()
+    assert common.scan_history(repo)
+    with pytest.raises(common.ResidueError):
+        validate.validate_residue(repo)
+
+
+def test_binary_findings_carry_the_offending_commit(tmp_path):
+    repo = git_repo(tmp_path)
+    (repo / "blob.bin").write_bytes(b"\xff\xfe\x00\x01\x02")
+    commit_all(repo, "add a binary")
+
+    findings = common.scan_history(repo)
+    assert findings and findings[0]["label"] == "unscannable-file"
+    assert findings[0]["commit"], "a binary finding must name its commit"
+
+
+def test_ci_scans_tag_pushes_too():
+    text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "tags:" in text, "a tag push must still run the leak scan"
+
+
+def test_sweep_workflow_keeps_a_credential_to_fetch_every_branch():
+    text = (common.REPO_ROOT / ".github/workflows/sweep.yml").read_text(encoding="utf-8")
+    # The origin is private until publication: the sweep's fetch needs a token.
+    assert "persist-credentials: false" not in text
+    assert "fetch" in text
