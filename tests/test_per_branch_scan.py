@@ -196,6 +196,46 @@ def test_a_merge_commit_message_is_scanned(tmp_path):
     assert common.scan_history(repo)
 
 
+def test_an_annotated_tag_message_is_scanned(tmp_path):
+    # The target commit is clean; the offence is only in the tag OBJECT, which
+    # `git log` (a commit walk) never reads.
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    _git(repo, "tag", "-a", "v1", "-m", "release " + j("s3", "://bucket"))
+
+    assert j("s3", "://") not in (repo / "note.md").read_text()
+    assert common.scan_history(repo)
+    with pytest.raises(common.ResidueError):
+        validate.validate_residue(repo)
+
+
+def test_a_lightweight_tag_has_no_tag_object_to_scan(tmp_path):
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    _git(repo, "tag", "v1")
+
+    # A lightweight tag is just a ref to a commit; nothing extra to scan.
+    assert common.scan_history(repo) == []
+
+
+def test_sweep_scans_annotated_tags(tmp_path, capsys):
+    from scripts import sweep_branches
+
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    base = _base_branch(repo)
+    _git(repo, "update-ref", "refs/remotes/origin/base", f"refs/heads/{base}")
+    _git(repo, "tag", "-a", "v1", "-m", "release " + j("s3", "://bucket"))
+
+    reports = sweep_branches.branch_reports(repo)
+    tags = [report for report in reports if report["kind"] == "tag"]
+    assert tags and tags[0]["ok"] is False
+    assert tags[0]["author"], "a tag finding must name its tagger"
+
+    assert sweep_branches.main(["--root", str(repo)]) == 0
+    assert "tag/v1" in capsys.readouterr().out
+
+
 def test_ci_scans_tag_pushes_too():
     text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "tags:" in text, "a tag push must still run the leak scan"
