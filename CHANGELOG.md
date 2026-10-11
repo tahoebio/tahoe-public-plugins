@@ -52,9 +52,11 @@ Initial repository skeleton.
   exiting 0. It backs the pre-publication gate ("every remote branch's scan is
   green") and runs on `workflow_dispatch` and a weekly schedule. It fails
   loudly when it cannot do its job: a fetch it cannot read, or no branches found.
-- The history scan runs `--full-history`, so a commit on a merged parent that a
-  merge resolution reverted is still scanned; binary findings carry their commit,
-  so the report names the author.
+- The history scan walks the ref's full ancestry with no path limit: commit
+  messages of every commit — empty commits and merge commits included — are
+  scanned with the same patterns, and `--full-history` keeps a commit on a merged
+  parent that a merge resolution reverted. Binary findings carry their commit, so
+  the report names the author.
 - CI triggers on pushes to every branch **and on tag pushes** (a tag can point
   outside every branch tip's ancestry), plus pull requests.
 

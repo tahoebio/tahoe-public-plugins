@@ -164,6 +164,38 @@ def test_binary_findings_carry_the_offending_commit(tmp_path):
     assert findings[0]["commit"], "a binary finding must name its commit"
 
 
+def test_an_empty_commit_with_a_forbidden_message_is_scanned(tmp_path):
+    # An empty commit changes no path. A path-limited `git log` omits it, so a
+    # forbidden token in its MESSAGE would evade the gate entirely.
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    _git(
+        repo,
+        "commit",
+        "-q",
+        "--allow-empty",
+        "-m",
+        "note " + j("s3", "://bucket"),
+    )
+
+    assert common.scan_history(repo)
+    with pytest.raises(common.ResidueError):
+        validate.validate_residue(repo)
+
+
+def test_a_merge_commit_message_is_scanned(tmp_path):
+    repo = git_repo(tmp_path)
+    base = _base_branch(repo)
+    _commit(repo, "note.md", "base\n", "base")
+    _git(repo, "checkout", "-q", "-b", "side")
+    _commit(repo, "side.md", "side\n", "side")
+    _git(repo, "checkout", "-q", base)
+    _commit(repo, "other.md", "other\n", "other")
+    _git(repo, "merge", "-q", "--no-ff", "side", "-m", "merge " + j("s3", "://bucket"))
+
+    assert common.scan_history(repo)
+
+
 def test_ci_scans_tag_pushes_too():
     text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "tags:" in text, "a tag push must still run the leak scan"

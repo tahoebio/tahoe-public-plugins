@@ -384,6 +384,11 @@ def scan_history(
 ) -> list[dict]:
     """Scan every line added, every commit message and every binary change.
 
+    Walks the ref's **full ancestry** with no path limit, so a commit that
+    changes no path (an empty commit) and a commit on a merged parent are both
+    covered; every commit message — subject and body, empty and merge commits
+    included — is scanned with the same patterns.
+
     Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
     function of the commit under test and not of whatever other branches happen
     to be fetched. ``all_refs=True`` restores the whole-repository sweep over
@@ -405,16 +410,16 @@ def scan_history(
         "-c",
         "core.quotePath=false",
         "log",
-        # --full-history: do not let path-history simplification drop a commit on
-        # a merged parent whose change a merge resolution reverted. The scan must
-        # cover the ref's FULL ancestry, every merge parent included.
+        # No pathspec, and --full-history: a pathspec makes git omit commits that
+        # change no path (an empty commit could carry a forbidden token in its
+        # MESSAGE), and path-history simplification can drop a commit on a merged
+        # parent whose change a merge resolution reverted. The scan must cover the
+        # ref's FULL ancestry, every commit — empty and merge commits included.
         "--full-history",
         *_history_selector(ref, all_refs),
         "-p",
         "--no-color",
         f"--format={_HISTORY_COMMIT}%H%n%B%n{_HISTORY_MESSAGE_END}",
-        "--",
-        ".",
     ]
     with subprocess.Popen(command, stdout=subprocess.PIPE, text=True) as process:
         lines = _scannable_lines(process.stdout)
