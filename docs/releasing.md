@@ -13,23 +13,27 @@ ref under test**: the history scan is a function of the commit, so one stale
 branch cannot fail an unrelated branch or `main`. A developer can widen the scan
 to every ref with `uv run python scripts/validate.py --all-refs`.
 
-## Branch leak sweep (pre-publication gate)
+## Branch and tag leak sweep (pre-publication gate)
 
 `scripts/sweep_branches.py` runs the same per-ref scan once for **every** remote
-branch and prints a report (`branch · tip · offending commit · author · pass/fail`).
-It reports and exits 0 — a dirty branch never fails unrelated work. It runs on
-`workflow_dispatch` and a weekly schedule (`.github/workflows/sweep.yml`), and
-locally:
+branch and **every annotated tag** and prints a report
+(`branch · tip · offending commit · author · pass/fail`). It reports and exits 0 —
+a dirty ref never fails unrelated work. It runs on `workflow_dispatch` and a
+weekly schedule (`.github/workflows/sweep.yml`), and locally:
 
 ```sh
-git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
 uv run python scripts/sweep_branches.py
 ```
 
-**Gate:** before publishing, run the sweep and confirm every remote branch is
-clean. A dirty branch is a leak that would enter `main` if it merged; the report
-names the commit that introduced it and its author, so it can be fixed before
-publication.
+**Gate:** before publishing, run the sweep and confirm every remote branch and
+annotated tag is clean. A dirty ref is a leak that would enter `main` if it
+merged; the report names the commit that introduced it and its author, so it can
+be fixed before publication.
+
+An annotated tag carries its own message, which no commit walk reads, so the scan
+reads the tag object too — a tag-push CI run scans the pushed tag's message, and
+the sweep reads every annotated tag.
 
 ## Packaging
 

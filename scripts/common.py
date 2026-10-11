@@ -221,6 +221,8 @@ def _finding(
         "text": line.strip(),
         #: The commit an added line came from, when a history scan supplies it.
         "commit": "",
+        #: The tagger, when the finding came from an annotated tag's message.
+        "author": "",
     }
 
 
@@ -379,6 +381,93 @@ def _history_selector(ref: str | None, all_refs: bool) -> list[str]:
     return ["--all"] if all_refs else [ref or "HEAD"]
 
 
+#: Field separator for `for-each-ref` formats, so a value with spaces (a name,
+#: an email) cannot shift the columns.
+_TAG_FIELD_SEP = "\t"
+
+
+def annotated_tags(
+    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> list[tuple[str, str, str]]:
+    """``(refname, tag object sha, "Tagger <email>")`` for annotated tags.
+
+    An annotated tag is a real object with its own message; ``git log`` walks
+    commits and never reads it. By default only tags whose target is the ref
+    under test or an ancestor of it are returned; ``all_refs`` returns every
+    annotated tag. A lightweight tag is a bare ref to a commit and is not
+    returned. Raises when the tag list cannot be read — fail closed, never
+    silently clean.
+    """
+    result = _git_output(
+        root,
+        "for-each-ref",
+        "--format=%(refname)%09%(objectname)%09%(objecttype)%09%(*objectname)"
+        "%09%(taggername) %(taggeremail)",
+        "refs/tags",
+    )
+    if result.returncode:
+        raise RepoError(
+            f"git for-each-ref failed while listing tags ({result.returncode})"
+        )
+
+    target_ref: str | None = None
+    if not all_refs:
+        resolved = _git_output(root, "rev-parse", f"{ref or 'HEAD'}^{{commit}}")
+        if resolved.returncode:
+            return []
+        target_ref = resolved.stdout.strip()
+
+    tags: list[tuple[str, str, str]] = []
+    for line in result.stdout.splitlines():
+        parts = line.split(_TAG_FIELD_SEP)
+        if len(parts) != 5:
+            continue
+        refname, sha, objecttype, peeled, tagger = parts
+        if objecttype != "tag":
+            continue  # a lightweight tag has no tag object
+        if target_ref is not None:
+            target = peeled.strip()
+            if not target:
+                continue
+            if target != target_ref and (
+                _git_output(
+                    root, "merge-base", "--is-ancestor", target, target_ref
+                ).returncode
+                != 0
+            ):
+                continue
+        tags.append((refname, sha, tagger))
+    return tags
+
+
+def scan_tag_messages(
+    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> list[dict]:
+    """Scan every selected annotated tag's message with the same patterns.
+
+    Findings name the tag (``tag <name>``) and carry the tag object's sha and
+    its tagger, so the report can identify who wrote the offending message.
+    """
+    findings: list[dict] = []
+    for refname, sha, tagger in annotated_tags(root, ref=ref, all_refs=all_refs):
+        result = _git_output(root, "for-each-ref", "--format=%(contents)", refname)
+        if result.returncode:
+            raise RepoError(
+                f"git for-each-ref failed while reading {refname} "
+                f"({result.returncode})"
+            )
+        name = refname[len("refs/tags/") :] if refname.startswith("refs/tags/") else refname
+        for lineno, text in enumerate(result.stdout.splitlines(), start=1):
+            for category, label in _match_line(text):
+                finding = _finding(
+                    "history", f"tag {name}", category, label, lineno, text
+                )
+                finding["commit"] = sha
+                finding["author"] = tagger
+                findings.append(finding)
+    return findings
+
+
 def scan_history(
     root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
 ) -> list[dict]:
@@ -387,7 +476,9 @@ def scan_history(
     Walks the ref's **full ancestry** with no path limit, so a commit that
     changes no path (an empty commit) and a commit on a merged parent are both
     covered; every commit message — subject and body, empty and merge commits
-    included — is scanned with the same patterns.
+    included — is scanned with the same patterns. Annotated **tag** messages are
+    scanned too (see `scan_tag_messages`): a tag object is not a commit, so
+    `git log` never reads it.
 
     Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
     function of the commit under test and not of whatever other branches happen
@@ -441,6 +532,8 @@ def scan_history(
                     findings.append(finding)
     if process.returncode:
         raise RepoError(f"git log failed while scanning history ({process.returncode})")
+    # Annotated tag objects are not in the commit walk; scan their messages too.
+    findings.extend(scan_tag_messages(root, ref=ref, all_refs=all_refs))
     return findings
 
 

@@ -23,6 +23,9 @@ jobs:
           # them, so one stale branch cannot fail an unrelated one (the
           # workflow_dispatch sweep reports those separately).
           fetch-depth: 0
+          # Fetch tag objects too: on a tag push the annotated tag's own message
+          # is part of the scanned surface, and a tag object is not a commit.
+          fetch-tags: true
           persist-credentials: false
 
       - name: Set up uv

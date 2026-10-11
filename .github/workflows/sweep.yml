@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
           fetch-depth: 0
+          fetch-tags: true
           # The origin is private until publication, so the fetch below needs the
           # checkout token. Keep it for this read-only job; the job's permissions
           # are contents:read, so the token can only read.
@@ -34,9 +35,9 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen
 
-      - name: Fetch every branch
+      - name: Fetch every branch and tag
         # Fails the job on any fetch error rather than sweeping a partial set.
-        run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*"
+        run: git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:refs/tags/*"
 
       - name: Sweep every branch's history
         run: uv run python scripts/sweep_branches.py

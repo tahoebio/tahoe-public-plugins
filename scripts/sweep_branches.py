@@ -1,17 +1,19 @@
-"""Report the leak/history scan for every remote branch.
+"""Report the leak/history scan for every remote branch and every annotated tag.
 
     uv run python scripts/sweep_branches.py
     uv run python scripts/sweep_branches.py --root <repo> --refs origin/a origin/b
 
 CI validates the commit under test on its own history. This sweep is the other
-half of the design: a reporting-only pass over **every** remote branch, so the
-pre-publication gate ("every remote branch's scan is green") has an artifact and
-a dirty branch names the commit that introduced the offence and its author.
+half of the design: a reporting-only pass over **every** remote branch **and
+every annotated tag**, so the pre-publication gate ("every remote branch's scan
+is green") has an artifact and a dirty ref names the commit that introduced the
+offence and its author. Annotated tags are included because a tag object carries
+its own message, which no commit walk reads.
 
-It never fails on a dirty branch: it prints a report and exits 0, so it can run
-on a schedule without failing unrelated work. It DOES fail (non-zero) when it
-cannot do its job — git not runnable, a ref that cannot be read, or no branches
-found at all (reporting "0/0 clean" would be a silent pass).
+It never fails on a dirty ref: it prints a report and exits 0, so it can run on a
+schedule without failing unrelated work. It DOES fail (non-zero) when it cannot
+do its job — git not runnable, a ref or tag object that cannot be read, or no
+refs found at all (reporting "0/0 clean" would be a silent pass).
 """
 
 from __future__ import annotations
@@ -56,37 +58,67 @@ def _remote_refs(root: Path) -> list[tuple[str, str]]:
     return refs
 
 
-def _author(root: Path, commit: str) -> str:
-    """The author of ``commit`` as ``Name <email>``, or ``""`` when unknown."""
-    result = _git(root, "show", "-s", "--format=%an <%ae>", commit)
+def _author(root: Path, obj: str) -> str:
+    """The author of ``obj`` as ``Name <email>``, or ``""`` when unknown.
+
+    A tag object has a tagger, not an author; read it from the tag object so a
+    tag-message finding names the person who wrote it.
+    """
+    if not obj:
+        return ""
+    kind = _git(root, "cat-file", "-t", obj).stdout.strip()
+    if kind == "tag":
+        for line in _git(root, "cat-file", "-p", obj).stdout.splitlines():
+            if line.startswith("tagger "):
+                return line[len("tagger ") :].rsplit(">", 1)[0] + ">"
+        return ""
+    result = _git(root, "show", "-s", "--format=%an <%ae>", obj)
     return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def _report(root: Path, ref: str, tip: str, kind: str) -> dict:
+    """One ref's report: its tip, whether its own history is clean, and — when it
+    is not — the offending commit and its author (or the tagger)."""
+    findings = common.scan_history(root, ref=ref)
+    commit = next((f["commit"] for f in findings if f["commit"]), "")
+    author = next((f["author"] for f in findings if f["author"]), "")
+    if commit and not author:
+        author = _author(root, commit)
+    if kind == "tag":
+        name = ref[len("refs/tags/") :] if ref.startswith("refs/tags/") else ref
+        label = f"tag/{name}"
+    else:
+        label = ref[len(_REMOTE_PREFIX) :] if ref.startswith(_REMOTE_PREFIX) else ref
+    return {
+        "branch": label,
+        "kind": kind,
+        "ref": ref,
+        "tip": tip,
+        "ok": not findings,
+        "findings": len(findings),
+        "commit": commit,
+        "author": author,
+    }
 
 
 def branch_reports(
     root: Path = common.REPO_ROOT, refs: list[str] | None = None
 ) -> list[dict]:
-    """One report per ref: its tip, whether its own history is clean, and — when
-    it is not — the offending commit and its author."""
+    """One report per ref: every remote branch, and every annotated tag.
+
+    An annotated tag is scanned too — its message is not in any commit, so the
+    branch walk alone would miss it.
+    """
     tips = dict(_remote_refs(root))
     targets = refs if refs is not None else list(tips)
-    reports: list[dict] = []
-    for ref in targets:
-        findings = common.scan_history(root, ref=ref)
-        commit = next((f["commit"] for f in findings if f["commit"]), "")
-        tip = tips.get(ref) or _git(root, "rev-parse", ref).stdout.strip()
-        reports.append(
-            {
-                "branch": (
-                    ref[len(_REMOTE_PREFIX) :] if ref.startswith(_REMOTE_PREFIX) else ref
-                ),
-                "ref": ref,
-                "tip": tip,
-                "ok": not findings,
-                "findings": len(findings),
-                "commit": commit,
-                "author": _author(root, commit) if commit else "",
-            }
-        )
+    reports = [
+        _report(root, ref, tips.get(ref) or _git(root, "rev-parse", ref).stdout.strip(), "branch")
+        for ref in targets
+    ]
+    reports.extend(
+        _report(root, refname, sha, "tag")
+        for refname, sha, _ in common.annotated_tags(root, all_refs=True)
+    )
     return reports
 
 
@@ -129,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
     for report in reports:
         print("  " + _line(report))
     dirty = [report for report in reports if not report["ok"]]
-    print(f"  {len(reports) - len(dirty)}/{len(reports)} branches clean")
+    print(f"  {len(reports) - len(dirty)}/{len(reports)} refs clean")
     return 0
 
 

@@ -246,3 +246,14 @@ def test_sweep_workflow_keeps_a_credential_to_fetch_every_branch():
     # The origin is private until publication: the sweep's fetch needs a token.
     assert "persist-credentials: false" not in text
     assert "fetch" in text
+
+
+def test_sweep_workflow_fetches_tag_objects():
+    text = (common.REPO_ROOT / ".github/workflows/sweep.yml").read_text(encoding="utf-8")
+    # Annotated tag messages are scanned, so the sweep needs the tag objects.
+    assert "refs/tags" in text
+
+
+def test_ci_fetches_tag_objects():
+    text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    assert "fetch-tags: true" in text
