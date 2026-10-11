@@ -31,6 +31,15 @@ def _base_branch(repo) -> str:
     ).stdout.strip()
 
 
+def _rev_parse(repo, ref: str) -> str:
+    return subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", ref],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+
 def _commit(repo, rel: str, content: str, message: str) -> None:
     (repo / rel).write_text(content)
     commit_all(repo, message)
@@ -198,15 +207,18 @@ def test_a_merge_commit_message_is_scanned(tmp_path):
 
 def test_an_annotated_tag_message_is_scanned(tmp_path):
     # The target commit is clean; the offence is only in the tag OBJECT, which
-    # `git log` (a commit walk) never reads.
+    # `git log` (a commit walk) never reads. A TAG-push run scans the tag ref.
     repo = git_repo(tmp_path)
     _commit(repo, "note.md", "clean\n", "clean base")
     _git(repo, "tag", "-a", "v1", "-m", "release " + j("s3", "://bucket"))
 
     assert j("s3", "://") not in (repo / "note.md").read_text()
-    assert common.scan_history(repo)
+    # A branch scan of HEAD does not read a tag object...
+    assert common.scan_history(repo) == []
+    # ...but scanning the tag ref does.
+    assert common.scan_history(repo, ref="refs/tags/v1")
     with pytest.raises(common.ResidueError):
-        validate.validate_residue(repo)
+        validate.validate_residue(repo, ref="refs/tags/v1")
 
 
 def test_a_lightweight_tag_has_no_tag_object_to_scan(tmp_path):
@@ -214,8 +226,36 @@ def test_a_lightweight_tag_has_no_tag_object_to_scan(tmp_path):
     _commit(repo, "note.md", "clean\n", "clean base")
     _git(repo, "tag", "v1")
 
-    # A lightweight tag is just a ref to a commit; nothing extra to scan.
+    # A lightweight tag is just a ref to a commit; its scan is the commit's.
+    assert common.scan_history(repo, ref="refs/tags/v1") == []
+
+
+def test_an_unrelated_dirty_tag_does_not_fail_a_clean_branch(tmp_path):
+    # Per-ref isolation: a tag on an older commit is another ref's problem, so a
+    # clean branch must not fail because someone tagged its ancestor.
+    repo = git_repo(tmp_path)
+    base = _base_branch(repo)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    older = _rev_parse(repo, "HEAD")
+    _commit(repo, "note.md", "clean v2\n", "clean v2")
+    _git(repo, "tag", "-a", "old", "-m", "x " + j("s3", "://bucket"), older)
+
     assert common.scan_history(repo) == []
+    validate.validate_residue(repo)
+    # The dirty tag is still dirty on its own ref.
+    assert common.scan_history(repo, ref="refs/tags/old")
+
+
+def test_a_clean_tag_next_to_a_dirty_sibling_passes(tmp_path):
+    repo = git_repo(tmp_path)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    _git(repo, "tag", "-a", "clean", "-m", "a clean release note")
+    _git(repo, "tag", "-a", "dirty", "-m", "x " + j("s3", "://bucket"))
+
+    validate.validate_residue(repo, ref="refs/tags/clean")
+    assert common.scan_history(repo, ref="refs/tags/clean") == []
+    with pytest.raises(common.ResidueError):
+        validate.validate_residue(repo, ref="refs/tags/dirty")
 
 
 def test_sweep_scans_annotated_tags(tmp_path, capsys):
@@ -236,9 +276,40 @@ def test_sweep_scans_annotated_tags(tmp_path, capsys):
     assert "tag/v1" in capsys.readouterr().out
 
 
+def test_sweep_reports_a_dirty_lightweight_tag(tmp_path, capsys):
+    # A lightweight tag can be the SOLE ref to a dirty commit; the sweep must
+    # enumerate every tag, not only annotated ones.
+    from scripts import sweep_branches
+
+    repo = git_repo(tmp_path)
+    base = _base_branch(repo)
+    _commit(repo, "note.md", "clean\n", "clean base")
+    _git(repo, "checkout", "-q", "-b", "side")
+    _commit(repo, "note.md", _offending(), "dirty on side")
+    dirty = _rev_parse(repo, "HEAD")
+    _git(repo, "checkout", "-q", base)
+    _git(repo, "branch", "-q", "-D", "side")
+    _git(repo, "tag", "light-orphan", dirty)
+    _git(repo, "update-ref", "refs/remotes/origin/base", f"refs/heads/{base}")
+
+    reports = sweep_branches.branch_reports(repo)
+    orphan = next(r for r in reports if r["branch"] == "tag/light-orphan")
+    assert orphan["ok"] is False
+
+    assert sweep_branches.main(["--root", str(repo)]) == 0
+    assert "tag/light-orphan" in capsys.readouterr().out
+
+
+
 def test_ci_scans_tag_pushes_too():
     text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "tags:" in text, "a tag push must still run the leak scan"
+
+
+def test_ci_scans_the_pushed_tag_object():
+    text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    # On a tag push HEAD is the tag's TARGET commit, so CI must name the tag ref.
+    assert "refs/tags/" in text
 
 
 def test_sweep_workflow_keeps_a_credential_to_fetch_every_branch():
