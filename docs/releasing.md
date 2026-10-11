@@ -27,8 +27,9 @@ uv run python scripts/sweep_branches.py
 ```
 
 **Gate:** before publishing, run the sweep and confirm every remote branch is
-clean. A dirty branch is a leak that would enter `main` if it merged; its owner
-is named in the report so it can be fixed before publication.
+clean. A dirty branch is a leak that would enter `main` if it merged; the report
+names the commit that introduced it and its author, so it can be fixed before
+publication.
 
 ## Packaging
 

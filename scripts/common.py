@@ -332,7 +332,7 @@ def _scannable_lines(
     a ``commit <sha>`` path) and binary-change notices, for which ``text`` is
     ``None`` — a binary member cannot be read as text and is reported, not
     skipped. ``commit`` is the commit the line belongs to, so a finding can name
-    the pusher who introduced it.
+    the commit that introduced it.
     """
     path = ""
     lineno = 0
@@ -405,6 +405,10 @@ def scan_history(
         "-c",
         "core.quotePath=false",
         "log",
+        # --full-history: do not let path-history simplification drop a commit on
+        # a merged parent whose change a merge resolution reverted. The scan must
+        # cover the ref's FULL ancestry, every merge parent included.
+        "--full-history",
         *_history_selector(ref, all_refs),
         "-p",
         "--no-color",
@@ -417,8 +421,11 @@ def scan_history(
         findings: list[dict] = []
         for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
             entries = list(group)
-            if any(text is None for _, _, text, _ in entries):
-                findings.append(_unscannable("history", path))
+            binary = next((entry for entry in entries if entry[2] is None), None)
+            if binary is not None:
+                finding = _unscannable("history", path)
+                finding["commit"] = binary[3]
+                findings.append(finding)
                 continue
             for _, lineno, text, commit in entries:
                 for category, label in _match_line(text):

@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: ["**"]
+    # A tag can point at a commit outside every branch tip's ancestry, so a tag
+    # push must run the scan too: it checks the tag's own ancestry.
+    tags: ["**"]
   pull_request:
 
 permissions:

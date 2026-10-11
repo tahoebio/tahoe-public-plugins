@@ -50,8 +50,13 @@ Initial repository skeleton.
 - `scripts/sweep_branches.py` runs the same per-ref scan once for every remote
   branch and prints a report — branch, tip, offending commit, author, pass/fail —
   exiting 0. It backs the pre-publication gate ("every remote branch's scan is
-  green") and runs on `workflow_dispatch` and a weekly schedule.
-- CI triggers on pushes to every branch and on pull requests.
+  green") and runs on `workflow_dispatch` and a weekly schedule. It fails
+  loudly when it cannot do its job: a fetch it cannot read, or no branches found.
+- The history scan runs `--full-history`, so a commit on a merged parent that a
+  merge resolution reverted is still scanned; binary findings carry their commit,
+  so the report names the author.
+- CI triggers on pushes to every branch **and on tag pushes** (a tag can point
+  outside every branch tip's ancestry), plus pull requests.
 
 ### Thin plugin (no guidance payload)
 

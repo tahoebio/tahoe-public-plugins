@@ -6,11 +6,12 @@
 CI validates the commit under test on its own history. This sweep is the other
 half of the design: a reporting-only pass over **every** remote branch, so the
 pre-publication gate ("every remote branch's scan is green") has an artifact and
-a dirty branch names the commit and the pusher who introduced it.
+a dirty branch names the commit that introduced the offence and its author.
 
 It never fails on a dirty branch: it prints a report and exits 0, so it can run
-on a schedule without failing unrelated work. Only an operational error — git not
-runnable, or a ref that cannot be read — exits non-zero.
+on a schedule without failing unrelated work. It DOES fail (non-zero) when it
+cannot do its job — git not runnable, a ref that cannot be read, or no branches
+found at all (reporting "0/0 clean" would be a silent pass).
 """
 
 from __future__ import annotations
@@ -114,6 +115,14 @@ def main(argv: list[str] | None = None) -> int:
         reports = branch_reports(Path(args.root), args.refs)
     except common.RepoError as exc:
         print(f"sweep failed: {exc}", file=sys.stderr)
+        return 1
+
+    if not reports:
+        print(
+            "sweep failed: no remote branches found to scan (did the fetch run? "
+            "the sweep reports nothing rather than passing silently)",
+            file=sys.stderr,
+        )
         return 1
 
     print("branch leak sweep (per-ref history scan)")
