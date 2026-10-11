@@ -104,20 +104,23 @@ def _report(root: Path, ref: str, tip: str, kind: str) -> dict:
 def branch_reports(
     root: Path = common.REPO_ROOT, refs: list[str] | None = None
 ) -> list[dict]:
-    """One report per ref: every remote branch, and every annotated tag.
+    """One report per ref: every remote branch, and every tag.
 
-    An annotated tag is scanned too — its message is not in any commit, so the
-    branch walk alone would miss it.
+    Every tag is enumerated — annotated and lightweight — and each is scanned on
+    its OWN ref, so a tag that is the sole ref to a dirty commit is caught and no
+    tag's verdict depends on a sibling tag. An annotated tag's message is scanned
+    with its own ref (a tag object is not a commit).
     """
     tips = dict(_remote_refs(root))
     targets = refs if refs is not None else list(tips)
     reports = [
-        _report(root, ref, tips.get(ref) or _git(root, "rev-parse", ref).stdout.strip(), "branch")
+        _report(
+            root, ref, tips.get(ref) or _git(root, "rev-parse", ref).stdout.strip(), "branch"
+        )
         for ref in targets
     ]
     reports.extend(
-        _report(root, refname, sha, "tag")
-        for refname, sha, _ in common.annotated_tags(root, all_refs=True)
+        _report(root, refname, sha, "tag") for refname, sha in common.all_tags(root)
     )
     return reports
 

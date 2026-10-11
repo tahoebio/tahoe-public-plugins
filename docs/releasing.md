@@ -16,7 +16,7 @@ to every ref with `uv run python scripts/validate.py --all-refs`.
 ## Branch and tag leak sweep (pre-publication gate)
 
 `scripts/sweep_branches.py` runs the same per-ref scan once for **every** remote
-branch and **every annotated tag** and prints a report
+branch and **every tag** (annotated and lightweight) and prints a report
 (`branch · tip · offending commit · author · pass/fail`). It reports and exits 0 —
 a dirty ref never fails unrelated work. It runs on `workflow_dispatch` and a
 weekly schedule (`.github/workflows/sweep.yml`), and locally:
@@ -27,13 +27,16 @@ uv run python scripts/sweep_branches.py
 ```
 
 **Gate:** before publishing, run the sweep and confirm every remote branch and
-annotated tag is clean. A dirty ref is a leak that would enter `main` if it
-merged; the report names the commit that introduced it and its author, so it can
-be fixed before publication.
+tag is clean. A dirty ref is a leak that would enter `main` if it merged; the
+report names the commit that introduced it and its author, so it can be fixed
+before publication.
 
-An annotated tag carries its own message, which no commit walk reads, so the scan
-reads the tag object too — a tag-push CI run scans the pushed tag's message, and
-the sweep reads every annotated tag.
+Each ref is judged on its own: a tag never changes a branch's verdict, and a
+branch never reads a tag object. An annotated tag carries its own message, which
+no commit walk reads, so a tag scan reads that tag's object chain; a lightweight
+tag's scan is its target commit's ancestry, so a tag that is the sole ref to a
+dirty commit is caught. On a tag push, CI passes the tag ref (`--ref`) because
+`HEAD` is then the tag's target commit.
 
 ## Packaging
 

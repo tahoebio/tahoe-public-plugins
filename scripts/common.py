@@ -386,78 +386,135 @@ def _history_selector(ref: str | None, all_refs: bool) -> list[str]:
 _TAG_FIELD_SEP = "\t"
 
 
-def annotated_tags(
-    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
-) -> list[tuple[str, str, str]]:
-    """``(refname, tag object sha, "Tagger <email>")`` for annotated tags.
+def _tag_refs(root: Path) -> list[tuple[str, str, str]]:
+    """``(refname, object sha, object type)`` for every ref under ``refs/tags``.
 
-    An annotated tag is a real object with its own message; ``git log`` walks
-    commits and never reads it. By default only tags whose target is the ref
-    under test or an ancestor of it are returned; ``all_refs`` returns every
-    annotated tag. A lightweight tag is a bare ref to a commit and is not
-    returned. Raises when the tag list cannot be read — fail closed, never
-    silently clean.
+    Raises when the tag list cannot be read — fail closed, never silently clean.
     """
     result = _git_output(
         root,
         "for-each-ref",
-        "--format=%(refname)%09%(objectname)%09%(objecttype)%09%(*objectname)"
-        "%09%(taggername) %(taggeremail)",
+        "--format=%(refname)%09%(objectname)%09%(objecttype)",
         "refs/tags",
     )
     if result.returncode:
         raise RepoError(
             f"git for-each-ref failed while listing tags ({result.returncode})"
         )
-
-    target_ref: str | None = None
-    if not all_refs:
-        resolved = _git_output(root, "rev-parse", f"{ref or 'HEAD'}^{{commit}}")
-        if resolved.returncode:
-            return []
-        target_ref = resolved.stdout.strip()
-
-    tags: list[tuple[str, str, str]] = []
+    rows: list[tuple[str, str, str]] = []
     for line in result.stdout.splitlines():
         parts = line.split(_TAG_FIELD_SEP)
-        if len(parts) != 5:
-            continue
-        refname, sha, objecttype, peeled, tagger = parts
-        if objecttype != "tag":
-            continue  # a lightweight tag has no tag object
-        if target_ref is not None:
-            target = peeled.strip()
-            if not target:
-                continue
-            if target != target_ref and (
-                _git_output(
-                    root, "merge-base", "--is-ancestor", target, target_ref
-                ).returncode
-                != 0
-            ):
-                continue
-        tags.append((refname, sha, tagger))
-    return tags
+        if len(parts) == 3:
+            rows.append((parts[0], parts[1], parts[2]))
+    return rows
 
 
-def scan_tag_messages(
-    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
-) -> list[dict]:
-    """Scan every selected annotated tag's message with the same patterns.
+def _tag_object(root: Path, sha: str) -> str:
+    """The raw text of a tag object."""
+    result = _git_output(root, "cat-file", "-p", sha)
+    if result.returncode:
+        raise RepoError(
+            f"git cat-file failed while reading tag object {sha} ({result.returncode})"
+        )
+    return result.stdout
 
-    Findings name the tag (``tag <name>``) and carry the tag object's sha and
-    its tagger, so the report can identify who wrote the offending message.
-    """
-    findings: list[dict] = []
-    for refname, sha, tagger in annotated_tags(root, ref=ref, all_refs=all_refs):
-        result = _git_output(root, "for-each-ref", "--format=%(contents)", refname)
-        if result.returncode:
-            raise RepoError(
-                f"git for-each-ref failed while reading {refname} "
-                f"({result.returncode})"
+
+def _tag_tagger(text: str) -> str:
+    """The ``Name <email>`` on a tag object's ``tagger`` line, or ``""``."""
+    for line in text.splitlines():
+        if line.startswith("tagger "):
+            return line[len("tagger ") :].rsplit(">", 1)[0] + ">"
+        if not line.strip():
+            break
+    return ""
+
+
+def _tag_target(text: str) -> str:
+    """The object a tag object points at, or ``""``."""
+    for line in text.splitlines():
+        if line.startswith("object "):
+            return line[len("object ") :].strip()
+        if not line.strip():
+            break
+    return ""
+
+
+def _tag_message(text: str) -> list[str]:
+    """The message lines of a tag object (after the header block)."""
+    _, _, body = text.partition("\n\n")
+    return body.splitlines()
+
+
+def _tag_display_name(root: Path, sha: str) -> str:
+    """The short tag name whose object is ``sha``, else a short sha."""
+    for refname, object_sha, object_type in _tag_refs(root):
+        if object_type == "tag" and object_sha == sha:
+            return (
+                refname[len("refs/tags/") :]
+                if refname.startswith("refs/tags/")
+                else refname
             )
-        name = refname[len("refs/tags/") :] if refname.startswith("refs/tags/") else refname
-        for lineno, text in enumerate(result.stdout.splitlines(), start=1):
+    return sha[:12]
+
+
+def all_tags(root: Path = REPO_ROOT) -> list[tuple[str, str]]:
+    """``(refname, object sha)`` for every tag, annotated and lightweight."""
+    return [(refname, sha) for refname, sha, _ in _tag_refs(root)]
+
+
+def annotated_tags(root: Path = REPO_ROOT) -> list[tuple[str, str, str]]:
+    """``(short tag name, tag object sha, tagger)`` for every annotated tag."""
+    return [
+        (
+            refname[len("refs/tags/") :]
+            if refname.startswith("refs/tags/")
+            else refname,
+            sha,
+            _tag_tagger(_tag_object(root, sha)),
+        )
+        for refname, sha, object_type in _tag_refs(root)
+        if object_type == "tag"
+    ]
+
+
+def tag_chain(root: Path = REPO_ROOT, ref: str | None = None) -> list[tuple[str, str, str]]:
+    """``(name, tag object sha, tagger)`` for the tag chain of ``ref``.
+
+    A tag object carries its own message, which ``git log`` never reads. This
+    returns the tag objects the REF ITSELF points through — the ref's own object
+    chain, following nested tags — and is empty when ``ref`` is not a tag object
+    (a branch, or ``HEAD`` on a commit). So a branch scan never reads another
+    ref's tag, and a tag scan reads only the pushed tag's own chain.
+    """
+    resolved = _git_output(root, "rev-parse", "--verify", ref or "HEAD")
+    if resolved.returncode:
+        return []
+    sha = resolved.stdout.strip()
+    chain: list[tuple[str, str, str]] = []
+    seen: set[str] = set()
+    while sha and sha not in seen:
+        if _git_output(root, "cat-file", "-t", sha).stdout.strip() != "tag":
+            break
+        seen.add(sha)
+        text = _tag_object(root, sha)
+        chain.append((_tag_display_name(root, sha), sha, _tag_tagger(text)))
+        sha = _tag_target(text)
+    return chain
+
+
+def scan_tag_messages(root: Path = REPO_ROOT, *, ref: str | None = None) -> list[dict]:
+    """Scan annotated tag-object messages with the same patterns.
+
+    With ``ref`` set, only that ref's own tag chain is scanned (a branch ref has
+    none, so a branch scan reads no tag). With ``ref=None``, every annotated tag
+    is scanned — the whole-repository sweep. Findings name the tag
+    (``tag <name>``) and carry the tag object's sha and its tagger, so a report
+    can identify who wrote the offending message.
+    """
+    targets = annotated_tags(root) if ref is None else tag_chain(root, ref)
+    findings: list[dict] = []
+    for name, sha, tagger in targets:
+        for lineno, text in enumerate(_tag_message(_tag_object(root, sha)), start=1):
             for category, label in _match_line(text):
                 finding = _finding(
                     "history", f"tag {name}", category, label, lineno, text
@@ -476,9 +533,10 @@ def scan_history(
     Walks the ref's **full ancestry** with no path limit, so a commit that
     changes no path (an empty commit) and a commit on a merged parent are both
     covered; every commit message — subject and body, empty and merge commits
-    included — is scanned with the same patterns. Annotated **tag** messages are
-    scanned too (see `scan_tag_messages`): a tag object is not a commit, so
-    `git log` never reads it.
+    included — is scanned with the same patterns. An annotated **tag** message is
+    scanned only when the ref under test IS that tag (see `scan_tag_messages`): a
+    tag object is not a commit, so `git log` never reads it, and another ref's
+    tag is never read here.
 
     Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
     function of the commit under test and not of whatever other branches happen
@@ -493,6 +551,10 @@ def scan_history(
         return []
     if not all_refs and _git_output(root, "rev-parse", "--verify", "HEAD").returncode:
         return []
+
+    # The ref whose OWN tag chain is scanned: ``HEAD`` by default, never "all
+    # tags" — so a branch scan reads no tag object.
+    effective_ref = ref or "HEAD"
 
     command = [
         "git",
@@ -533,7 +595,11 @@ def scan_history(
     if process.returncode:
         raise RepoError(f"git log failed while scanning history ({process.returncode})")
     # Annotated tag objects are not in the commit walk; scan their messages too.
-    findings.extend(scan_tag_messages(root, ref=ref, all_refs=all_refs))
+    # Per-ref isolation: a branch scan reads NO tag object; a tag scan reads only
+    # the ref's own tag chain; the whole-repository sweep reads every tag.
+    findings.extend(
+        scan_tag_messages(root, ref=None if all_refs else effective_ref)
+    )
     return findings
 
 

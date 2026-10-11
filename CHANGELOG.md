@@ -48,14 +48,16 @@ Initial repository skeleton.
   `scan_history(all_refs=True)`) restores the whole-repository sweep as an
   explicit developer option.
 - `scripts/sweep_branches.py` runs the same per-ref scan once for every remote
-  branch **and every annotated tag**, and prints a report — branch/tag, tip,
-  offending commit, author, pass/fail — exiting 0. It backs the pre-publication
-  gate and runs on `workflow_dispatch` and a weekly schedule. It fails loudly
-  when it cannot do its job: a fetch it cannot read, or no refs found.
-- Annotated tag messages are scanned with the same patterns. A tag object is not
-  a commit, so `git log` never reads it; the scan reads `refs/tags/*` objects and
-  reports the tagger. CI fetches tag objects, and a tag push scans the tag's own
-  message and ancestry.
+  branch **and every tag** (annotated and lightweight), and prints a report —
+  branch/tag, tip, offending commit, author, pass/fail — exiting 0. It backs the
+  pre-publication gate and runs on `workflow_dispatch` and a weekly schedule. It
+  fails loudly when it cannot do its job: a fetch it cannot read, or no refs.
+- An annotated tag message is scanned only when the ref under test IS that tag: a
+  tag object is not a commit, so `git log` never reads it, and a sibling tag
+  never changes another ref's verdict. CI names the tag ref on a tag push (HEAD
+  is then the tag's target commit), and both workflows fetch tag objects. The
+  sweep reports each tag separately and scans a lightweight tag's own commit
+  ancestry, so a tag that is the sole ref to a dirty commit is caught.
 - The history scan walks the ref's full ancestry with no path limit: commit
   messages of every commit — empty commits and merge commits included — are
   scanned with the same patterns, and `--full-history` keeps a commit on a merged
