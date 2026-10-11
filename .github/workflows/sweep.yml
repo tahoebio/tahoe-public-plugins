@@ -1,9 +1,10 @@
 name: Branch leak sweep
 
 # The other half of the per-branch scan. CI (ci.yml) judges one commit on its
-# own history; this sweep reports the same scan once for every remote branch, so
-# a dirty branch is visible and names the commit and pusher — without failing
-# unrelated work. It never fails on a dirty branch; it reports and exits 0.
+# own history; this sweep reports the same scan once for every remote branch and
+# every tag, so a dirty ref is visible and names the offending commit and its
+# author — without failing unrelated work. It never fails on a dirty ref; it
+# reports and exits 0.
 #
 # Pre-publication gate: run this and confirm every branch is clean.
 on:

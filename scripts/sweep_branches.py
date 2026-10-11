@@ -1,14 +1,15 @@
-"""Report the leak/history scan for every remote branch and every annotated tag.
+"""Report the leak/history scan for every remote branch and every tag.
 
     uv run python scripts/sweep_branches.py
     uv run python scripts/sweep_branches.py --root <repo> --refs origin/a origin/b
 
 CI validates the commit under test on its own history. This sweep is the other
 half of the design: a reporting-only pass over **every** remote branch **and
-every annotated tag**, so the pre-publication gate ("every remote branch's scan
-is green") has an artifact and a dirty ref names the commit that introduced the
-offence and its author. Annotated tags are included because a tag object carries
-its own message, which no commit walk reads.
+every tag** (annotated and lightweight), so the pre-publication gate ("every
+remote branch's scan is green") has an artifact and a dirty ref names the commit
+that introduced the offence and its author. Annotated tags are included because a
+tag object carries its own message, which no commit walk reads; a lightweight
+tag's scan is its target commit's ancestry.
 
 It never fails on a dirty ref: it prints a report and exits 0, so it can run on a
 schedule without failing unrelated work. It DOES fail (non-zero) when it cannot

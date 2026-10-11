@@ -569,6 +569,10 @@ def scan_history(
         # parent whose change a merge resolution reverted. The scan must cover the
         # ref's FULL ancestry, every commit — empty and merge commits included.
         "--full-history",
+        # --diff-merges=separate: diff every merge against EACH parent, so a line
+        # added in a conflict resolution (which the default merge patch omits) is
+        # scanned as an added line even after a later commit removes it.
+        "--diff-merges=separate",
         *_history_selector(ref, all_refs),
         "-p",
         "--no-color",
@@ -600,7 +604,23 @@ def scan_history(
     findings.extend(
         scan_tag_messages(root, ref=None if all_refs else effective_ref)
     )
-    return findings
+    # `--diff-merges=separate` shows a merge once per parent, so a line added in
+    # the resolution is found more than once. Collapse exact repeats, keeping the
+    # first (a distinct commit or line is still a distinct finding).
+    unique: list[dict] = []
+    seen: set[tuple] = set()
+    for finding in findings:
+        key = (
+            finding["path"],
+            finding["line"],
+            finding["category"],
+            finding["label"],
+            finding["commit"],
+        )
+        if key not in seen:
+            seen.add(key)
+            unique.append(finding)
+    return unique
 
 
 def _is_generated(rel: str) -> bool:

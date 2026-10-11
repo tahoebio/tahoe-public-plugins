@@ -58,11 +58,13 @@ Initial repository skeleton.
   is then the tag's target commit), and both workflows fetch tag objects. The
   sweep reports each tag separately and scans a lightweight tag's own commit
   ancestry, so a tag that is the sole ref to a dirty commit is caught.
-- The history scan walks the ref's full ancestry with no path limit: commit
-  messages of every commit — empty commits and merge commits included — are
-  scanned with the same patterns, and `--full-history` keeps a commit on a merged
-  parent that a merge resolution reverted. Binary findings carry their commit, so
-  the report names the author.
+- The history scan walks the ref's full ancestry with no path limit and diffs
+  every merge against each parent (`--diff-merges=separate`), so a line added in
+  a conflict resolution is scanned as an added line even after a later commit
+  removes it; commit messages of every commit — empty commits and merge commits
+  included — are scanned with the same patterns, and `--full-history` keeps a
+  commit on a merged parent that a merge resolution reverted. Binary findings
+  carry their commit, so the report names the author.
 - CI triggers on pushes to every branch **and on tag pushes** (a tag can point
   outside every branch tip's ancestry), plus pull requests.
 
