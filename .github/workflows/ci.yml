@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: ["**"]
   pull_request:
 
 permissions:
@@ -14,7 +15,10 @@ jobs:
       - name: Check out
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
-          # Full history: validate.py scans every commit, not just the tip.
+          # Full history of the ref under test: validate.py scans this commit's
+          # own history. Other branches are fetched too, but the scan ignores
+          # them, so one stale branch cannot fail an unrelated one (the
+          # workflow_dispatch sweep reports those separately).
           fetch-depth: 0
           persist-credentials: false
 

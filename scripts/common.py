@@ -83,7 +83,9 @@ REQUIRED_LAYOUT = (
     "docs/releasing.md",
     "scripts/validate.py",
     "scripts/package.py",
+    "scripts/sweep_branches.py",
     ".github/workflows/ci.yml",
+    ".github/workflows/sweep.yml",
 )
 
 class RepoError(Exception):
@@ -217,6 +219,8 @@ def _finding(
         "label": label,
         "line": lineno,
         "text": line.strip(),
+        #: The commit an added line came from, when a history scan supplies it.
+        "commit": "",
     }
 
 
@@ -318,23 +322,29 @@ def _diff_path(line: str) -> str:
     return tail
 
 
-def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | None]]:
-    """Yield ``(path, line_number, text)`` for everything a history scan reads.
+def _scannable_lines(
+    stream: Iterable[str],
+) -> Iterator[tuple[str, int, str | None, str]]:
+    """Yield ``(path, line_number, text, commit)`` for everything a history scan
+    reads.
 
     Covers added lines, commit messages (as public as the diff, so scanned under
     a ``commit <sha>`` path) and binary-change notices, for which ``text`` is
     ``None`` — a binary member cannot be read as text and is reported, not
-    skipped.
+    skipped. ``commit`` is the commit the line belongs to, so a finding can name
+    the pusher who introduced it.
     """
     path = ""
     lineno = 0
+    commit = ""
     in_message = False
     in_hunk = False
     for raw in stream:
         line = raw.rstrip("\n")
         if line.startswith(_HISTORY_COMMIT):
             in_message, in_hunk = True, False
-            path = f"commit {line[len(_HISTORY_COMMIT) :][:12]}"
+            commit = line[len(_HISTORY_COMMIT) :]
+            path = f"commit {commit[:12]}"
             lineno = 0
             continue
         if in_message:
@@ -342,7 +352,7 @@ def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | No
                 in_message, path = False, ""
                 continue
             lineno += 1
-            yield path, lineno, line
+            yield path, lineno, line, commit
             continue
         header = _HUNK_HEADER.match(line)
         if header:
@@ -355,23 +365,37 @@ def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | No
             if line.startswith("+++ b/"):
                 path = line[len("+++ b/") :]
             elif line.startswith("Binary files ") and line.endswith(" differ"):
-                yield path, 0, None
+                yield path, 0, None, commit
             continue
         if line.startswith("+"):
-            yield path, lineno, line[1:]
+            yield path, lineno, line[1:], commit
             lineno += 1
         elif line.startswith(" "):
             lineno += 1
 
 
-def scan_history(root: Path = REPO_ROOT) -> list[dict]:
+def _history_selector(ref: str | None, all_refs: bool) -> list[str]:
+    """The ``git log`` revision selector for a history scan."""
+    return ["--all"] if all_refs else [ref or "HEAD"]
+
+
+def scan_history(
+    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> list[dict]:
     """Scan every line added, every commit message and every binary change.
 
-    Uses ``--all``, so on a developer machine this also covers local branches
-    and stashes, not only the branch being built. Returns ``[]`` when ``root``
-    is not a git repository.
+    Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
+    function of the commit under test and not of whatever other branches happen
+    to be fetched. ``all_refs=True`` restores the whole-repository sweep over
+    every ref — a developer convenience, and the pre-publication sweep's engine;
+    it is never the CI default, because one stale branch would otherwise fail
+    every unrelated branch and ``main``.
+
+    Returns ``[]`` when ``root`` is not a git repository, or has no commits.
     """
     if not _is_git_repo(root):
+        return []
+    if not all_refs and _git_output(root, "rev-parse", "--verify", "HEAD").returncode:
         return []
 
     command = [
@@ -381,7 +405,7 @@ def scan_history(root: Path = REPO_ROOT) -> list[dict]:
         "-c",
         "core.quotePath=false",
         "log",
-        "--all",
+        *_history_selector(ref, all_refs),
         "-p",
         "--no-color",
         f"--format={_HISTORY_COMMIT}%H%n%B%n{_HISTORY_MESSAGE_END}",
@@ -393,12 +417,16 @@ def scan_history(root: Path = REPO_ROOT) -> list[dict]:
         findings: list[dict] = []
         for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
             entries = list(group)
-            if any(text is None for _, _, text in entries):
+            if any(text is None for _, _, text, _ in entries):
                 findings.append(_unscannable("history", path))
                 continue
-            findings.extend(
-                _scan_lines("history", path, ((ln, tx) for _, ln, tx in entries))
-            )
+            for _, lineno, text, commit in entries:
+                for category, label in _match_line(text):
+                    finding = _finding(
+                        "history", path, category, label, lineno, text
+                    )
+                    finding["commit"] = commit
+                    findings.append(finding)
     if process.returncode:
         raise RepoError(f"git log failed while scanning history ({process.returncode})")
     return findings

@@ -58,6 +58,11 @@ uv run python scripts/validate.py
 uv run python scripts/package.py --out dist
 ```
 
+The leak/history scan is per-branch: CI judges the commit under test on its own
+history, so one stale branch cannot fail an unrelated one. To widen the scan to
+every ref locally, or to report every remote branch (the pre-publication gate),
+see `docs/releasing.md`.
+
 ## Data and guidance
 
 The Tahoe-100M **data is CC0** — free to use. The **guidance is proprietary**

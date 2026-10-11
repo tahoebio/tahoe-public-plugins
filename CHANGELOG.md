@@ -40,6 +40,19 @@ Initial repository skeleton.
 - Validation fails when history cannot be read in full (no repository, or a
   shallow clone).
 
+### Per-branch leak scan (CI)
+
+- The history scan is now a function of the commit under test: `scan_history`
+  scans the history reachable from `HEAD` by default, so one stale branch can no
+  longer fail every unrelated branch and `main`. `--all-refs` (and
+  `scan_history(all_refs=True)`) restores the whole-repository sweep as an
+  explicit developer option.
+- `scripts/sweep_branches.py` runs the same per-ref scan once for every remote
+  branch and prints a report — branch, tip, offending commit, author, pass/fail —
+  exiting 0. It backs the pre-publication gate ("every remote branch's scan is
+  green") and runs on `workflow_dispatch` and a weekly schedule.
+- CI triggers on pushes to every branch and on pull requests.
+
 ### Thin plugin (no guidance payload)
 
 - The plugin now ships connection manifests only: the portable Codex pair
