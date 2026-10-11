@@ -205,6 +205,31 @@ def test_a_merge_commit_message_is_scanned(tmp_path):
     assert common.scan_history(repo)
 
 
+def test_a_leak_added_by_a_merge_resolution_is_scanned(tmp_path):
+    # Two clean parents; the RESOLUTION introduces the offence; a later commit
+    # removes it. The tree is clean and the merge's own patch is empty by
+    # default, so only a merge-aware diff catches the added line.
+    repo = git_repo(tmp_path)
+    base = _base_branch(repo)
+    _commit(repo, "note.md", "a\n", "base")
+    _git(repo, "checkout", "-q", "-b", "side")
+    _commit(repo, "note.md", "b\n", "side")
+    _git(repo, "checkout", "-q", base)
+    _commit(repo, "note.md", "c\n", "mainline")
+    # A conflicted merge: the resolution writes the offence into the merge commit.
+    subprocess.run(
+        ["git", "-C", str(repo), "merge", "side"], capture_output=True, check=False
+    )
+    _commit(repo, "note.md", _offending(), "merge resolution")
+    _commit(repo, "note.md", "clean\n", "remove the offence")
+
+    assert j("s3", "://") not in (repo / "note.md").read_text()
+    assert common.scan_history(repo)
+    with pytest.raises(common.ResidueError):
+        validate.validate_residue(repo)
+
+
+
 def test_an_annotated_tag_message_is_scanned(tmp_path):
     # The target commit is clean; the offence is only in the tag OBJECT, which
     # `git log` (a commit walk) never reads. A TAG-push run scans the tag ref.
