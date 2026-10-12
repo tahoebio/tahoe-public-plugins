@@ -11,13 +11,16 @@ reported on every result.
 ## Data and guidance are different rights
 
 - The **data is CC0** — free to use, including commercially, without conditions.
-- The **guidance is proprietary**. It is delivered by the service at runtime
-  (server instructions, tool descriptions, and any guide the service returns);
-  it is not distributed as files in this repository, and it may not be
-  redistributed.
+- The **guidance is proprietary**. The service delivers it at runtime (server
+  instructions, tool descriptions, and any guide the service returns); it may not
+  be redistributed.
 
 These are separate grants. Nothing about the data's CC0 status makes the
 guidance or the wrapper free to reuse.
+
+The plugin also ships the `tara` skill, which routes a question to the right
+tool and repeats scrubbed methodology; it is part of this repository and is
+covered by the unresolved licence below, not by the data's CC0 grant.
 
 ## Licensing — placeholder, not a decision
 

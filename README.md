@@ -14,7 +14,8 @@ dataset service.
 ## Install
 
 The plugin is the way in. It connects your agent to the `tahoe-public` MCP
-server; the service then delivers the data and the guidance for using it.
+server and ships the `tara` skill, which tells the agent how to route a
+Tahoe-100M question to the right tool; the service then serves the data.
 
 ### Codex CLI
 
@@ -44,6 +45,9 @@ one-prompt variant and the advanced direct-server option, are in
 | `plugins/tara/plugin.json` | Portable plugin manifest (Codex). |
 | `plugins/tara/mcp.json` | Portable MCP configuration (Codex). |
 | `plugins/tara/.claude-plugin/plugin.json` | Native Claude manifest, MCP inline. |
+| `plugins/tara/skills/tara/SKILL.md` | The `tara` skill: routing and contract. |
+| `plugins/tara/skills/tara/references/` | The skill's methodology, data and routing references. |
+| `evals/tara/` | Public-safe eval prompt pack and rubric. |
 | `docs/` | Public documentation. |
 | `schemas/` | Vendored Agent Plugins schemas used by the offline tests. |
 | `scripts/` | Validation and packaging tooling. |
@@ -65,9 +69,10 @@ see `docs/releasing.md`.
 
 ## Data and guidance
 
-The Tahoe-100M **data is CC0** — free to use. The **guidance is proprietary**
-and is delivered by the service at runtime; it is not distributed as files in
-this repository. See `docs/data-and-licensing.md`.
+The Tahoe-100M **data is CC0** — free to use. The plugin ships the `tara` skill,
+which routes questions to the public tools; the service also serves longer
+guidance at runtime. Both are covered by the unresolved licence below. See
+`docs/data-and-licensing.md`.
 
 ## Licence — placeholder, not a decision
 

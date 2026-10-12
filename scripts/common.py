@@ -44,10 +44,92 @@ INSTALLATION_POLICIES = frozenset(
 )
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 
+#: SKILL.md frontmatter is deliberately flat (``name`` and a single-line
+#: ``description``), so a full YAML parser is unnecessary.
+_FRONTMATTER_RE = re.compile(r"\A---\n(?P<body>.*?)\n---\n", re.DOTALL)
+#: A tool-contract table row whose first cell is a backticked tool name.
+_TOOL_CONTRACT_CELL_RE = re.compile(r"^\|\s*`([a-z][a-z0-9_]*)`\s*\|")
+#: A level-2 heading, delimiting a section of the tool-contract doc.
+_SECTION_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
+#: The tool-contract sections: the live surface, and the not-yet-served one.
+#: The tool set the public MCP registers (its `server/tools.py`, at the pinned
+#: server revision). The tool-contract table must match it exactly, so a tool added
+#: or removed on the server fails validation until the docs and routing are synced.
+PINNED_PUBLIC_TOOLS_REVISION = "fc65ddb"
+PINNED_PUBLIC_TOOLS = frozenset(
+    {
+        "health",
+        "list_releases",
+        "search_conditions",
+        "resolve_genes",
+        "get_expression_slice",
+        "list_cell_lines",
+        "get_drug_info",
+        "get_differential_expression",
+        "run_sql",
+        "get_guide",
+        "get_perturbation_markers",
+        "cancel_execution",
+        "send_feedback",
+    }
+)
+_LIVE_TOOLS_SECTION = "Tools"
+_PLANNED_TOOLS_SECTION = "Not yet served"
+#: The phrase that must sit beside a not-yet-served tool's name in shipped text,
+#: so a planned tool can never read as live.
+COMING_SOON_MARKER = "available once the server advertises"
+_BACKTICK_RE = re.compile(r"`([a-z][a-z0-9_]*)[^`]*`")
+#: A backticked tool CALL: an identifier followed by ``(`` before the closing
+#: backtick, e.g. `` `health()` ``.
+_CALL_RE = re.compile(r"`([a-z][a-z0-9_]*)\s*\(")
+#: A backticked token that names a tool: a read verb, the SQL tool, the two
+#: control tools, or ``health``. Keeps the mention check from flagging a column
+#: such as ``cancel_handle``, a unit such as ``cpm_log1p`` or a SQL function such
+#: as ``array_contains``.
+_TOOL_NAME_RE = re.compile(
+    r"^(?:get|list|search|resolve|run)_[a-z0-9_]+$"
+    r"|^(?:cancel|send)_(?:execution|feedback)$"
+    r"|^health$"
+)
+#: A three-part dotted locator (catalog.schema.table). The first segment must
+#: start like an identifier, so a DOI such as ``10.1101/2025.02.20.639398`` is
+#: not mistaken for one.
+_LOCATOR_RE = re.compile(r"\b[A-Za-z_]\w*(?:\.[A-Za-z_]\w*){2,}\b")
+#: The internal cell-code shape that must never reach public text.
+_CELL_CODE_RE = re.compile(r"\bc_\d+\b")
+_MARKDOWN_LINK_RE = re.compile(r"\]\(([^)]+)\)")
+
+#: The tara skill payload: Tier 1 frontmatter + Tier 2 body (``SKILL.md``) and
+#: the Tier 3 references it links. The reference budget is the served-guide
+#: ceiling, so the single-source projection never has to trim.
+SKILL_DIR_REL = f"plugins/{PLUGIN_NAME}/skills/{PLUGIN_NAME}"
+SKILL_MD_REL = f"{SKILL_DIR_REL}/SKILL.md"
+REFERENCE_RELS = (
+    f"{SKILL_DIR_REL}/references/analysis-guidelines.md",
+    f"{SKILL_DIR_REL}/references/data-catalog.md",
+    f"{SKILL_DIR_REL}/references/tool-routing.md",
+    f"{SKILL_DIR_REL}/references/sql-guidance.md",
+)
+SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
+
+#: Tier 1 description limit (the host's hard cap) and the tier byte budgets.
+SKILL_DESCRIPTION_MAX_CHARS = 1024
+SKILL_BODY_MAX_BYTES = 12_000
+REFERENCES_MAX_BYTES = 39_000
+
+#: The live public tool surface is declared once, in the tool-contract doc; the
+#: skill's mention-completeness check reads that table rather than a second list.
+TOOL_CONTRACT_REL = "docs/public-tool-contract.md"
+
 #: The exact files that make up the release archive. An explicit list, not a
-#: directory prefix: the plugin ships connection manifests and nothing else.
-#: Dotfiles are permitted only by being named here.
-ARCHIVE_ALLOWLIST = (PLUGIN_MANIFEST_REL, MCP_CONFIG_REL, CLAUDE_ADAPTER_REL)
+#: directory prefix: the plugin ships connection manifests and its skill, and
+#: nothing else. Dotfiles are permitted only by being named here.
+ARCHIVE_ALLOWLIST = (
+    PLUGIN_MANIFEST_REL,
+    MCP_CONFIG_REL,
+    CLAUDE_ADAPTER_REL,
+    *SKILL_FILES,
+)
 
 GENERATED_DIRS = frozenset(
     {
@@ -75,6 +157,7 @@ REQUIRED_LAYOUT = (
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
+    SKILL_MD_REL,
     "docs/install.md",
     "docs/install-verification.md",
     "docs/public-tool-contract.md",
@@ -173,6 +256,113 @@ def plugin_dir(root: Path = REPO_ROOT) -> Path:
 
 def load_json(path: Path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def parse_frontmatter(text: str) -> dict[str, str]:
+    """Return a SKILL.md's flat frontmatter as a ``key -> value`` map.
+
+    The public skill's frontmatter is deliberately flat (``name`` and a
+    single-line ``description``), so a full YAML parser is not needed here.
+    """
+    match = _FRONTMATTER_RE.match(text)
+    if match is None:
+        raise RepoError("skill file has no '---' frontmatter block")
+    fields: dict[str, str] = {}
+    for line in match.group("body").splitlines():
+        key, sep, value = line.partition(":")
+        if sep:
+            fields[key.strip()] = value.strip()
+    return fields
+
+
+def _tool_contract_rows(text: str, heading: str) -> frozenset[str]:
+    """Tool names in the table under ``heading`` of the tool-contract doc."""
+    sections = list(_SECTION_RE.finditer(text))
+    for index, match in enumerate(sections):
+        if match.group(1).strip() != heading:
+            continue
+        end = sections[index + 1].start() if index + 1 < len(sections) else len(text)
+        body = text[match.end() : end]
+        return frozenset(
+            row.group(1)
+            for line in body.splitlines()
+            if (row := _TOOL_CONTRACT_CELL_RE.match(line))
+        )
+    return frozenset()
+
+
+def known_tools(root: Path = REPO_ROOT) -> frozenset[str]:
+    """The live public tool names, read from the tool-contract table.
+
+    The doc is the single declaration of the served surface, so the skill's
+    mention check and the docs cannot drift apart.
+    """
+    text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
+    return _tool_contract_rows(text, _LIVE_TOOLS_SECTION)
+
+
+def planned_tools(root: Path = REPO_ROOT) -> frozenset[str]:
+    """Tools the contract lists as not yet served.
+
+    A skill may name one only beside the coming-soon marker, and never as live.
+    """
+    text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
+    return _tool_contract_rows(text, _PLANNED_TOOLS_SECTION)
+
+
+def backticked_tokens(text: str) -> list[str]:
+    """The leading identifier of each backticked span.
+
+    A tool is written `` `name(...)` ``, so the identifier is captured even when
+    arguments follow it inside the backticks.
+    """
+    return _BACKTICK_RE.findall(text)
+
+
+def tool_shaped_mentions(text: str) -> set[str]:
+    """Backticked tokens that name a tool: a call, or a verb-shaped name.
+
+    A name is tool-shaped when it starts with a read verb, is the SQL tool, is one
+    of the two control tools, or is ``health``; a call is such a name followed by
+    ``(``. This catches a named-but-absent tool without flagging a result field
+    (``cancel_handle``), a unit (``cpm_log1p``) or a SQL function
+    (``array_contains``).
+    """
+    shaped = {
+        token for token in backticked_tokens(text) if _TOOL_NAME_RE.match(token)
+    }
+    calls = {name for name in _CALL_RE.findall(text) if _TOOL_NAME_RE.match(name)}
+    return shaped | calls
+
+
+def locator_tokens(text: str) -> list[str]:
+    """Three-part dotted locators (the ``catalog.schema.table`` shape)."""
+    return _LOCATOR_RE.findall(text)
+
+
+def cell_code_tokens(text: str) -> list[str]:
+    """Internal cell-code tokens (the ``c_N`` shape)."""
+    return _CELL_CODE_RE.findall(text)
+
+
+def relative_links(text: str) -> list[str]:
+    """Markdown link targets that are not absolute URLs."""
+    return [
+        target
+        for target in _MARKDOWN_LINK_RE.findall(text)
+        if not target.startswith(("http://", "https://", "mailto:"))
+    ]
+
+
+def names_coming_soon(text: str, name: str) -> bool:
+    """True when some line names ``name`` and carries the coming-soon marker.
+
+    A not-yet-served tool may appear in shipped text only beside this marker, so
+    it can never read as live.
+    """
+    return any(
+        name in line and COMING_SOON_MARKER in line for line in text.splitlines()
+    )
 
 
 def load_schema(name: str) -> dict:

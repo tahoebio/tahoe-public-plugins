@@ -1,7 +1,7 @@
 {
   "name": "tara",
-  "version": "0.1.0",
-  "description": "Discover and retrieve bounded slices of the public Tahoe-100M dataset from your own agent.",
+  "version": "0.2.0",
+  "description": "Analyze the public Tahoe-100M single-cell perturbation atlas through the Tahoe public tools: coverage, gene expression, drug annotations and how to interpret a served value. Read-only, bounded retrieval with provenance.",
   "mcpServers": {
     "tahoe-public": {
       "type": "http",

@@ -11,6 +11,11 @@ MANIFESTS = {
     "plugins/tara/plugin.json": '{"name": "tara", "version": "1.0.0"}\n',
     "plugins/tara/mcp.json": '{"mcpServers": {}}\n',
     "plugins/tara/.claude-plugin/plugin.json": '{"name": "tara"}\n',
+    "plugins/tara/skills/tara/SKILL.md": "---\nname: tara\n---\n\n# tara\n",
+    "plugins/tara/skills/tara/references/analysis-guidelines.md": "# Guidelines\n",
+    "plugins/tara/skills/tara/references/data-catalog.md": "# Catalog\n",
+    "plugins/tara/skills/tara/references/tool-routing.md": "# Routing\n",
+    "plugins/tara/skills/tara/references/sql-guidance.md": "# SQL\n",
 }
 
 

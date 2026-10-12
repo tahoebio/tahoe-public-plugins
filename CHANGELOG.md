@@ -3,6 +3,32 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.2.0 — unreleased
+
+The `tara` skill.
+
+- `plugins/tara/skills/tara/SKILL.md` ships a real skill: when to use it, the
+  non-negotiable rules, the call order, the routing table (short form), the
+  analysis contract in brief, the response contract, the error vocabulary and
+  what the tools do not serve.
+- Three Tier 3 references under `skills/tara/references/`:
+  `analysis-guidelines.md` (methodology), `data-catalog.md` (what is served,
+  expression grain, coverage traps, the citation) and `tool-routing.md` (the long
+  routing table, one worked call per tool, the response contract).
+- `skills/tara/references/sql-guidance.md` documents `run_sql`: the guard's
+  rules (one read-only `SELECT`/`WITH`/`UNION`, approved tables only, a literal
+  key filter on any large table, no cross joins, a capped outer `LIMIT`), and the
+  approved tables with their grain, keys, joins, units, controls and pitfalls.
+- The skill routes only to tools that are live on the public service; no
+  not-yet-served tool is named.
+- Both hosts discover `skills/` by convention, so no manifest declares a
+  `skills` field; the portable manifest is unchanged in shape.
+- Validation now checks the skill: frontmatter, tier byte budgets, links that
+  resolve inside the skill directory, mention completeness against the tool
+  contract, and a locator/path/cell-code shape check.
+- The release archive now carries the skill files alongside the manifests.
+- Install, tool-contract, data-and-licensing and README docs describe the skill.
+
 ## 0.1.0 — unreleased
 
 Initial repository skeleton.

@@ -110,8 +110,8 @@ def validate_manifests(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError(
             "plugin.json must not carry a license field until licensing is decided"
         )
-    if "skills" in manifest:
-        raise common.RepoError("the thin plugin must not declare a skills payload")
+    # No `skills` field: both hosts discover ``skills/`` by convention, and the
+    # portable schema forbids unknown fields (`additionalProperties: false`).
 
     codex = common.load_json(root / common.CODEX_CATALOG_REL)
     claude = common.load_json(root / common.CLAUDE_CATALOG_REL)
@@ -188,6 +188,104 @@ def validate_residue(
         )
 
 
+def _skill_texts(root: Path) -> dict[str, str]:
+    """The skill's files, as ``relative path -> text``."""
+    return {
+        rel: (root / rel).read_text(encoding="utf-8") for rel in common.SKILL_FILES
+    }
+
+
+def validate_tool_contract(root: Path = common.REPO_ROOT) -> None:
+    """Fail when the tool-contract table drifts from the pinned public tool list."""
+    known = common.known_tools(root)
+    if known != common.PINNED_PUBLIC_TOOLS:
+        raise common.RepoError(
+            "the tool contract drifted from the pinned public tool list "
+            f"(revision {common.PINNED_PUBLIC_TOOLS_REVISION}): missing "
+            f"{sorted(common.PINNED_PUBLIC_TOOLS - known)}, unexpected "
+            f"{sorted(known - common.PINNED_PUBLIC_TOOLS)}"
+        )
+
+
+def validate_skill(root: Path = common.REPO_ROOT) -> None:
+    """Enforce the skill payload's shape, budgets and vocabulary.
+
+    Checks the frontmatter, the tier byte budgets, that every relative link
+    resolves inside the skill directory, that every tool the text names is on the
+    public tool contract, and that no locator, volume path or internal cell code
+    appears in the shipped text.
+    """
+    if not (root / common.SKILL_MD_REL).is_file():
+        raise common.RepoError(f"missing skill file: {common.SKILL_MD_REL}")
+
+    texts = _skill_texts(root)
+    fields = common.parse_frontmatter(texts[common.SKILL_MD_REL])
+    if fields.get("name") != common.PLUGIN_NAME:
+        raise common.RepoError(
+            f"{common.SKILL_MD_REL}: frontmatter name must be {common.PLUGIN_NAME!r}"
+        )
+    description = fields.get("description", "")
+    if not 1 <= len(description) <= common.SKILL_DESCRIPTION_MAX_CHARS:
+        raise common.RepoError(
+            f"{common.SKILL_MD_REL}: description must be 1 to "
+            f"{common.SKILL_DESCRIPTION_MAX_CHARS} characters"
+        )
+
+    body_bytes = len(texts[common.SKILL_MD_REL].encode("utf-8"))
+    if body_bytes > common.SKILL_BODY_MAX_BYTES:
+        raise common.RepoError(
+            f"{common.SKILL_MD_REL}: {body_bytes} bytes exceeds the "
+            f"{common.SKILL_BODY_MAX_BYTES}-byte budget"
+        )
+
+    for rel in common.REFERENCE_RELS:
+        if rel not in texts:
+            raise common.RepoError(f"missing skill reference: {rel}")
+    references_bytes = sum(
+        len(texts[rel].encode("utf-8")) for rel in common.REFERENCE_RELS
+    )
+    if references_bytes > common.REFERENCES_MAX_BYTES:
+        raise common.RepoError(
+            f"skill references total {references_bytes} bytes, over the "
+            f"{common.REFERENCES_MAX_BYTES}-byte budget"
+        )
+
+    skill_dir = (root / common.SKILL_DIR_REL).resolve()
+    known = common.known_tools(root)
+    planned = common.planned_tools(root)
+    if known & planned:
+        raise common.RepoError(
+            "the tool contract lists a tool as both live and not-yet-served: "
+            + ", ".join(sorted(known & planned))
+        )
+    for rel, text in texts.items():
+        for target in common.relative_links(text):
+            resolved = (root / rel).parent.joinpath(target).resolve()
+            if not resolved.is_relative_to(skill_dir) or not resolved.is_file():
+                raise common.RepoError(
+                    f"{rel}: link does not resolve inside the skill dir: {target}"
+                )
+        for name in common.tool_shaped_mentions(text):
+            if name in known:
+                continue
+            if name in planned and common.names_coming_soon(text, name):
+                continue
+            raise common.RepoError(
+                f"{rel}: names a tool that is neither on the public tool contract "
+                f"nor marked as not yet served: {name}"
+            )
+        if common.locator_tokens(text):
+            raise common.RepoError(
+                f"{rel}: contains a three-part locator: "
+                f"{common.locator_tokens(text)[0]}"
+            )
+        if common.cell_code_tokens(text):
+            raise common.RepoError(
+                f"{rel}: contains an internal cell code: "
+                f"{common.cell_code_tokens(text)[0]}"
+            )
+
+
 def validate_all(
     root: Path = common.REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
 ) -> None:
@@ -195,6 +293,8 @@ def validate_all(
     validate_layout(root)
     validate_mcp_config(root)
     validate_versions(root)
+    validate_tool_contract(root)
+    validate_skill(root)
     validate_residue(root, ref=ref, all_refs=all_refs)
 
 
