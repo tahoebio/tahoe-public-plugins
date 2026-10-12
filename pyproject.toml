@@ -1,6 +1,6 @@
 [project]
 name = "tahoe-public-plugins"
-version = "0.2.1"
+version = "0.3.1"
 description = "Validation, residue scanning and packaging tooling for the Tahoe Bio plugin marketplace."
 requires-python = ">=3.10"
 dependencies = []
