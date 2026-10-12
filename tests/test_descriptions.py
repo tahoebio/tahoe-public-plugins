@@ -19,6 +19,22 @@ FORBIDDEN = [
     j("LI", "NCS"),
     j("Data", "bricks"),
     j("inter", "nal"),
+    "target discovery",
+    "target deconvolution",
+    "biomarker discovery",
+    "responder stratification",
+    "pharmacogenomic sensitivity",
+    "dependencies",
+    "viability",
+    "IC50",
+    "AUC",
+]
+
+CAPABILITIES = [
+    "annotated mechanism classes",
+    "baseline expression or driver-gene status",
+    "genotype- or lineage-defined groups of cell lines",
+    "relative depletion and cell-cycle effects per cell line across three doses",
 ]
 
 DEFAULT_PROMPTS = [
@@ -101,3 +117,8 @@ def test_keywords_drop_dataset_name():
         "mcp",
     ]
 
+
+
+@pytest.mark.parametrize("phrase", CAPABILITIES)
+def test_description_states_each_audited_capability(phrase):
+    assert phrase in _portable()["description"]

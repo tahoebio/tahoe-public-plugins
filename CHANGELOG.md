@@ -12,6 +12,12 @@ Richer, honest plugin descriptions.
   drug-versus-vehicle differential expression; perturbation markers; pathway
   scores; phenotype readouts; embedding distance from vehicle; guarded
   read-only SQL. It refers to "Tahoe's data" and names no dataset.
+- The description also states four analyses the public tools support, in plain
+  wording: comparing a compound's response with annotated mechanism classes,
+  comparing drug responses between genotype- or lineage-defined groups of cell
+  lines, correlating baseline expression or driver-gene status with drug
+  response (exploratory), and ranking relative depletion and cell-cycle effects
+  per cell line across three doses.
 - The Codex `interface` block (display name, short and long description,
   developer, category, capabilities, website, brand colour, three default
   prompts) lives under `extensions.com.openai` in the portable `plugin.json`,
