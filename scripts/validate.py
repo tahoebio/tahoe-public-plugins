@@ -10,6 +10,7 @@ from the repository root:
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -164,31 +165,59 @@ def validate_versions(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError("CHANGELOG.md must record the plugin version")
 
 
-def validate_residue(root: Path = common.REPO_ROOT) -> None:
-    """Scan the working tree and the full git history for residue and secrets.
+def validate_residue(
+    root: Path = common.REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> None:
+    """Scan the working tree and the ref under test for residue and secrets.
+
+    The history scan covers ``ref`` (default ``HEAD``) by default, so a scan is a
+    function of this ref and cannot be failed by another branch or tag. When
+    ``ref`` is an annotated tag, the tag object's own message is scanned too.
+    ``all_refs=True`` sweeps every ref and every annotated tag — a
+    developer/pre-publication check, never the CI default.
 
     Fails rather than reporting clean when the history cannot be read in full.
     """
     common.require_full_history(root)
-    findings = common.scan_repo(root=root) + common.scan_history(root=root)
+    findings = common.scan_repo(root=root) + common.scan_history(
+        root, ref=ref, all_refs=all_refs
+    )
     if findings:
         raise common.ResidueError(
             "forbidden residue or secrets found:\n" + common.format_findings(findings)
         )
 
 
-def validate_all(root: Path = common.REPO_ROOT) -> None:
+def validate_all(
+    root: Path = common.REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> None:
     validate_manifests(root)
     validate_layout(root)
     validate_mcp_config(root)
     validate_versions(root)
-    validate_residue(root)
+    validate_residue(root, ref=ref, all_refs=all_refs)
 
 
 def main(argv: list[str] | None = None) -> int:
-    root = Path(argv[0]) if argv else common.REPO_ROOT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "root", nargs="?", default=str(common.REPO_ROOT), help="repository root"
+    )
+    parser.add_argument(
+        "--ref",
+        default=None,
+        help="the ref under test to scan (default: HEAD). On a tag push, pass the "
+        "tag ref so the tag object's own message is scanned",
+    )
+    parser.add_argument(
+        "--all-refs",
+        action="store_true",
+        help="scan every ref's history and every annotated tag (developer/"
+        "pre-publication sweep; CI scans the ref under test only)",
+    )
+    args = parser.parse_args(argv)
     try:
-        validate_all(root)
+        validate_all(Path(args.root), ref=args.ref, all_refs=args.all_refs)
     except common.RepoError as exc:
         print(f"validation failed: {exc}", file=sys.stderr)
         return 1

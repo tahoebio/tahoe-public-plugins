@@ -40,6 +40,34 @@ Initial repository skeleton.
 - Validation fails when history cannot be read in full (no repository, or a
   shallow clone).
 
+### Per-branch leak scan (CI)
+
+- The history scan is now a function of the commit under test: `scan_history`
+  scans the history reachable from `HEAD` by default, so one stale branch can no
+  longer fail every unrelated branch and `main`. `--all-refs` (and
+  `scan_history(all_refs=True)`) restores the whole-repository sweep as an
+  explicit developer option.
+- `scripts/sweep_branches.py` runs the same per-ref scan once for every remote
+  branch **and every tag** (annotated and lightweight), and prints a report —
+  branch/tag, tip, offending commit, author, pass/fail — exiting 0. It backs the
+  pre-publication gate and runs on `workflow_dispatch` and a weekly schedule. It
+  fails loudly when it cannot do its job: a fetch it cannot read, or no refs.
+- An annotated tag message is scanned only when the ref under test IS that tag: a
+  tag object is not a commit, so `git log` never reads it, and a sibling tag
+  never changes another ref's verdict. CI names the tag ref on a tag push (HEAD
+  is then the tag's target commit), and both workflows fetch tag objects. The
+  sweep reports each tag separately and scans a lightweight tag's own commit
+  ancestry, so a tag that is the sole ref to a dirty commit is caught.
+- The history scan walks the ref's full ancestry with no path limit and diffs
+  every merge against each parent (`--diff-merges=separate`), so a line added in
+  a conflict resolution is scanned as an added line even after a later commit
+  removes it; commit messages of every commit — empty commits and merge commits
+  included — are scanned with the same patterns, and `--full-history` keeps a
+  commit on a merged parent that a merge resolution reverted. Binary findings
+  carry their commit, so the report names the author.
+- CI triggers on pushes to every branch **and on tag pushes** (a tag can point
+  outside every branch tip's ancestry), plus pull requests.
+
 ### Thin plugin (no guidance payload)
 
 - The plugin now ships connection manifests only: the portable Codex pair

@@ -83,7 +83,9 @@ REQUIRED_LAYOUT = (
     "docs/releasing.md",
     "scripts/validate.py",
     "scripts/package.py",
+    "scripts/sweep_branches.py",
     ".github/workflows/ci.yml",
+    ".github/workflows/sweep.yml",
 )
 
 class RepoError(Exception):
@@ -217,6 +219,10 @@ def _finding(
         "label": label,
         "line": lineno,
         "text": line.strip(),
+        #: The commit an added line came from, when a history scan supplies it.
+        "commit": "",
+        #: The tagger, when the finding came from an annotated tag's message.
+        "author": "",
     }
 
 
@@ -318,23 +324,29 @@ def _diff_path(line: str) -> str:
     return tail
 
 
-def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | None]]:
-    """Yield ``(path, line_number, text)`` for everything a history scan reads.
+def _scannable_lines(
+    stream: Iterable[str],
+) -> Iterator[tuple[str, int, str | None, str]]:
+    """Yield ``(path, line_number, text, commit)`` for everything a history scan
+    reads.
 
     Covers added lines, commit messages (as public as the diff, so scanned under
     a ``commit <sha>`` path) and binary-change notices, for which ``text`` is
     ``None`` — a binary member cannot be read as text and is reported, not
-    skipped.
+    skipped. ``commit`` is the commit the line belongs to, so a finding can name
+    the commit that introduced it.
     """
     path = ""
     lineno = 0
+    commit = ""
     in_message = False
     in_hunk = False
     for raw in stream:
         line = raw.rstrip("\n")
         if line.startswith(_HISTORY_COMMIT):
             in_message, in_hunk = True, False
-            path = f"commit {line[len(_HISTORY_COMMIT) :][:12]}"
+            commit = line[len(_HISTORY_COMMIT) :]
+            path = f"commit {commit[:12]}"
             lineno = 0
             continue
         if in_message:
@@ -342,7 +354,7 @@ def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | No
                 in_message, path = False, ""
                 continue
             lineno += 1
-            yield path, lineno, line
+            yield path, lineno, line, commit
             continue
         header = _HUNK_HEADER.match(line)
         if header:
@@ -355,24 +367,194 @@ def _scannable_lines(stream: Iterable[str]) -> Iterator[tuple[str, int, str | No
             if line.startswith("+++ b/"):
                 path = line[len("+++ b/") :]
             elif line.startswith("Binary files ") and line.endswith(" differ"):
-                yield path, 0, None
+                yield path, 0, None, commit
             continue
         if line.startswith("+"):
-            yield path, lineno, line[1:]
+            yield path, lineno, line[1:], commit
             lineno += 1
         elif line.startswith(" "):
             lineno += 1
 
 
-def scan_history(root: Path = REPO_ROOT) -> list[dict]:
+def _history_selector(ref: str | None, all_refs: bool) -> list[str]:
+    """The ``git log`` revision selector for a history scan."""
+    return ["--all"] if all_refs else [ref or "HEAD"]
+
+
+#: Field separator for `for-each-ref` formats, so a value with spaces (a name,
+#: an email) cannot shift the columns.
+_TAG_FIELD_SEP = "\t"
+
+
+def _tag_refs(root: Path) -> list[tuple[str, str, str]]:
+    """``(refname, object sha, object type)`` for every ref under ``refs/tags``.
+
+    Raises when the tag list cannot be read — fail closed, never silently clean.
+    """
+    result = _git_output(
+        root,
+        "for-each-ref",
+        "--format=%(refname)%09%(objectname)%09%(objecttype)",
+        "refs/tags",
+    )
+    if result.returncode:
+        raise RepoError(
+            f"git for-each-ref failed while listing tags ({result.returncode})"
+        )
+    rows: list[tuple[str, str, str]] = []
+    for line in result.stdout.splitlines():
+        parts = line.split(_TAG_FIELD_SEP)
+        if len(parts) == 3:
+            rows.append((parts[0], parts[1], parts[2]))
+    return rows
+
+
+def _tag_object(root: Path, sha: str) -> str:
+    """The raw text of a tag object."""
+    result = _git_output(root, "cat-file", "-p", sha)
+    if result.returncode:
+        raise RepoError(
+            f"git cat-file failed while reading tag object {sha} ({result.returncode})"
+        )
+    return result.stdout
+
+
+def _tag_tagger(text: str) -> str:
+    """The ``Name <email>`` on a tag object's ``tagger`` line, or ``""``."""
+    for line in text.splitlines():
+        if line.startswith("tagger "):
+            return line[len("tagger ") :].rsplit(">", 1)[0] + ">"
+        if not line.strip():
+            break
+    return ""
+
+
+def _tag_target(text: str) -> str:
+    """The object a tag object points at, or ``""``."""
+    for line in text.splitlines():
+        if line.startswith("object "):
+            return line[len("object ") :].strip()
+        if not line.strip():
+            break
+    return ""
+
+
+def _tag_message(text: str) -> list[str]:
+    """The message lines of a tag object (after the header block)."""
+    _, _, body = text.partition("\n\n")
+    return body.splitlines()
+
+
+def _tag_display_name(root: Path, sha: str) -> str:
+    """The short tag name whose object is ``sha``, else a short sha."""
+    for refname, object_sha, object_type in _tag_refs(root):
+        if object_type == "tag" and object_sha == sha:
+            return (
+                refname[len("refs/tags/") :]
+                if refname.startswith("refs/tags/")
+                else refname
+            )
+    return sha[:12]
+
+
+def all_tags(root: Path = REPO_ROOT) -> list[tuple[str, str]]:
+    """``(refname, object sha)`` for every tag, annotated and lightweight."""
+    return [(refname, sha) for refname, sha, _ in _tag_refs(root)]
+
+
+def annotated_tags(root: Path = REPO_ROOT) -> list[tuple[str, str, str]]:
+    """``(short tag name, tag object sha, tagger)`` for every annotated tag."""
+    return [
+        (
+            refname[len("refs/tags/") :]
+            if refname.startswith("refs/tags/")
+            else refname,
+            sha,
+            _tag_tagger(_tag_object(root, sha)),
+        )
+        for refname, sha, object_type in _tag_refs(root)
+        if object_type == "tag"
+    ]
+
+
+def tag_chain(root: Path = REPO_ROOT, ref: str | None = None) -> list[tuple[str, str, str]]:
+    """``(name, tag object sha, tagger)`` for the tag chain of ``ref``.
+
+    A tag object carries its own message, which ``git log`` never reads. This
+    returns the tag objects the REF ITSELF points through — the ref's own object
+    chain, following nested tags — and is empty when ``ref`` is not a tag object
+    (a branch, or ``HEAD`` on a commit). So a branch scan never reads another
+    ref's tag, and a tag scan reads only the pushed tag's own chain.
+    """
+    resolved = _git_output(root, "rev-parse", "--verify", ref or "HEAD")
+    if resolved.returncode:
+        return []
+    sha = resolved.stdout.strip()
+    chain: list[tuple[str, str, str]] = []
+    seen: set[str] = set()
+    while sha and sha not in seen:
+        if _git_output(root, "cat-file", "-t", sha).stdout.strip() != "tag":
+            break
+        seen.add(sha)
+        text = _tag_object(root, sha)
+        chain.append((_tag_display_name(root, sha), sha, _tag_tagger(text)))
+        sha = _tag_target(text)
+    return chain
+
+
+def scan_tag_messages(root: Path = REPO_ROOT, *, ref: str | None = None) -> list[dict]:
+    """Scan annotated tag-object messages with the same patterns.
+
+    With ``ref`` set, only that ref's own tag chain is scanned (a branch ref has
+    none, so a branch scan reads no tag). With ``ref=None``, every annotated tag
+    is scanned — the whole-repository sweep. Findings name the tag
+    (``tag <name>``) and carry the tag object's sha and its tagger, so a report
+    can identify who wrote the offending message.
+    """
+    targets = annotated_tags(root) if ref is None else tag_chain(root, ref)
+    findings: list[dict] = []
+    for name, sha, tagger in targets:
+        for lineno, text in enumerate(_tag_message(_tag_object(root, sha)), start=1):
+            for category, label in _match_line(text):
+                finding = _finding(
+                    "history", f"tag {name}", category, label, lineno, text
+                )
+                finding["commit"] = sha
+                finding["author"] = tagger
+                findings.append(finding)
+    return findings
+
+
+def scan_history(
+    root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
+) -> list[dict]:
     """Scan every line added, every commit message and every binary change.
 
-    Uses ``--all``, so on a developer machine this also covers local branches
-    and stashes, not only the branch being built. Returns ``[]`` when ``root``
-    is not a git repository.
+    Walks the ref's **full ancestry** with no path limit, so a commit that
+    changes no path (an empty commit) and a commit on a merged parent are both
+    covered; every commit message — subject and body, empty and merge commits
+    included — is scanned with the same patterns. An annotated **tag** message is
+    scanned only when the ref under test IS that tag (see `scan_tag_messages`): a
+    tag object is not a commit, so `git log` never reads it, and another ref's
+    tag is never read here.
+
+    Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
+    function of the commit under test and not of whatever other branches happen
+    to be fetched. ``all_refs=True`` restores the whole-repository sweep over
+    every ref — a developer convenience, and the pre-publication sweep's engine;
+    it is never the CI default, because one stale branch would otherwise fail
+    every unrelated branch and ``main``.
+
+    Returns ``[]`` when ``root`` is not a git repository, or has no commits.
     """
     if not _is_git_repo(root):
         return []
+    if not all_refs and _git_output(root, "rev-parse", "--verify", "HEAD").returncode:
+        return []
+
+    # The ref whose OWN tag chain is scanned: ``HEAD`` by default, never "all
+    # tags" — so a branch scan reads no tag object.
+    effective_ref = ref or "HEAD"
 
     command = [
         "git",
@@ -381,27 +563,64 @@ def scan_history(root: Path = REPO_ROOT) -> list[dict]:
         "-c",
         "core.quotePath=false",
         "log",
-        "--all",
+        # No pathspec, and --full-history: a pathspec makes git omit commits that
+        # change no path (an empty commit could carry a forbidden token in its
+        # MESSAGE), and path-history simplification can drop a commit on a merged
+        # parent whose change a merge resolution reverted. The scan must cover the
+        # ref's FULL ancestry, every commit — empty and merge commits included.
+        "--full-history",
+        # --diff-merges=separate: diff every merge against EACH parent, so a line
+        # added in a conflict resolution (which the default merge patch omits) is
+        # scanned as an added line even after a later commit removes it.
+        "--diff-merges=separate",
+        *_history_selector(ref, all_refs),
         "-p",
         "--no-color",
         f"--format={_HISTORY_COMMIT}%H%n%B%n{_HISTORY_MESSAGE_END}",
-        "--",
-        ".",
     ]
     with subprocess.Popen(command, stdout=subprocess.PIPE, text=True) as process:
         lines = _scannable_lines(process.stdout)
         findings: list[dict] = []
         for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
             entries = list(group)
-            if any(text is None for _, _, text in entries):
-                findings.append(_unscannable("history", path))
+            binary = next((entry for entry in entries if entry[2] is None), None)
+            if binary is not None:
+                finding = _unscannable("history", path)
+                finding["commit"] = binary[3]
+                findings.append(finding)
                 continue
-            findings.extend(
-                _scan_lines("history", path, ((ln, tx) for _, ln, tx in entries))
-            )
+            for _, lineno, text, commit in entries:
+                for category, label in _match_line(text):
+                    finding = _finding(
+                        "history", path, category, label, lineno, text
+                    )
+                    finding["commit"] = commit
+                    findings.append(finding)
     if process.returncode:
         raise RepoError(f"git log failed while scanning history ({process.returncode})")
-    return findings
+    # Annotated tag objects are not in the commit walk; scan their messages too.
+    # Per-ref isolation: a branch scan reads NO tag object; a tag scan reads only
+    # the ref's own tag chain; the whole-repository sweep reads every tag.
+    findings.extend(
+        scan_tag_messages(root, ref=None if all_refs else effective_ref)
+    )
+    # `--diff-merges=separate` shows a merge once per parent, so a line added in
+    # the resolution is found more than once. Collapse exact repeats, keeping the
+    # first (a distinct commit or line is still a distinct finding).
+    unique: list[dict] = []
+    seen: set[tuple] = set()
+    for finding in findings:
+        key = (
+            finding["path"],
+            finding["line"],
+            finding["category"],
+            finding["label"],
+            finding["commit"],
+        )
+        if key not in seen:
+            seen.add(key)
+            unique.append(finding)
+    return unique
 
 
 def _is_generated(rel: str) -> bool:

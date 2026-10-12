@@ -2,6 +2,10 @@ name: CI
 
 on:
   push:
+    branches: ["**"]
+    # A tag can point at a commit outside every branch tip's ancestry, so a tag
+    # push must run the scan too: it checks the tag's own ancestry.
+    tags: ["**"]
   pull_request:
 
 permissions:
@@ -14,8 +18,14 @@ jobs:
       - name: Check out
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
-          # Full history: validate.py scans every commit, not just the tip.
+          # Full history of the ref under test: validate.py scans this commit's
+          # own history. Other branches are fetched too, but the scan ignores
+          # them, so one stale branch cannot fail an unrelated one (the
+          # workflow_dispatch sweep reports those separately).
           fetch-depth: 0
+          # Fetch tag objects too: on a tag push the annotated tag's own message
+          # is part of the scanned surface, and a tag object is not a commit.
+          fetch-tags: true
           persist-credentials: false
 
       - name: Set up uv
@@ -25,7 +35,17 @@ jobs:
         run: uv sync --frozen
 
       - name: Validate repository
-        run: uv run python scripts/validate.py
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        # On a tag push, HEAD is the tag's TARGET commit, so name the tag ref: the
+        # scan then reads the pushed tag object's own message and chain.
+        run: |
+          if [ "$REF_TYPE" = "tag" ]; then
+            uv run python scripts/validate.py --ref "refs/tags/$REF_NAME"
+          else
+            uv run python scripts/validate.py
+          fi
 
       - name: Run offline tests
         run: uv run pytest
