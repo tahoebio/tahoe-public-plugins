@@ -52,6 +52,27 @@ _TOOL_CONTRACT_CELL_RE = re.compile(r"^\|\s*`([a-z][a-z0-9_]*)`\s*\|")
 #: A level-2 heading, delimiting a section of the tool-contract doc.
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 #: The tool-contract sections: the live surface, and the not-yet-served one.
+#: The tool set the public MCP registers (its `server/tools.py`, at the pinned
+#: server revision). The tool-contract table must match it exactly, so a tool added
+#: or removed on the server fails validation until the docs and routing are synced.
+PINNED_PUBLIC_TOOLS_REVISION = "fc65ddb"
+PINNED_PUBLIC_TOOLS = frozenset(
+    {
+        "health",
+        "list_releases",
+        "search_conditions",
+        "resolve_genes",
+        "get_expression_slice",
+        "list_cell_lines",
+        "get_drug_info",
+        "get_differential_expression",
+        "run_sql",
+        "get_guide",
+        "get_perturbation_markers",
+        "cancel_execution",
+        "send_feedback",
+    }
+)
 _LIVE_TOOLS_SECTION = "Tools"
 _PLANNED_TOOLS_SECTION = "Not yet served"
 #: The phrase that must sit beside a not-yet-served tool's name in shipped text,

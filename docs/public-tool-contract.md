@@ -12,12 +12,16 @@ Tahoe-100M release. Names and schemas are versioned with the dataset release.
 | `search_conditions` | Search the treatment conditions (drug x dose arms). |
 | `resolve_genes` | Resolve gene identifiers, reporting ambiguity explicitly. |
 | `get_expression_slice` | Retrieve a bounded pseudobulk expression slice. |
+| `list_cell_lines` | List the cell lines (Cellosaurus id, name, organ, driver annotations). |
+| `get_drug_info` | Drug annotations: targets, mechanism class, approval and trial status. |
+| `get_differential_expression` | Per-gene differential expression, drug versus same-plate vehicle. |
+| `get_perturbation_markers` | Genes a classifier found most important for one drug in one cell line (importance, not direction). |
 | `get_guide` | Return the analysis guidelines and data catalog, whole or by topic. |
 | `run_sql` | Run one read-only SQL query over the approved tables, guarded server-side. |
 | `cancel_execution` | Cancel a still-running call, using its `cancel_handle`. |
 | `send_feedback` | Send optional feedback about the service. |
 
-The six data tools are read-only. `run_sql` is read-only too, but it accepts
+The data tools are read-only. `run_sql` is read-only too, but it accepts
 client-supplied query text: the statement is parsed and refused unless it is one
 `SELECT`/`WITH`/`UNION` over the approved tables, with a selective filter on any
 large table and no cross join. `cancel_execution` and `send_feedback` act only on

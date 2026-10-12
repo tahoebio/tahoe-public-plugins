@@ -218,4 +218,4 @@ def test_host_descriptions_do_not_call_every_line_a_cancer_line():
 def test_install_doc_counts_every_shipped_reference():
     install = (common.REPO_ROOT / "docs" / "install.md").read_text(encoding="utf-8")
     words = {3: "three", 4: "four", 5: "five"}
-    assert f"{words[len(common.REFERENCE_RELS)]} references" in install
+    assert f"{words[len(common.REFERENCE_RELS)]} references" in " ".join(install.split())

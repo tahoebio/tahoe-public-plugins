@@ -253,3 +253,19 @@ def test_skill_validator_rejects_a_planned_tool_without_the_marker(tmp_path):
     _write_skill(tmp_path, skill_md=_VALID_SKILL_MD + "\nCall `run_planned(...)`.\n")
     with pytest.raises(common.RepoError):
         validate.validate_skill(tmp_path)
+
+
+def test_tool_contract_validator_rejects_drift_from_the_pinned_tools(tmp_path):
+    _write_skill(tmp_path)
+    with pytest.raises(common.RepoError, match="drifted"):
+        validate.validate_tool_contract(tmp_path)
+
+
+def test_tool_contract_validator_accepts_the_pinned_tools(tmp_path):
+    contract = tmp_path / common.TOOL_CONTRACT_REL
+    contract.parent.mkdir(parents=True)
+    rows = "".join(f"| `{t}` | x. |\n" for t in sorted(common.PINNED_PUBLIC_TOOLS))
+    contract.write_text(
+        f"## Tools\n\n| Tool | Purpose |\n|---|---|\n{rows}", encoding="utf-8"
+    )
+    validate.validate_tool_contract(tmp_path)

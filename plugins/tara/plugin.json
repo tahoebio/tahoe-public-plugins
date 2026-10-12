@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tara",
   "version": "0.2.0",
-  "description": "Analyze the public Tahoe-100M single-cell perturbation atlas (379 drugs x 50 cancer cell lines x 3 doses) through the Tahoe public tools: which drugs, doses and cell lines are covered, gene expression under treatment versus vehicle, drug targets and approval annotations, and how to interpret a served value. Read-only, bounded retrieval with provenance; no SQL, no file access.",
+  "description": "Analyze the public Tahoe-100M single-cell perturbation atlas (379 drugs x 50 cell lines x 3 doses) through the Tahoe public tools: which drugs, doses and cell lines are covered, gene expression under treatment versus vehicle, drug targets and approval annotations, and how to interpret a served value. Read-only, bounded retrieval with provenance, plus guarded read-only SQL over the approved tables; no file access.",
   "author": {
     "name": "Tahoe Bio"
   },

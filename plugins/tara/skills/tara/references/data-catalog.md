@@ -7,8 +7,9 @@ interpretation map, not an inventory: confirm what a release contains with
 ## What is served
 
 One bounded, read-only slice of the public **Tahoe-100M** release, reached only
-through this server's tools. There is no SQL, no direct table or file access, and
-no client-supplied query text. Every tool is read-only and runs as the service's
+through this server's tools. There is no direct table or file access; the only
+client-supplied query is one guarded, read-only `run_sql` statement over the
+approved tables. Every tool is read-only and runs as the service's
 own read identity, so the release is the same for every caller. Responses are
 bounded to a fixed byte ceiling: a truncated response says so, and narrowing the
 request is the only way to see more.
@@ -110,16 +111,15 @@ the release when asked about provenance.
 ## What these tools do not serve
 
 Only the public Tahoe-100M release is served -- one drug panel (379 treatments,
-3 doses, vehicle `DMSO_TF`), one 50-line cell panel, 14 plates. There is no SQL,
-no file or table browsing, and no client-supplied query text; a request for a
-table, path or query is refused. Not available, so do not search for it here:
+3 doses, vehicle `DMSO_TF`), one 50-line cell panel, 14 plates. There is no file
+or table browsing; the only client-supplied query is a guarded `run_sql`
+statement, and a table outside the approved set is refused. Not available, so do
+not search for it here:
 other Tahoe screens or unreleased datasets; clinical or adverse-event data;
 proprietary external reference panels (dependency, viability or signature
 databases) joined to this release; unreleased compound annotations beyond the
-released drug metadata; per-cell expression matrices and per-cell embeddings
-(public in the Hugging Face release, not through these tools); embedding vectors
-themselves (distances only); the "absolute" pathway-score run (a centred
-duplicate of the differential scores); wide per-line matrices (request rows and
-pivot); internal cell-line codes (results carry Cellosaurus ids and names). If a
+released drug metadata; per-cell embeddings (public in the Hugging Face release,
+not through these tools); embedding vectors themselves (distances only); internal
+cell-line codes (results carry Cellosaurus ids and names). If a
 question needs one of these, say so and stop; do not substitute a different
 population, measurement or dataset silently.

@@ -13,6 +13,10 @@ live service; nothing that is not yet served is named.
 | Is drug X, or dose d, in the release? The exact label? | `search_conditions(query=<substring>)`, then confirm the label verbatim |
 | Which conditions belong to one drug? | `search_conditions(drug=<exact label>)` |
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
+| Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)`, `list_cell_lines(query=...)` |
+| A drug's targets, mechanism class, approval or trial status | `get_drug_info(drug=...)`, or filter by `moa=` or `target=` (a filter is required) |
+| Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast |
+| Genes most important for one drug in one line (importance, not direction) | `get_perturbation_markers(drug=..., cell_line=...)` |
 | Expression of gene(s) under a treatment | `resolve_genes` -> `search_conditions` -> `get_expression_slice(genes=[...], conditions=[<label>], include_matched_controls=true)` |
 | How do I interpret a score, a control, or the citation? | `get_guide(topic=...)` (omit `topic` for the whole guide) |
 | A call returned `pending`; how do I fetch it? | call the **same** tool with the **same** arguments plus `result_handle` |
@@ -38,6 +42,10 @@ get_expression_slice(
     genes=["TP53"], conditions=["Trametinib"],
     measurement="raw_counts", include_matched_controls=true,
 )
+list_cell_lines(organ="Lung")            # discover cell-line ids and names
+get_drug_info(target="EGFR")             # drugs annotated against a gene
+get_differential_expression(drug=["Trametinib"], cell_lines=["A549"], top_n=20)
+get_perturbation_markers(drug="Trametinib", cell_line="A549")
 get_guide()                              # the whole guide
 get_guide(topic="conditions-and-controls")   # one guide section
 cancel_execution(cancel_handle="<cancel_handle from the pending response>")

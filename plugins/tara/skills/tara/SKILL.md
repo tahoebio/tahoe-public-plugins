@@ -1,6 +1,6 @@
 ---
 name: tara
-description: Analyze the public Tahoe-100M single-cell perturbation atlas (379 drugs x 50 cancer cell lines x 3 doses) through the Tahoe public tools. Use for any question about drug effects in Tahoe-100M: which drugs, doses or cell lines are covered; gene expression under treatment versus vehicle; drug targets, mechanism and approval annotations; and how to interpret a served value. Read-only, bounded retrieval with provenance; no SQL, no file access. Load before calling any Tahoe public tool.
+description: Analyze the public Tahoe-100M single-cell perturbation atlas (379 drugs x 50 cell lines x 3 doses) through the Tahoe public tools. Use for any question about drug effects in Tahoe-100M: which drugs, doses or cell lines are covered; gene expression under treatment versus vehicle; drug targets, mechanism and approval annotations; and how to interpret a served value. Read-only, bounded retrieval with provenance, plus guarded read-only `run_sql` over the approved tables; no file access. Load before calling any Tahoe public tool.
 ---
 
 # Tara — the public Tahoe-100M perturbation atlas
@@ -26,8 +26,9 @@ serve** below before answering a question that reaches beyond the panel.
 
 ## Non-negotiable rules
 
-- Read-only: never write, and never ask for a table, file, path or query. There
-  is no SQL here; such a request is refused.
+- Read-only: never write, and never ask for a file or path. The only
+  client-supplied query is one read-only `run_sql` statement over the approved
+  tables; anything else is refused.
 - Never invent a table, column, gene label, drug label or cell-line id. Confirm
   every identifier with a vocabulary tool before using it.
 - Use the smallest slice that answers the question, and report what you checked.
@@ -49,8 +50,11 @@ serve** below before answering a question that reaches beyond the panel.
 
 1. `list_releases()` first, to pin the release every result will carry.
 2. Confirm vocabulary before retrieval: `search_conditions(...)` for a drug or
-   dose arm, `resolve_genes(...)` for a gene symbol.
-3. Retrieve the smallest slice with the data tool (`get_expression_slice`).
+   dose arm, `resolve_genes(...)` for a gene symbol, `list_cell_lines(...)` for
+   a cell line, `get_drug_info(...)` for drug targets and approval.
+3. Retrieve the smallest slice with the bounded data tool:
+   `get_expression_slice` (expression), `get_differential_expression` (drug vs
+   vehicle contrast), `get_perturbation_markers` (classifier feature ranking).
 4. Read `get_guide(...)` before drawing a scientific conclusion; the tool
    descriptions only say how to call the tools.
 5. `health()` only when something fails, or to confirm the service is up.
@@ -63,6 +67,10 @@ serve** below before answering a question that reaches beyond the panel.
 | Which drugs or doses are covered? | `search_conditions(...)` |
 | Is drug X or dose d in the release? The exact label? | `search_conditions(query=...)` |
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
+| Which cell lines, or which organ's lines? | `list_cell_lines(...)` |
+| A drug's targets, mechanism, approval status | `get_drug_info(...)` |
+| Differential expression, drug vs same-plate vehicle | `get_differential_expression(...)` |
+| Genes most important for separating a drug's cells from vehicle | `get_perturbation_markers(...)` |
 | Expression of gene(s) under a treatment, versus vehicle | `resolve_genes` -> `search_conditions` -> `get_expression_slice(..., include_matched_controls=true)` |
 | How do I interpret a score, a control, or the citation? | `get_guide(topic)` |
 | A call returned `pending`; how do I fetch it? | call the same tool again with `result_handle` |
@@ -77,17 +85,10 @@ The long form, with arguments and one worked call per tool, is in
 
 ## Querying with SQL
 
-A bounded tool first: use `search_conditions`, `resolve_genes` and
-`get_expression_slice` whenever one fits the question. Reach for `run_sql` only
-for a join, an aggregate or a table the bounded tools do not expose.
-
-`run_sql(statement, max_rows)` runs one read-only query over the approved tables.
-It is guarded server-side: one `SELECT`/`WITH`/`UNION`, approved tables only, a
-`LIMIT` capped at 1000 (default 200), no cross joins, and a large table needs a
-literal key filter (`key = literal` or `key IN (...)`) in its own `WHERE`. A slow
-query returns `pending` rather than failing; the normalized SQL comes back in
-`manifest.sql` with its `sql_sha256`. The served tables, their keys, joins and
-pitfalls are documented in
+A bounded tool first. Use `run_sql(statement, max_rows)` only for a join, an
+aggregate or a table the bounded tools do not expose: one read-only statement
+over the approved tables, guarded and cost-bounded server-side. The rules, the
+tables, their keys and their pitfalls are in
 [references/sql-guidance.md](references/sql-guidance.md).
 
 ## The analysis contract in brief
@@ -139,23 +140,16 @@ not put handles, account ids or service URLs into a deliverable.
 
 ## What these tools do not serve
 
-Only the public Tahoe-100M release is served — one drug panel (379 treatments,
+Only the public Tahoe-100M release is served: one drug panel (379 treatments,
 3 doses, vehicle `DMSO_TF`), one 50-line cell panel, 14 plates. There is no file
-or table browsing, and the only client-supplied query text is a `run_sql`
-statement over the approved tables; a request for a path or a table outside the
-approved set is refused. Not available, so do not search for it here:
-other Tahoe screens or unreleased datasets; clinical or adverse-event data;
-proprietary external reference panels (dependency, viability or signature
-databases) joined to this release; unreleased compound annotations beyond the
-released drug metadata; per-cell embeddings (public in the Hugging Face release,
-not through these tools); embedding vectors themselves (distances only, and the
-per-cell embedding table is not served); the "absolute" pathway-score run (a
-centred duplicate of the differential scores); wide per-line matrices (request
-rows and pivot, or use the wide matrix tables by alias); internal cell-line codes
-(results carry Cellosaurus ids and names; SQL returns the internal code only in
-the `cell_line` column, which you join to the crosswalk). If a question needs one
-of these, say so and stop; do not substitute a different population, measurement
-or dataset silently.
+or path access, and the only client-supplied query is a guarded `run_sql`
+statement; a table outside the approved set is refused. Not available: other
+Tahoe screens or unreleased datasets; clinical or adverse-event data; external
+reference panels joined to this release; per-cell embeddings (only plate-level
+centroids are in SQL); internal cell-line codes (results carry Cellosaurus ids and names; SQL
+returns the internal code only in the `cell_line` column, which you join to the
+crosswalk). If a question needs one of these, say so and stop; do not substitute
+a different population, measurement or dataset silently.
 
 ## References
 

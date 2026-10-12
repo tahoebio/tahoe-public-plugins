@@ -195,6 +195,18 @@ def _skill_texts(root: Path) -> dict[str, str]:
     }
 
 
+def validate_tool_contract(root: Path = common.REPO_ROOT) -> None:
+    """Fail when the tool-contract table drifts from the pinned public tool list."""
+    known = common.known_tools(root)
+    if known != common.PINNED_PUBLIC_TOOLS:
+        raise common.RepoError(
+            "the tool contract drifted from the pinned public tool list "
+            f"(revision {common.PINNED_PUBLIC_TOOLS_REVISION}): missing "
+            f"{sorted(common.PINNED_PUBLIC_TOOLS - known)}, unexpected "
+            f"{sorted(known - common.PINNED_PUBLIC_TOOLS)}"
+        )
+
+
 def validate_skill(root: Path = common.REPO_ROOT) -> None:
     """Enforce the skill payload's shape, budgets and vocabulary.
 
@@ -281,6 +293,7 @@ def validate_all(
     validate_layout(root)
     validate_mcp_config(root)
     validate_versions(root)
+    validate_tool_contract(root)
     validate_skill(root)
     validate_residue(root, ref=ref, all_refs=all_refs)
 

@@ -26,8 +26,8 @@ your SQL:
   / `UNION` only. No writes, DDL, `SET`, `DESCRIBE`, `SHOW` or `EXPLAIN`, and no
   second statement.
 - `table_not_allowed` — only the approved tables. No other catalog, no `system`
-  or `information_schema`, no file path or volume source. Cell-level embeddings
-  and the centred absolute pathway-score run are not served.
+  or `information_schema`, no file path or volume source. The per-cell
+  embedding table is not served.
 - `function_not_allowed` — no file, network, AI, reflection, identity or
   generator functions (`read_files`, `http_request`, `ai_*`, `reflect`, `url_*`,
   `current_user`, `sequence`, `repeat`), no table-valued functions, no qualified
@@ -95,6 +95,7 @@ selective `WHERE` in the `SELECT` that reads them.
 | `single_cell_expression` **LARGE** | one stored nonzero (cell, gene) | `cell_line`, `sample`, `cell_joinid`, `gene_joinid` |
 | `obs` **LARGE** | one cell | `cell_line`, `drug`, `sample`, `sublibrary` |
 | `augur_feature_results` **LARGE** | one gene's classifier feature in one model | `drug`, `cell_line`, `gene`, `plate` |
+| `vision_scores_pseudobulk` **LARGE** | one pseudobulk sample (vehicle rows included) × gene set | `drug`, `cell_line`, `gene_set`, `cell_id`, `plate` |
 | `vision_scores_pseudobulk_differential` **LARGE** | one treated pseudobulk sample × gene set | `drug`, `cell_line`, `gene_set`, `plate` |
 | `phenotype_scores` | one drug × line × dose × plate × phenotype | `drug`, `cell_line`, `dose`, `plate`, `phenotype` |
 | `gene_metadata` | one gene | `gene_name`, `ensembl_id`, `gene_joinid` |
@@ -107,8 +108,10 @@ selective `WHERE` in the `SELECT` that reads them.
 | `survival_effect_size_odds_ratio`, `survival_significance_neg_log10p`, `cell_cycle_effect_size_matrix`, `cell_cycle_significance_matrix` | wide matrices: one row per drug × concentration, one column per cell line | `drug__concentration`, `analysis_type` |
 | the Tahoe-x1 embedding-centroid table | one drug × line × plate centroid, mean embedding + cell count | `cell_line`, `plate` |
 
-The centred absolute pathway-score run is refused by the guard; only the
-differential pathway scores are served.
+Two pathway-score tables are served: `vision_scores_pseudobulk` (absolute) and
+`vision_scores_pseudobulk_differential` (vehicle-subtracted). Pick by the
+question: the absolute table when you need the level itself or your own control
+design; the differential table when you want the change versus vehicle.
 
 ## Notes per table
 
@@ -148,9 +151,14 @@ differential pathway scores are served.
   not a fold change and carries no direction; take direction from
   `deseq2_results` or `pseudobulk_expression`. A gene absent here is not in that
   model.
+- **`vision_scores_pseudobulk`** — the absolute gene-set score per pseudobulk
+  sample, **not vehicle-subtracted**; vehicle rows are in the table. Subtract a
+  plate-matched vehicle yourself if you want a contrast.
 - **`vision_scores_pseudobulk_differential`** — the score is the change in
-  gene-set activity versus the matched vehicle mean. No statistics. It is already
-  a contrast: use it as-is, never subtract a vehicle again. `conc` is in uM.
+  gene-set activity versus the matched vehicle mean, already vehicle-subtracted:
+  use it as-is, never subtract a vehicle again. NULL means no matched `DMSO_TF`
+  (untested, not zero). No statistics. `conc` is in uM. Scores of different gene
+  sets are not on a common scale.
 - **The embedding-centroid table** — a centroid is the mean of cells, not a cell
   and not a replicate. Compare distances within a line, plate-matched, and do not
   interpret a direction. A low cell count makes a centroid noisy.
