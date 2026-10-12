@@ -80,11 +80,24 @@ serve** below before answering a question that reaches beyond the panel.
 | Stop a running call | `cancel_execution(cancel_handle)` |
 | A join or aggregation a bounded tool does not expose | `run_sql(statement, max_rows)` |
 | Per-cell expression at scale | `run_sql` over `single_cell_expression` (bounded) |
-| Per-cell embeddings, bulk download | not served; the public Hugging Face release |
+| Native streaming/loading | `list_dataset_products` — available once the server advertises it; read the streaming reference |
+| Prepare a source for an existing reader | `prepare_dataset` — available once the server advertises it |
+| Per-cell embeddings | not served; the public Hugging Face release |
 | Anything outside Tahoe-100M | not available through these tools |
 
 The long form, with arguments and one worked call per tool, is in
 `references/tool-routing.md`.
+
+## Streaming and loading
+
+For a dataloader, training loop or lazy analysis, read
+[references/streaming.md](references/streaming.md). It shows HF and Tara side by
+side, plus Polars, Arrow, sparse CSR and safe MDS. The bundled helper manages
+public OAuth and renewable access; bytes go to the client reader, outside model
+context. Keep the current bounded tools for small analytical answers. Check the
+live tool list before offering streaming: these data-access tools are available
+only when advertised. Never invent a product id or imply an undeployed source
+is usable. Native source URLs remain in the client, not in chat.
 
 ## Querying with SQL
 

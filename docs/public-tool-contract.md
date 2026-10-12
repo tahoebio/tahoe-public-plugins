@@ -29,8 +29,14 @@ the caller's own state and are not reads.
 
 ## Not yet served
 
-None today. When a tool is planned, it is listed here and the skill may name it
-only beside an explicit "available once the server advertises it" note.
+| Tool | Purpose |
+|------|---------|
+| `list_dataset_products` | Approved pinned products and row grain; available once the server advertises it. |
+| `prepare_dataset` | Account-bound renewable access for native readers; available once the server advertises it. |
+
+Bulk file or Arrow reads use a separate metered data API. These tools are not
+claimed live until the server advertises them. Preparing access changes only
+the caller's access lease; it does not change dataset contents.
 
 ## Contract properties
 

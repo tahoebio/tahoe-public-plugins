@@ -109,6 +109,7 @@ REFERENCE_RELS = (
     f"{SKILL_DIR_REL}/references/data-catalog.md",
     f"{SKILL_DIR_REL}/references/tool-routing.md",
     f"{SKILL_DIR_REL}/references/sql-guidance.md",
+    f"{SKILL_DIR_REL}/references/streaming.md",
 )
 SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
 
@@ -129,6 +130,8 @@ ARCHIVE_ALLOWLIST = (
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
     *SKILL_FILES,
+    f"{SKILL_DIR_REL}/scripts/tara_data.py",
+    f"{SKILL_DIR_REL}/scripts/requirements.txt",
 )
 
 GENERATED_DIRS = frozenset(

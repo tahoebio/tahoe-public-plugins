@@ -1,0 +1,2 @@
+# Connection only. Keep using the native libraries already in your project.
+fastmcp==4.1.0

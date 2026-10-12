@@ -3,6 +3,13 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.4.0 — unreleased
+
+- Bundle a renewable public OAuth connection helper for native HF Datasets, Polars, Arrow, sparse CSR and safe Mosaic Streaming readers.
+- Add side-by-side HF/Tara examples and six loading/training demo prompts.
+- Keep the access tools explicitly conditional on the live server advertising them.
+- Package the helper and its requirements through the explicit release allowlist; retain residue and credential scans.
+
 ## 0.3.0 — unreleased
 
 Richer, honest plugin descriptions.
