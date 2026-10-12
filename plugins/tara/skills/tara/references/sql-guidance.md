@@ -15,7 +15,8 @@ dropped, an outer `LIMIT` added. It is echoed in `manifest.sql` with its
 aggregate in SQL instead of paging. A slow query returns `pending`: call again
 with the SAME statement and `result_handle`. A query running longer than about a
 minute is cancelled. Each call costs three request units; a refused statement
-costs none.
+costs none. These are request and runtime bounds, not a dollar cap; a small
+returned row count does not establish a small scan.
 
 ## What the guard refuses
 
@@ -68,17 +69,17 @@ WHERE `moa-fine` LIKE '%MEK%' OR `moa-fine` LIKE '%RAF%' ORDER BY drug
 
 ```sql
 -- Condition-level survival scores for one drug, with cell-line identity
-SELECT p.cell_line, c.cell_name, p.dose, p.score, p.p_adj_fdr
+SELECT p.cell_line, c.cell_name, p.dose, p.plate, p.score, p.p_adj_fdr
 FROM phenotype_scores p JOIN cell_line_metadata c ON p.cell_line = c.cell_line_id_cellosaurus
 WHERE p.drug = 'Trametinib' AND p.phenotype = 'survival' ORDER BY p.score LIMIT 50
 ```
 
 ```sql
--- Top differentially expressed genes of one contrast
-SELECT c.cell_name, d.gene_name, d.log2FoldChange, d.padj
+-- Released effects for two genes, preserving line, dose and plate
+SELECT c.cell_name, d.drug, d.dose, d.plate, d.gene_name, d.log2FoldChange, d.padj
 FROM deseq2_results d JOIN cell_line_metadata c ON d.cell_line = c.cell_id
 WHERE d.drug IN ('Trametinib', 'Trametinib ') AND d.dose = '5.0'
-  AND d.gene_name IN ('TP53', 'MYC') ORDER BY d.padj LIMIT 20
+  AND d.gene_name IN ('TP53', 'MYC') ORDER BY c.cell_name, d.plate, d.gene_name LIMIT 20
 ```
 
 ## Table semantics
@@ -91,13 +92,25 @@ server's own query notes. Table names come from `list_releases`.
 
 Traps that hold across tables:
 
-- A table named `*_differential` is already vehicle-subtracted: use it as-is and
-  never subtract a vehicle again. Its absolute counterpart is not subtracted and
-  carries the vehicle rows. A NULL there means no matched vehicle, not zero.
+- Establish whether the selected value is already a treatment contrast: use
+  released differential values as-is, never subtract a vehicle again. Before
+  reconstructing a differential from absolute scores, verify compatible builds,
+  definitions, sample keys, controls and numeric agreement; a join is not proof.
+  Use the source's missing-value semantics: NULL is not zero.
 - `dose` is a string in some tables and a float in others; check the table's
   schema in the guide before filtering.
 - A table's `gene` or `cell_line` column may be an internal index or code, not a
   symbol or a Cellosaurus id: resolve it through the metadata tables, and never
   put an internal code in a deliverable.
-- Importance, centroid-distance and survival-style scores are not fold changes;
-  take direction from an expression or differential table.
+- Importance and centroid distance have no direction. Survival and phase-arrest
+  scores have phenotype-specific direction; read their provenance. None is an
+  expression fold change, and relative depletion is not absolute viability.
+- Read `references/data-catalog.md` for synthetic DE pseudoreplicates,
+  gene-set sensitivity, phenotype-specific significance and embedding caveats.
+  A truncated result cannot support a full-panel claim: aggregate the complete
+  eligible population in SQL before sorting/limiting its summary.
+- Approved SQL can select centroid vectors and source identity columns even
+  though named tools return distances and translated line identities. Resolve
+  source keys before presentation; do not describe these columns as forbidden.
+- A release label plus normalized SQL does not pin source table versions. Retain
+  source-version evidence when available; replay assumes unchanged data.

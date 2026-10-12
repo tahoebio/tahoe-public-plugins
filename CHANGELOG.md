@@ -3,6 +3,19 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.2.1 — unreleased
+
+- Route gene-set discovery, differential pathway scores, phenotype readouts and
+  matched embedding distances alongside the existing tools; synchronize the
+  17-tool contract and validation pin.
+- Bundle scientific interpretation safeguards for expression normalization,
+  synthetic DE pseudoreplicates, gene-set definitions and sensitivity,
+  phenotype-specific direction/FDR and model-dependent distances.
+- Distinguish biological replication from cell/sample counts, measurements from
+  released contrasts, and a verified scoring relationship from a join alone.
+- Clarify named-tool output versus approved SQL columns, source-version replay
+  limits and request/runtime bounds versus scan cost.
+
 ## 0.2.0 — unreleased
 
 The `tara` skill.

@@ -15,8 +15,9 @@ smallest sufficient slice; the 50-line panel is not a reference cohort.
 - Confirm release, gene label, condition identity, control arm, value direction,
   and whether a value is an absolute measurement or a treatment-versus-control
   contrast.
-- Check compound and cell-line coverage in the served release with
-  `search_conditions`, not only in library metadata.
+- Check drug/dose arms with `search_conditions` and line identity with
+  `list_cell_lines`, not only in library metadata. Check joint drug x dose x
+  line coverage in the relevant result; presence in both lists is insufficient.
 - Resolve compound synonyms through the release's own labels. Preserve
   parent/salt distinctions when relevant.
 - Resolve gene identifiers with `resolve_genes` before joining across layers.
@@ -33,10 +34,12 @@ smallest sufficient slice; the 50-line panel is not a reference cohort.
 
 - Match controls by the design encoded in the release, commonly plate and cell
   line; do not pool controls merely to increase n.
-- Across the panel the independent unit is the cell line; within one line it is
-  the plate-matched sample, often too few for an interval (report the difference
-  with treated and control counts). Cells, wells and pseudo-replicates within a
-  sample are not independent replicates.
+- Across the panel the independent biological unit is the cell line. Within one
+  line, establish independence from the experimental design; a sample or plate
+  identifier alone does not establish a biological replicate. Cells, wells and
+  pseudo-replicates must not inflate biological n. Where independent units are
+  too few, report a descriptive difference with treated/control sample counts
+  and explain why an interval is unsupported.
 - Distinguish exploratory ranking from confirmatory inference. The pre-specified
   estimate is the result; an adjustment invented after seeing the data is
   exploratory and is labelled so.
@@ -45,7 +48,7 @@ smallest sufficient slice; the 50-line panel is not a reference cohort.
   unit counts. Summarise
   across conditions with a pooled estimate and interval, not with a count of
   significant conditions.
-- Account for multiple testing when selecting across genes, compounds or strata.
+- Account for multiple testing when selecting across genes, pathways, compounds or strata.
   Nominal p-values and BH within a pre-specified family may be reported; they
   never carry the headline and never support a claim of no effect.
 - No post-hoc adjustment gates: do not residualise a score on other gene sets,
@@ -62,21 +65,31 @@ smallest sufficient slice; the 50-line panel is not a reference cohort.
   claim.
 - Do not infer mechanism directly from pathway enrichment, transcriptional
   similarity or target annotations alone.
+- Classifier feature importance and embedding distance have no direction.
+  Survival and phase-arrest statistics have their own phenotype-defined
+  direction; neither is an expression fold change or a direct viability assay.
 - Pseudobulk or aggregate results and single-cell state distributions answer
   different questions.
 
 ## Measurements versus treatment contrasts
 
-- A served value is an expression measurement -- an absolute pseudobulk
-  aggregate -- unless the release publishes it as a contrast. Read the
-  `provenance` block to establish which it is before using it.
-- A treatment-versus-control contrast is computed by the analyst from the
-  aggregates and the matched control rows. State the definition in the Methods
+- An expression slice is an absolute pseudobulk measurement. DE and differential
+  pathway results already carry treatment contrasts. Phenotype statistics and
+  embedding distances have separate definitions. Read the result's `provenance`
+  and the relevant server guide before selecting a calculation.
+- An expression difference computed by the analyst from aggregates and matched
+  control rows is descriptive. A difference on a log-normalized scale is not
+  automatically a log2 fold change. State the definition in the Methods
   and in every figure footnote, for example: "Delta = treated aggregate minus the
   matched control aggregate, computed here; the served values are absolute and
   were not pre-subtracted."
 - Do not subtract a vehicle, control or baseline value from a served value that
   is already a contrast, and do not re-centre a contrast on control groups.
+- Do not reconstruct a released differential pathway score from absolute scores
+  merely because rows join. Establish compatible scoring builds, gene-set
+  definitions, sample identities and matched controls, then check the numeric
+  relationship on a bounded slice. Until verified, use the differential score
+  as-is and state that reconstruction is unverified.
 - Before analysis, print the `provenance` block and run one numeric check that
   confirms the semantics; keep the check and its output in the analysis record.
 
@@ -100,6 +113,10 @@ Retain exact arguments, filters, parameter values, release and access date, row
 counts, filtering decisions and software versions. Keep downloaded data and
 derived tables outside git-tracked paths unless the repository explicitly
 permits a small non-sensitive artifact. Never commit raw Tahoe data.
+
+A release label, guide version and argument manifest do not themselves pin
+immutable source tables. Retain table-version or scoring-build evidence when
+available, and describe replay as conditional on unchanged source data.
 
 In the final explanation, separate:
 
