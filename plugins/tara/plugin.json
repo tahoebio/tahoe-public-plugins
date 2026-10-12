@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tara",
   "version": "0.2.1",
-  "description": "Analyze public Tahoe-100M through bounded read-only tools for coverage, expression, differential expression, pathways, phenotypes, embedding distances and drug annotations, with scientific provenance and guarded SQL over approved tables; no file access.",
+  "description": "Read-only access to Tahoe Bio's scientific data. Use for scientific and drug-discovery analyses that benefit from Tahoe's single-cell perturbational transcriptomics data, including phenotypic, MoA, target, biomarker, responder-stratification and pathway analyses.",
   "author": {
     "name": "Tahoe Bio"
   },

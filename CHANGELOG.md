@@ -8,11 +8,12 @@ to semantic versioning.
 - Route gene-set discovery, differential pathway scores, phenotype readouts and
   matched embedding distances alongside the existing tools; synchronize the
   17-tool contract and validation pin.
-- Bundle scientific interpretation safeguards for expression normalization,
-  synthetic DE pseudoreplicates, gene-set definitions and sensitivity,
-  phenotype-specific direction/FDR and model-dependent distances.
-- Distinguish biological replication from cell/sample counts, measurements from
-  released contrasts, and a verified scoring relationship from a join alone.
+- Port the existing scientific guidance: effect sizes, intervals, biological
+  replication, treatment contrasts, reporting and reproducible output.
+- Distinguish single-cell counts from pseudobulk measurements, and summarize
+  the existing expression, DE, pathway, phenotype and centroid catalog caveats.
+- Use the scientific-analysis description, with the current public data scope
+  documented in the skill body rather than its description.
 - Clarify named-tool output versus approved SQL columns, source-version replay
   limits and request/runtime bounds versus scan cost.
 

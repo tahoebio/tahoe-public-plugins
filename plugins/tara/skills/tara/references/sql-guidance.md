@@ -92,11 +92,11 @@ server's own query notes. Table names come from `list_releases`.
 
 Traps that hold across tables:
 
-- Establish whether the selected value is already a treatment contrast: use
-  released differential values as-is, never subtract a vehicle again. Before
-  reconstructing a differential from absolute scores, verify compatible builds,
-  definitions, sample keys, controls and numeric agreement; a join is not proof.
-  Use the source's missing-value semantics: NULL is not zero.
+- A release differential table already holds treatment minus matched control,
+  computed by the release pipeline. Use it as-is: never subtract a control again
+  or re-centre the contrast. Absolute controls serve an untreated-baseline view;
+  a reconstructed absolute treated score is differential plus the matched
+  control mean and is labelled "reconstructed absolute".
 - `dose` is a string in some tables and a float in others; check the table's
   schema in the guide before filtering.
 - A table's `gene` or `cell_line` column may be an internal index or code, not a
@@ -105,8 +105,9 @@ Traps that hold across tables:
 - Importance and centroid distance have no direction. Survival and phase-arrest
   scores have phenotype-specific direction; read their provenance. None is an
   expression fold change, and relative depletion is not absolute viability.
-- Read `references/data-catalog.md` for synthetic DE pseudoreplicates,
-  gene-set sensitivity, phenotype-specific significance and embedding caveats.
+- Read `references/data-catalog.md` for single-cell versus pseudobulk expression,
+  synthetic DE pseudoreplicates, gene-set definitions, phenotype-specific
+  significance and centroid grain.
   A truncated result cannot support a full-panel claim: aggregate the complete
   eligible population in SQL before sorting/limiting its summary.
 - Approved SQL can select centroid vectors and source identity columns even
