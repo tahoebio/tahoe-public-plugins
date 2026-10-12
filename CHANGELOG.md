@@ -3,6 +3,23 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.3.0 — unreleased
+
+Richer, honest plugin descriptions.
+
+- The plugin description now says what the public tools do today: coverage of
+  drugs, doses, cell lines and genes; drug annotations; expression and
+  drug-versus-vehicle differential expression; perturbation markers; pathway
+  scores; phenotype readouts; embedding distance from vehicle; guarded
+  read-only SQL. It refers to "Tahoe's data" and names no dataset.
+- The Codex `interface` block (display name, short and long description,
+  developer, category, capabilities, website, brand colour, three default
+  prompts) lives under `extensions.com.openai` in the portable `plugin.json`,
+  where Codex reads it. No logo or icon is set until an approved asset exists.
+- The Claude manifest carries the identical description.
+- Keywords no longer name a dataset.
+- A test keeps the manifest text free of dataset and internal names.
+
 ## 0.2.0 — unreleased
 
 The `tara` skill.

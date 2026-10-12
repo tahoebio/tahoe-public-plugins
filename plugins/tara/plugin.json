@@ -1,16 +1,39 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tara",
-  "version": "0.2.0",
-  "description": "Analyze the public Tahoe-100M single-cell perturbation atlas (379 drugs x 50 cell lines x 3 doses) through the Tahoe public tools: which drugs, doses and cell lines are covered, gene expression under treatment versus vehicle, drug targets and approval annotations, and how to interpret a served value. Read-only, bounded retrieval with provenance, plus guarded read-only SQL over the approved tables; no file access.",
+  "version": "0.3.0",
+  "description": "Read-only access to Tahoe's data through the Tahoe public tools. Use for scientific and drug-discovery analyses that benefit from large-scale single-cell perturbational transcriptomics, including phenotypic profiling, mechanism-of-action inference, pathway-response and cell-state analysis, and comparing drug responses across cell lines. Look up which drugs, doses, cell lines and genes are covered; read drug annotations (targets, mechanism of action, approval status); retrieve gene expression and drug-versus-vehicle differential expression; and get perturbation markers, pathway scores, phenotype readouts (relative depletion, cell cycle, heterogeneity) and embedding distance from vehicle. Bounded retrieval with provenance, plus guarded read-only SQL and analysis guidance.",
   "author": {
     "name": "Tahoe Bio"
   },
   "repository": "https://github.com/tahoebio/tahoe-public-plugins",
   "keywords": [
-    "tahoe-100m",
     "single-cell",
+    "perturbation",
+    "drug-discovery",
     "gene-expression",
-    "agent-plugin"
-  ]
+    "pathways",
+    "mcp"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Tara",
+        "shortDescription": "Analyze Tahoe's frontier-scale perturbation data.",
+        "longDescription": "Read-only access to Tahoe's data through the Tahoe public tools. Use for scientific and drug-discovery analyses that benefit from large-scale single-cell perturbational transcriptomics, including phenotypic profiling, mechanism-of-action inference, pathway-response and cell-state analysis, and comparing drug responses across cell lines. Look up which drugs, doses, cell lines and genes are covered; read drug annotations (targets, mechanism of action, approval status); retrieve gene expression and drug-versus-vehicle differential expression; and get perturbation markers, pathway scores, phenotype readouts (relative depletion, cell cycle, heterogeneity) and embedding distance from vehicle. Bounded retrieval with provenance, plus guarded read-only SQL and analysis guidance.",
+        "developerName": "Tahoe Bio",
+        "category": "Research",
+        "capabilities": [
+          "Read"
+        ],
+        "websiteURL": "https://tara.tahoebio.io/",
+        "brandColor": "#082846",
+        "defaultPrompt": [
+          "Which MEK and RAF inhibitors are in Tahoe's data?",
+          "In Tahoe's data, is Pitavastatin's stronger suppression of YAP signaling than Pravastatin driven by greater on-target activity?",
+          "Does binimetinib up- or down-regulate KRAS signaling in Tahoe's data?"
+        ]
+      }
+    }
+  }
 }

@@ -1,7 +1,7 @@
 {
   "name": "tara",
-  "version": "0.2.0",
-  "description": "Analyze the public Tahoe-100M single-cell perturbation atlas through the Tahoe public tools: coverage, gene expression, drug annotations and how to interpret a served value. Read-only, bounded retrieval with provenance.",
+  "version": "0.3.0",
+  "description": "Read-only access to Tahoe's data through the Tahoe public tools. Use for scientific and drug-discovery analyses that benefit from large-scale single-cell perturbational transcriptomics, including phenotypic profiling, mechanism-of-action inference, pathway-response and cell-state analysis, and comparing drug responses across cell lines. Look up which drugs, doses, cell lines and genes are covered; read drug annotations (targets, mechanism of action, approval status); retrieve gene expression and drug-versus-vehicle differential expression; and get perturbation markers, pathway scores, phenotype readouts (relative depletion, cell cycle, heterogeneity) and embedding distance from vehicle. Bounded retrieval with provenance, plus guarded read-only SQL and analysis guidance.",
   "mcpServers": {
     "tahoe-public": {
       "type": "http",
