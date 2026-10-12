@@ -170,18 +170,11 @@ def test_the_contract_lists_exactly_the_pinned_live_tools():
     assert common.known_tools() == common.PINNED_PUBLIC_TOOLS
 
 
-def test_the_new_bounded_tools_are_routed_in_the_skill():
-    skill = _skill_texts()[common.SKILL_MD_REL]
+def test_every_pinned_tool_is_named_in_the_routing_reference():
     routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
-    routing_text = routing.read_text(encoding="utf-8")
-    for name in (
-        "list_cell_lines",
-        "get_drug_info",
-        "get_differential_expression",
-        "get_perturbation_markers",
-    ):
-        assert f"`{name}" in skill, name
-        assert f"`{name}" in routing_text, name
+    text = routing.read_text(encoding="utf-8")
+    for name in sorted(common.PINNED_PUBLIC_TOOLS):
+        assert f"`{name}" in text, name
 
 
 def test_no_shipped_text_says_there_is_no_sql():
@@ -195,15 +188,19 @@ def test_no_shipped_text_says_there_is_no_sql():
         assert "no client-supplied query text" not in lowered, rel
 
 
-def test_vision_tables_are_described_by_what_the_live_guard_serves():
+def test_table_semantics_are_served_by_get_guide_not_restated():
+    refs = common.SKILL_DIR_REL + "/references/"
+    sql = _skill_texts()[refs + "sql-guidance.md"]
+    catalog = _skill_texts()[refs + "data-catalog.md"]
+    assert 'get_guide(topic="table-reference")' in sql
+    for heading in ("## Notes per table", "## The approved tables"):
+        assert heading not in sql, heading
+    for heading in ("## Genes", "## Expression grain and measurement", "## Working with the public files"):
+        assert heading not in catalog, heading
     for rel, text in _skill_texts().items():
         lowered = text.lower()
         assert "centred duplicate" not in lowered, rel
-        assert "centred absolute pathway-score run is refused" not in lowered, rel
-    sql = _skill_texts()["plugins/tara/skills/tara/references/sql-guidance.md"]
-    assert "`vision_scores_pseudobulk`" in sql
-    assert "not vehicle-subtracted" in sql
-    assert "no matched" in sql
+        assert "tahoe-de-rhaister" not in lowered, rel
 
 
 def test_host_descriptions_do_not_call_every_line_a_cancer_line():
