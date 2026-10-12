@@ -7,6 +7,7 @@ PYTHONPATH. Native adapters import only the library selected by the caller.
 from __future__ import annotations
 
 import asyncio
+import os
 import threading
 import time
 from pathlib import Path
@@ -20,8 +21,13 @@ class DataAccessError(RuntimeError):
 class _ArrowRows:
     def __init__(self, source):
         self.source = source
+        self._pid = os.getpid()
 
     def __call__(self):
+        if os.getpid() != self._pid:
+            raise DataAccessError(
+                "Arrow HF bridges use num_workers=0; use Parquet for worker sharding."
+            )
         for batch in self.source.arrow_batches():
             yield from batch.to_pylist()
 
