@@ -19,6 +19,21 @@ and optional-feedback controls affect only the caller's operational state.
 Responses are bounded to a fixed byte ceiling: a truncated response says so,
 and narrowing the request is the only way to see more.
 
+## Registered release tables
+
+The public tools use the registered Delta-table routes for the approved
+Tahoe-100M release. They query in place rather than downloading retained release
+files. The bounded expression tool uses `pseudobulk_expression`; single-cell
+SQL uses `single_cell_expression`, `obs` and `gene_metadata`. Other bounded
+tools use the approved DE, pathway, phenotype and metadata tables.
+
+Use `list_releases` and the server's table reference to establish the selected
+release and routes. The plugin does not choose an arbitrary newest dataset or
+reference release: a newer release is a scientific source change, so re-establish
+population, measurement and coverage. External reference datasets are outside
+this service's approved scope. Table names and a release label do not pin a
+Delta transaction version; retain source-version evidence when available.
+
 ## Scientific reading map
 
 Read the relevant `get_guide(topic=...)` section and the result's provenance

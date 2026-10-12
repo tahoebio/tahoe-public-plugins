@@ -1,6 +1,6 @@
 ---
 name: tara
-description: Read-only access to Tahoe Bio's scientific data. Use for scientific and drug-discovery analyses that benefit from Tahoe's single-cell perturbational transcriptomics data, including phenotypic, MoA, target, biomarker, responder-stratification and pathway analyses.
+description: Read-only access to Tahoe Bio's scientific data, including a large-scale single-cell perturbation atlas. Use for scientific and drug-discovery analyses that benefit from Tahoe's single-cell perturbational transcriptomics data. Example applications include phenotypic, MoA, target, biomarker, responder-stratification and pathway analyses.
 ---
 
 # Tara
