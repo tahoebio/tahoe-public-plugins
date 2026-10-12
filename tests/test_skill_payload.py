@@ -161,3 +161,61 @@ def test_release_archive_is_the_manifests_and_the_skill_files():
     assert members == sorted(common.ARCHIVE_ALLOWLIST)
     assert common.CLAUDE_ADAPTER_REL in members
     assert common.SKILL_MD_REL in members
+
+
+# --- sync with the live public MCP (pinned tool list, SQL and VISION wording) ---
+
+
+def test_the_contract_lists_exactly_the_pinned_live_tools():
+    assert common.known_tools() == common.PINNED_PUBLIC_TOOLS
+
+
+def test_the_new_bounded_tools_are_routed_in_the_skill():
+    skill = _skill_texts()[common.SKILL_MD_REL]
+    routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
+    routing_text = routing.read_text(encoding="utf-8")
+    for name in (
+        "list_cell_lines",
+        "get_drug_info",
+        "get_differential_expression",
+        "get_perturbation_markers",
+    ):
+        assert f"`{name}" in skill, name
+        assert f"`{name}" in routing_text, name
+
+
+def test_no_shipped_text_says_there_is_no_sql():
+    surfaces = dict(_skill_texts())
+    for rel in ("plugins/tara/plugin.json", "plugins/tara/.claude-plugin/plugin.json"):
+        surfaces[rel] = (common.REPO_ROOT / rel).read_text(encoding="utf-8")
+    for rel, text in surfaces.items():
+        lowered = text.lower()
+        assert "no sql" not in lowered, rel
+        assert "there is no sql" not in lowered, rel
+        assert "no client-supplied query text" not in lowered, rel
+
+
+def test_vision_tables_are_described_by_what_the_live_guard_serves():
+    for rel, text in _skill_texts().items():
+        lowered = text.lower()
+        assert "centred duplicate" not in lowered, rel
+        assert "centred absolute pathway-score run is refused" not in lowered, rel
+    sql = _skill_texts()["plugins/tara/skills/tara/references/sql-guidance.md"]
+    assert "`vision_scores_pseudobulk`" in sql
+    assert "not vehicle-subtracted" in sql
+    assert "no matched" in sql
+
+
+def test_host_descriptions_do_not_call_every_line_a_cancer_line():
+    for rel in (
+        common.SKILL_MD_REL,
+        "plugins/tara/plugin.json",
+    ):
+        text = (common.REPO_ROOT / rel).read_text(encoding="utf-8")
+        assert "50 cancer cell lines" not in text, rel
+
+
+def test_install_doc_counts_every_shipped_reference():
+    install = (common.REPO_ROOT / "docs" / "install.md").read_text(encoding="utf-8")
+    words = {3: "three", 4: "four", 5: "five"}
+    assert f"{words[len(common.REFERENCE_RELS)]} references" in install
