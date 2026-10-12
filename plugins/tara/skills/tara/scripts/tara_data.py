@@ -247,6 +247,8 @@ class TaraSource:
         import numpy as np
         from scipy.sparse import csr_matrix
 
+        if self.metadata["layer"] != "single_cell":
+            raise DataAccessError("Choose a single-cell product for sparse CSR batches.")
         axis = {token: i for i, token in enumerate(gene_tokens)}
         if len(axis) != len(gene_tokens) or any(type(g) is not int or g <= 1 for g in axis):
             raise DataAccessError("Provide a unique pinned gene-token axis without CLS.")

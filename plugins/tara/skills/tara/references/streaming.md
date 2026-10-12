@@ -13,6 +13,8 @@ runtime does not already have it, install the bundled [requirements](../scripts/
 Keep your existing HF Datasets, Polars, PyTorch, Arrow or Mosaic libraries.
 
 The helper uses the public sign-in flow and renews data access during a long job.
+Public admission also depends on the service's launch policy; this draft does not
+remove invitations or enable new access on the running endpoint.
 Your notebook may need one browser sign-in if its host cannot bridge the plugin's
 OAuth credentials. No Databricks account or cloud credentials are needed for the
 metered Tara source. Keep the connection and source contexts open while reading.
@@ -210,7 +212,7 @@ Data limits apply to the account across readers and renewals. Replays consume th
 same budget. A short `take()` or client-side `limit()` does not authorize a full backend
 scan, and a rate-limit response is a reason to stop, not to retry indefinitely.
 
-These examples were checked with HF Datasets 4.8.4, Polars 2.0.0, PyArrow 26.0.0 and
+These examples were checked with HF Datasets 4.8.4 and 5.1.0, Polars 2.0.0, PyArrow 26.0.0 and
 Mosaic Streaming 0.13.0. The combined HF/Mosaic environment uses HF Hub 0.36.2 and
 Transformers 4.57.6; newer HF Datasets releases may need a separate environment.
 No speed advantage is claimed until representative source comparisons pass.
