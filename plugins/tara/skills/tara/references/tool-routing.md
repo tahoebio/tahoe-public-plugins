@@ -11,6 +11,7 @@ live service; nothing that is not yet served is named.
 | Is the service up? Which release? | `health()` then `list_releases()` |
 | Which drugs or doses are covered? | `search_conditions(limit=...)`, paging |
 | Is drug X, or dose d, in the release? The exact label? | `search_conditions(query=<substring>)`, then confirm the label verbatim |
+| Several drug labels at once? | `search_conditions(drugs=[...])` (batch) |
 | Which conditions belong to one drug? | `search_conditions(drug=<exact label>)` |
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
 | Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)`, `list_cell_lines(query=...)` |

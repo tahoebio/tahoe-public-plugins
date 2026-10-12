@@ -33,13 +33,16 @@ smallest sufficient slice; the 50-line panel is not a reference cohort.
 
 - Match controls by the design encoded in the release, commonly plate and cell
   line; do not pool controls merely to increase n.
-- The independent biological unit, usually the cell line, is the unit of
-  replication. Cells, wells and pseudo-replicates within it are not independent
-  replicates.
+- Across the panel the independent unit is the cell line; within one line it is
+  the plate-matched sample, often too few for an interval (report the difference
+  with treated and control counts). Cells, wells and pseudo-replicates within a
+  sample are not independent replicates.
 - Distinguish exploratory ranking from confirmatory inference. The pre-specified
   estimate is the result; an adjustment invented after seeing the data is
   exploratory and is labelled so.
-- Report every estimate as an effect size with a 95% interval and n. Summarise
+- Report every estimate as an effect size with a 95% interval and n, or, where
+  the independent units are too few for an interval, the difference with its
+  unit counts. Summarise
   across conditions with a pooled estimate and interval, not with a count of
   significant conditions.
 - Account for multiple testing when selecting across genes, compounds or strata.

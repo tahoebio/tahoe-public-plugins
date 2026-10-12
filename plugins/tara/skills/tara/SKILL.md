@@ -36,7 +36,9 @@ serve** below before answering a question that reaches beyond the panel.
 - Report every estimate as an effect size with a 95% interval and n, and name
   the unit of replication. Cells, wells and pseudo-replicates within a sample
   are not independent replicates.
-- The cell line is the unit of replication.
+- Across the panel the cell line is the unit of replication. Within one line the
+  unit is the plate-matched sample, usually too few for an interval: report the
+  difference with treated and control sample counts and say so.
 - No post-hoc adjustment gates, and no significance-count headlines.
 - Never re-centre or re-subtract a value the release already publishes as a
   contrast.
@@ -55,8 +57,9 @@ serve** below before answering a question that reaches beyond the panel.
 3. Retrieve the smallest slice with the bounded data tool:
    `get_expression_slice` (expression), `get_differential_expression` (drug vs
    vehicle contrast), `get_perturbation_markers` (classifier feature ranking).
-4. Read `get_guide(...)` before drawing a scientific conclusion; the tool
-   descriptions only say how to call the tools.
+4. Read `get_guide(...)` before drawing a scientific conclusion or writing SQL:
+   it carries the server's table semantics; the tool descriptions only say how
+   to call the tools.
 5. `health()` only when something fails, or to confirm the service is up.
 
 ## Routing table (short form)
@@ -146,9 +149,8 @@ or path access, and the only client-supplied query is a guarded `run_sql`
 statement; a table outside the approved set is refused. Not available: other
 Tahoe screens or unreleased datasets; clinical or adverse-event data; external
 reference panels joined to this release; per-cell embeddings (only plate-level
-centroids are in SQL); internal cell-line codes (results carry Cellosaurus ids and names; SQL
-returns the internal code only in the `cell_line` column, which you join to the
-crosswalk). If a question needs one of these, say so and stop; do not substitute
+centroids are in SQL); internal cell-line codes (results carry Cellosaurus ids and names; an internal
+code column in a table is joined through the metadata tables). If a question needs one of these, say so and stop; do not substitute
 a different population, measurement or dataset silently.
 
 ## References
@@ -157,10 +159,10 @@ a different population, measurement or dataset silently.
   when you are about to interpret a result or write up a finding: methodology,
   statistical discipline, reporting.
 - [references/data-catalog.md](references/data-catalog.md) — read when you need
-  what the release contains, the expression grain and measurement, coverage
-  traps, or the citation.
+  the coverage traps, what is not served, or the citation.
 - [references/tool-routing.md](references/tool-routing.md) — read when you need
   the long routing table, a tool's arguments, a worked call, or the full
   response contract.
 - [references/sql-guidance.md](references/sql-guidance.md) — read when you need
-  the served tables, their keys, joins and pitfalls, or the SQL query rules.
+  the SQL query rules and cross-table traps. Per-table semantics come from
+  `get_guide(topic="table-reference")`, not from this skill.
