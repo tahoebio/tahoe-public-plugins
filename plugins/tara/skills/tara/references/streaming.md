@@ -121,7 +121,9 @@ product when line/sample filtering must happen at the source.
 ## Filtered single-cell analysis: Arrow, Polars or sparse CSR
 
 Confirm the public Cellosaurus id and exact sample with coverage tools. Only
-conditions approved for the selected product are accepted.
+conditions approved for the selected product are accepted. Use
+`tara.conditions(product_id, cell_line=confirmed_cell_line)` to discover a bounded
+page of accepted sample labels without querying expression.
 
 ```python
 from tara_data import connect

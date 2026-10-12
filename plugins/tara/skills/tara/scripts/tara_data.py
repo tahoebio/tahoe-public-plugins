@@ -10,7 +10,7 @@ import asyncio
 import threading
 import time
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 
 class DataAccessError(RuntimeError):
@@ -170,8 +170,8 @@ class TaraSource:
             paths = self.parquet_files(rank=rank, world_size=world_size, names=names)
             if not paths:
                 return IterableDataset.from_generator(lambda: iter(()))
-            from datasets.data_files import DataFilesDict, DataFilesList
             import pyarrow.dataset as pa_dataset
+            from datasets.data_files import DataFilesDict, DataFilesList
 
             # HF's generic HTTP glob performs a full GET to test existence. The
             # registry already resolved files, so use its typed inventory and
@@ -412,6 +412,13 @@ class TaraConnection:
 
     def products(self):
         return self._run(self._request("GET", "/data/products"))["products"]
+
+    def conditions(self, product, *, cell_line=None, offset=0):
+        """Bounded pages of approved public filters, without a backend query."""
+        values = {"product": product, "offset": offset}
+        if cell_line is not None:
+            values["cell_line"] = cell_line
+        return self._run(self._request("GET", "/data/conditions?" + urlencode(values)))
 
     def prepare(self, product, *, revision=None, **options):
         metadata = self._run(
