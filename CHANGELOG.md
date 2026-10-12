@@ -5,10 +5,26 @@ to semantic versioning.
 
 ## 0.4.0 — unreleased
 
-- Bundle a renewable public OAuth connection helper for native HF Datasets, Polars, Arrow, sparse CSR and safe Mosaic Streaming readers.
+- Bundle a renewable OAuth connection helper for HF Datasets, Polars, Arrow, sparse CSR and safe MDS.
 - Add side-by-side HF/Tara examples and six loading/training demo prompts.
-- Keep the access tools explicitly conditional on the live server advertising them.
-- Package the helper and its requirements through the explicit release allowlist; retain residue and credential scans.
+- Keep access tools conditional on the live server advertising them.
+- Include the helper in the explicit archive allowlist and retain public residue scans.
+
+## 0.3.1 — unreleased
+
+- Route gene-set discovery, differential pathway scores, phenotype readouts and
+  matched embedding distances alongside the existing tools; synchronize the
+  17-tool contract and validation pin.
+- Route scientific methodology, statistics and catalog definitions to the
+  server-owned `get_guide` topics instead of mirroring detailed guidance.
+- Distinguish bounded pseudobulk retrieval from aggregate SQL over per-cell data
+  and make the 1,000-row / 40 KB output limits explicit.
+- Use the audited scientific-analysis description for skill discovery, with the
+  current public data scope documented in the skill body.
+- Preserve released DE log2 fold changes and defer phenotype definitions to the
+  server guide and result provenance.
+- Clarify named-tool output versus approved SQL columns, source-version replay
+  limits and request/runtime bounds versus scan cost.
 
 ## 0.3.0 — unreleased
 

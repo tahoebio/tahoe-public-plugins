@@ -15,6 +15,10 @@ Tahoe-100M release. Names and schemas are versioned with the dataset release.
 | `list_cell_lines` | List the cell lines (Cellosaurus id, name, organ, driver annotations). |
 | `get_drug_info` | Drug annotations: targets, mechanism class, approval and trial status. |
 | `get_differential_expression` | Per-gene differential expression, drug versus same-plate vehicle. |
+| `search_gene_sets` | Discover scored gene-set names and collections; names do not establish gene membership. |
+| `get_pathway_scores` | Retrieve differential VISION scores with the matched vehicle already subtracted. |
+| `get_phenotype_scores` | Retrieve phenotype-specific statistics, with their direction and significance semantics. |
+| `get_embedding_distance` | Distance from treatment to its plate- and line-matched vehicle centroid, not a directional effect. |
 | `get_perturbation_markers` | Genes a classifier found most important for one drug in one cell line (importance, not direction). |
 | `get_guide` | Return the analysis guidelines and data catalog, whole or by topic. |
 | `run_sql` | Run one read-only SQL query over the approved tables, guarded server-side. |
@@ -45,8 +49,9 @@ the caller's access lease; it does not change dataset contents.
   SQL, but only one read-only statement over the approved tables.
 - Results carry provenance: release, filters, measurement semantics,
   missing-value meaning and a repeatable request manifest.
-- Stable ordering: repeating a request against the same release returns
-  equivalent data.
+- Stable ordering: equivalent requests against unchanged source data return
+  equivalent data. A release label and request manifest do not themselves pin
+  immutable table versions; retain source-version evidence when available.
 - Limits and errors are explicit; a partial result is never presented as
   complete.
 - A long call may return `pending` with a `result_handle`; the same tool is
