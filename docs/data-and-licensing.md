@@ -19,8 +19,8 @@ These are separate grants. Nothing about the data's CC0 status makes the
 guidance or the wrapper free to reuse.
 
 The plugin also ships the `tara` skill, which routes a question to the right
-tool and repeats scrubbed methodology; it is part of this repository and is
-covered by the unresolved licence below, not by the data's CC0 grant.
+tool and loads scientific guidance from `get_guide`. It is covered by the
+unresolved repository licence below, not by the data's CC0 grant.
 
 ## Licensing — placeholder, not a decision
 

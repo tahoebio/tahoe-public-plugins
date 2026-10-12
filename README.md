@@ -46,7 +46,7 @@ one-prompt variant and the advanced direct-server option, are in
 | `plugins/tara/mcp.json` | Portable MCP configuration (Codex). |
 | `plugins/tara/.claude-plugin/plugin.json` | Native Claude manifest, MCP inline. |
 | `plugins/tara/skills/tara/SKILL.md` | The `tara` skill: routing and contract. |
-| `plugins/tara/skills/tara/references/` | The skill's methodology, data and routing references. |
+| `plugins/tara/skills/tara/references/` | The skill's guide-topic map, data routes and tool calls. |
 | `evals/tara/` | Public-safe eval prompt pack and rubric. |
 | `docs/` | Public documentation. |
 | `schemas/` | Vendored Agent Plugins schemas used by the offline tests. |
@@ -70,8 +70,8 @@ see `docs/releasing.md`.
 ## Data and guidance
 
 The Tahoe-100M **data is CC0** — free to use. The plugin ships the `tara` skill,
-which routes questions to the public tools; the service also serves longer
-guidance at runtime. Both are covered by the unresolved licence below. See
+which routes questions to the public tools and loads scientific guidance
+from `get_guide` at runtime. Both are covered by the unresolved licence below. See
 `docs/data-and-licensing.md`.
 
 ## Licence — placeholder, not a decision

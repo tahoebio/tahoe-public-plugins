@@ -23,6 +23,8 @@ FORBIDDEN = [
     "target deconvolution",
     "biomarker discovery",
     "responder stratification",
+    "responder-stratification",
+    "biomarker",
     "pharmacogenomic sensitivity",
     "dependencies",
     "viability",
@@ -62,6 +64,8 @@ def _human_text() -> list[str]:
     texts = [portable["description"], claude["description"], *portable["keywords"]]
     texts += [v for v in interface.values() if isinstance(v, str)]
     texts += interface["defaultPrompt"]
+    skill = (common.REPO_ROOT / common.SKILL_MD_REL).read_text(encoding="utf-8")
+    texts.append(common.parse_frontmatter(skill)["description"])
     return texts
 
 
@@ -122,3 +126,13 @@ def test_keywords_drop_dataset_name():
 @pytest.mark.parametrize("phrase", CAPABILITIES)
 def test_description_states_each_audited_capability(phrase):
     assert phrase in _portable()["description"]
+
+
+def test_skill_description_uses_the_audited_discovery_sentence():
+    skill = (common.REPO_ROOT / common.SKILL_MD_REL).read_text(encoding="utf-8")
+    assert common.parse_frontmatter(skill)["description"] == (
+        "Read-only access to Tahoe's data through the Tahoe public tools. "
+        "Use for drug-discovery analyses of large-scale single-cell perturbational "
+        "transcriptomics: phenotypic profiling, mechanism-of-action inference, "
+        "and pathway-response and cell-state analysis."
+    )

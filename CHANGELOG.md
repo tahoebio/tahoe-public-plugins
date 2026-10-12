@@ -8,12 +8,14 @@ to semantic versioning.
 - Route gene-set discovery, differential pathway scores, phenotype readouts and
   matched embedding distances alongside the existing tools; synchronize the
   17-tool contract and validation pin.
-- Port the existing scientific guidance: effect sizes, intervals, biological
-  replication, treatment contrasts, reporting and reproducible output.
-- Distinguish single-cell counts from pseudobulk measurements, and summarize
-  the existing expression, DE, pathway, phenotype and centroid catalog caveats.
-- Use the scientific-analysis description, with the current public data scope
-  documented in the skill body rather than its description.
+- Route scientific methodology, statistics and catalog definitions to the
+  server-owned `get_guide` topics instead of mirroring detailed guidance.
+- Distinguish bounded pseudobulk retrieval from aggregate SQL over per-cell data
+  and make the 1,000-row / 40 KB output limits explicit.
+- Use the audited scientific-analysis description for skill discovery, with the
+  current public data scope documented in the skill body.
+- Preserve released DE log2 fold changes and defer phenotype definitions to the
+  server guide and result provenance.
 - Clarify named-tool output versus approved SQL columns, source-version replay
   limits and request/runtime bounds versus scan cost.
 

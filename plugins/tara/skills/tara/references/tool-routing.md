@@ -28,7 +28,7 @@ live service; nothing that is not yet served is named.
 | Stop a running call | `cancel_execution(cancel_handle=<from the pending response>)` |
 | Tell the maintainers something | `send_feedback(text=...)` (optional) |
 | A join, aggregation or table a bounded tool does not expose | `run_sql(statement, max_rows)` (see `references/sql-guidance.md`) |
-| Per-cell expression at scale | `run_sql` over `single_cell_expression`, bounded |
+| Aggregates over per-cell expression | `run_sql` over advertised `single_cell_expression`; 1,000 rows / 40 KB, not a cell-matrix export |
 | Per-cell embeddings, bulk download | not served; the public Hugging Face release |
 | Plate-level centroid vectors | `run_sql` over the advertised centroid table; vectors are distinct from the scalar distance-tool output |
 | Anything outside Tahoe-100M | not available through these tools |
@@ -106,11 +106,10 @@ as complete.
 response lists the available `topics` and the `guide_version`. Read the relevant
 section before drawing a conclusion.
 
-Also read `references/data-catalog.md` for the scientific caveats attached to
-these routes. In particular, differential pathway scores are not absolute
-activity, classifier importance and distance have no direction, and phenotype
-scores are not interchangeable statistics. Verify the current topic list rather
-than assuming an older guide covers a newly advertised tool.
+Use `references/data-catalog.md` to select the server guide topic for each
+scientific layer, and read that topic and result provenance before interpreting
+a value. Verify the current topic list rather than assuming an older guide
+covers a newly advertised tool.
 
 ## SQL
 
