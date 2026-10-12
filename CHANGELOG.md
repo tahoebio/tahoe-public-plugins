@@ -3,6 +3,22 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.3.1 — unreleased
+
+- Route gene-set discovery, differential pathway scores, phenotype readouts and
+  matched embedding distances alongside the existing tools; synchronize the
+  17-tool contract and validation pin.
+- Route scientific methodology, statistics and catalog definitions to the
+  server-owned `get_guide` topics instead of mirroring detailed guidance.
+- Distinguish bounded pseudobulk retrieval from aggregate SQL over per-cell data
+  and make the 1,000-row / 40 KB output limits explicit.
+- Use the audited scientific-analysis description for skill discovery, with the
+  current public data scope documented in the skill body.
+- Preserve released DE log2 fold changes and defer phenotype definitions to the
+  server guide and result provenance.
+- Clarify named-tool output versus approved SQL columns, source-version replay
+  limits and request/runtime bounds versus scan cost.
+
 ## 0.3.0 — unreleased
 
 Richer, honest plugin descriptions.

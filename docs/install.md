@@ -71,9 +71,10 @@ Connection manifests and one skill:
 - `plugins/tara/.claude-plugin/plugin.json` — the native Claude manifest, with
   the same server inline as type `http`.
 - `plugins/tara/skills/tara/SKILL.md` — the `tara` skill: when to use it, the
-  call order, the routing table and the analysis contract in brief, with four
+  call order, the routing table and response handling, with four
   references under `skills/tara/references/`. It teaches the agent to route a
-  Tahoe-100M question to the right tool; the data itself is served at runtime.
+  Tahoe-100M question to the right tool; data and detailed scientific guidance
+  are served at runtime.
 
 None of the manifests embeds credentials; authentication is handled by the
 sign-in flow above. Both hosts discover the `skills/` directory by convention, so
