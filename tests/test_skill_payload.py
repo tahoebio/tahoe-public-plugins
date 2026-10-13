@@ -218,6 +218,34 @@ def test_install_doc_counts_every_shipped_reference():
     assert f"{words[len(common.REFERENCE_RELS)]} references" in " ".join(install.split())
 
 
+def test_skill_step_one_reads_the_server_version_and_warns_below_the_minimum():
+    """Step 1 reads the served ``server_version`` and warns below the floor the
+    plugin is frozen against, instead of assuming the frozen values hold."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    minimum = common.min_server_version(_config(common.PLUGIN_MANIFEST_REL))
+    assert minimum, "the manifest declares no minimum server version"
+    assert "server_version" in body
+    assert minimum in body
+    assert "below that floor" in body
+    assert "warn" in body.lower()
+
+
+def test_skill_step_one_states_a_numeric_version_comparison():
+    """A text comparison puts 0.3.10 below 0.3.9, so step 1 must say to compare
+    the numbers; both versions are in the frozen record."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    assert "numerically" in body
+    assert "0.3.10 is newer than 0.3.9" in body
+
+
+def test_skill_step_one_degrades_when_no_server_version_is_returned():
+    """Neither endpoint yielding a version must read as unknown compatibility,
+    never as the frozen values applying."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split()).lower()
+    assert "try the other endpoint" in body
+    assert "compatibility as unknown" in body
+
+
 def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
     """A decline must not hint at routes beyond Tahoe's tools, and must offer
     the nearest analysis the served data can answer."""
