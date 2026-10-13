@@ -3,6 +3,19 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.3.3 — unreleased
+
+Plugin ↔ server compatibility.
+
+- Both manifests declare the minimum public server version the plugin is frozen
+  against (`extensions["com.tahoebio"]["minServerVersion"]`, `0.3.9`), and the
+  validator keeps it semver and identical across the two hosts.
+- The skill's step 1 reads the served `server_version`, compares the three
+  numbers numerically (0.3.10 is newer than 0.3.9) and warns below the minimum
+  instead of assuming the published expected values hold; when no usable version
+  is returned it reports compatibility as unknown.
+- `docs/compatibility.md` gains a plugin ↔ server version table.
+
 ## 0.3.2 — unreleased
 
 - Decline out-of-scope parts of a question in one sentence and offer the nearest

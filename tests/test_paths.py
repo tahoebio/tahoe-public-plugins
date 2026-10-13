@@ -44,3 +44,9 @@ def test_compatibility_claims_only_codex_and_claude():
     assert "codex" in compatibility
     assert "claude" in compatibility
     assert "not claimed" in compatibility
+
+
+def test_compatibility_table_names_the_minimum_server_version():
+    compatibility = (common.REPO_ROOT / "docs" / "compatibility.md").read_text()
+    manifest = common.load_json(common.REPO_ROOT / common.PLUGIN_MANIFEST_REL)
+    assert common.min_server_version(manifest) in compatibility

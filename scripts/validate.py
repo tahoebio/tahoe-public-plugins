@@ -153,6 +153,29 @@ def validate_mcp_config(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError("mcp.json must not carry credentials")
 
 
+def validate_min_server_version(root: Path = common.REPO_ROOT) -> None:
+    """The minimum public server version each manifest declares.
+
+    The floor must be a semver string and identical in both host manifests, so
+    the two hosts never carry a different floor for the same server.
+    """
+    declared: list[tuple[str, str | None]] = []
+    for rel in (common.PLUGIN_MANIFEST_REL, common.CLAUDE_ADAPTER_REL):
+        value = common.min_server_version(common.load_json(root / rel))
+        if not isinstance(value, str) or not common.SEMVER.match(value):
+            raise common.RepoError(
+                f"{rel}: extensions[{common.TAHOE_EXTENSION_NAMESPACE!r}]"
+                f"[{common.MIN_SERVER_VERSION_FIELD!r}] must be a semver string"
+            )
+        declared.append((rel, value))
+    (portable_rel, portable), (claude_rel, claude) = declared
+    if portable != claude:
+        raise common.RepoError(
+            "the two manifests declare different minimum server versions: "
+            f"{portable_rel} {portable!r} vs {claude_rel} {claude!r}"
+        )
+
+
 def validate_versions(root: Path = common.REPO_ROOT) -> None:
     version = common.load_json(root / common.PLUGIN_MANIFEST_REL)["version"]
     if not common.SEMVER.match(version):
@@ -292,6 +315,7 @@ def validate_all(
     validate_manifests(root)
     validate_layout(root)
     validate_mcp_config(root)
+    validate_min_server_version(root)
     validate_versions(root)
     validate_tool_contract(root)
     validate_skill(root)
