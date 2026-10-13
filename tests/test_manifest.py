@@ -30,6 +30,14 @@ def test_plugin_manifest_carries_no_licence_field():
     assert "license" not in _plugin_manifest()
 
 
+def test_plugin_manifest_declares_a_semver_minimum_server_version():
+    # The plugin is frozen against a public server version; the manifest names
+    # it so a host can warn on an older server. Field name is Tahoe's own
+    # extension, so it must be semver.
+    value = common.min_server_version(_plugin_manifest())
+    assert isinstance(value, str) and common.SEMVER.match(value), value
+
+
 @pytest.mark.parametrize("rel_path", common.MARKETPLACE_PATHS)
 def test_marketplace_source_path_is_relative_and_inside_root(rel_path):
     catalog = common.load_json(common.REPO_ROOT / rel_path)
