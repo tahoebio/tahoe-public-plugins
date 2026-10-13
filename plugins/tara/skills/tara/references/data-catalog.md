@@ -2,7 +2,8 @@
 
 The server maintains the scientific catalog and table definitions. Call
 `list_releases()` for the selected public Tahoe-100M release and approved table
-aliases, then `get_guide()` for current topics and `guide_version`. The plugin
+aliases, then `get_guide(topic="establish-the-analysis-contract")` for the
+initial guidance, current topics and `guide_version`. The plugin
 routes to that catalog; it does not publish a parallel scientific inventory.
 
 | Need | Server guide topic |
@@ -21,7 +22,12 @@ routes to that catalog; it does not publish a parallel scientific inventory.
 | Citation | `citation-and-provenance` |
 
 Confirm actual identifiers and measured coverage with `search_conditions`,
-`resolve_genes`, `list_cell_lines` and `search_gene_sets`. The public tools use
+`resolve_genes`, `list_cell_lines` and `search_gene_sets`. Discover cell lines
+with `list_cell_lines(organ=...)` or resolve a name with
+`list_cell_lines(query=<name or substring>)`. For reproducible data calls,
+prefer the returned `cell_line` Cellosaurus ID (`CVCL_...`). Data tools also
+accept exact cell-line names; `cell_name` supplies the readable label, and
+`depmap_id` supports cross-reference to DepMap. The public tools use
 registered release tables; approved SQL queries them in place. Read the server
 catalog for current routes rather than assuming a plugin-shipped schema.
 

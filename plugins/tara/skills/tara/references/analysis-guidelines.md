@@ -2,7 +2,9 @@
 
 The scientific analysis and statistics guidance is maintained server-side and
 served by `get_guide`. This plugin routes to it rather than distributing a copy.
-Call `get_guide()` to discover the current `topics`; retain `guide_version`.
+Start with `get_guide(topic="establish-the-analysis-contract")`; it returns the
+current `topics` and `guide_version`. Read the relevant topic before interpreting
+a result, and retain `guide_version`.
 
 | Before | Read with `get_guide(topic=...)` |
 |---|---|
