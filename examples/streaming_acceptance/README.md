@@ -30,14 +30,19 @@ population. The exact row schema and ordered gene axis are pinned from the
 authorized source binding and checked against every received row.
 
 The source-pinned config keeps `source_pins.file_sha256["gene-axis.parquet"]`
-as the byte-level integrity hash of the Parquet source. The separately named
-`expected_gene_axis_tokens_sha256` is the semantic SHA-256 of the ordered
-`token_id` integer array encoded as compact UTF-8 JSON, matching
-`gene_axis_digest()`. The prepared metadata available offline contains the
-Parquet file hash and product revision, but not the ordered token IDs, so this
-semantic digest is intentionally blank in `config.tahoe-100m-v1.json`. The
-preflight stays red until an authorized source binding provides that digest;
-the runner must never use the Parquet file hash as its substitute.
+as the byte-level integrity hash of the Parquet source, unchanged from the
+export inventory, and mirrors it as `gene_axis_file_sha256` for the runner.
+The preflight requires this file hash to equal the pinned `gene_axis_revision`.
+The separately named `expected_gene_axis_tokens_sha256` is
+the semantic SHA-256 of the ordered `token_id` integer array encoded as compact
+UTF-8 JSON, matching `gene_axis_digest()`. The exporter selects
+`ORDER BY token_id`, asserts 62,710 rows and the exact `range(3, 62713)`, and
+writes those rows in order. That code provenance supports the semantic digest
+bound in the config, but does not itself prove the restored served artifact's
+contents. Before a live case can pass, the prepared gene-axis product must
+report the pinned product revision/file SHA-256 and its returned ordered token
+IDs must hash to `expected_gene_axis_tokens_sha256`. No live restoration was
+tested here.
 
 For each cell row, the schema must contain `cell_id` (integer), `cell_line_id`,
 `drug_id`, `drug`, `sample`, `plate`, `dose_unit`, and `timepoint_unit`

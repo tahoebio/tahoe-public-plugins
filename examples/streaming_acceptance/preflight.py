@@ -22,6 +22,7 @@ REQUIRED = {
     "population_product": "served raw-count population product id used for Case A",
     "gene_axis_product": "served gene-axis product id",
     "gene_axis_revision": "immutable gene-axis revision",
+    "gene_axis_file_sha256": "byte-level SHA-256 of the pinned gene-axis Parquet file",
     "expected_gene_count": "exact number of genes in the pinned axis",
     "expected_gene_axis_tokens_sha256": (
         "SHA-256 of compact UTF-8 JSON for the ordered token_id integer array; "
@@ -140,6 +141,12 @@ def inspect(config: dict, case: str) -> dict:
                 and len(value) == 64
                 and all(c in "0123456789abcdef" for c in value)
             )
+        elif key == "gene_axis_file_sha256":
+            okay = (
+                isinstance(value, str)
+                and len(value) == 64
+                and all(c in "0123456789abcdef" for c in value)
+            )
         elif key == "allowed_source_hosts":
             okay = (
                 isinstance(value, list)
@@ -151,6 +158,16 @@ def inspect(config: dict, case: str) -> dict:
         else:
             okay = isinstance(value, str) and bool(value.strip())
         checks.append({"name": key, "ok": okay, "requirement": description})
+
+    checks.append(
+        {
+            "name": "gene_axis_file_revision_binding",
+            "ok": bool(config.get("gene_axis_file_sha256"))
+            and config.get("gene_axis_file_sha256")
+            == config.get("gene_axis_revision"),
+            "requirement": "for the pinned source, the product revision matches the Parquet byte SHA-256",
+        }
+    )
 
     origin = config.get("base_url")
     if origin:

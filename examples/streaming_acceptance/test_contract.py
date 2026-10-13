@@ -84,20 +84,37 @@ class ContractTests(unittest.TestCase):
         )
         self.assertNotEqual(gene_axis_digest([3, 4, 9]), gene_axis_digest([4, 3, 9]))
 
-    def test_prepared_parquet_hash_is_not_misused_as_semantic_gene_axis_digest(self):
+    def test_exporter_axis_range_digest_and_file_pin_are_distinct(self):
         repo_root = Path(__file__).resolve().parents[2]
         config = json.loads(
             (repo_root / "examples/streaming_acceptance/config.tahoe-100m-v1.json")
             .read_text(encoding="utf-8")
         )
         parquet_hash = config["source_pins"]["file_sha256"]["gene-axis.parquet"]
+        ordered_tokens = list(range(3, 62713))
+        semantic_digest = gene_axis_digest(ordered_tokens)
+        self.assertEqual(len(ordered_tokens), 62710)
+        self.assertEqual(
+            semantic_digest,
+            "6760f6cabe2b2b9e833c1950764cf114133005e129f8bfa332ac2d90694f35bf",
+        )
+        self.assertEqual(config["expected_gene_axis_tokens_sha256"], semantic_digest)
         self.assertEqual(config["gene_axis_revision"], parquet_hash)
-        self.assertEqual(config["expected_gene_axis_tokens_sha256"], "")
+        self.assertEqual(config["gene_axis_file_sha256"], parquet_hash)
+        self.assertEqual(
+            parquet_hash,
+            "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
+        )
         self.assertNotIn("expected_gene_axis_sha256", config)
         result = inspect(config, "a")
         check_map = {check["name"]: check["ok"] for check in result["checks"]}
         self.assertTrue(check_map["no_embedded_credentials"])
-        self.assertFalse(check_map["expected_gene_axis_tokens_sha256"])
+        self.assertTrue(check_map["gene_axis_file_revision_binding"])
+        self.assertTrue(check_map["expected_gene_axis_tokens_sha256"])
+        config["gene_axis_file_sha256"] = "0" * 64
+        mismatch = inspect(config, "a")
+        mismatch_map = {check["name"]: check["ok"] for check in mismatch["checks"]}
+        self.assertFalse(mismatch_map["gene_axis_file_revision_binding"])
 
     def test_documented_runners_resolve_plugin_imports_without_pythonpath(self):
         repo_root = Path(__file__).resolve().parents[2]

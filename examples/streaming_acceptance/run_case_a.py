@@ -144,7 +144,8 @@ def run(config: dict) -> dict:
         report.check(
             "gene_axis_source_binding",
             axis_source.metadata.get("product") == config["gene_axis_product"]
-            and axis_source.metadata.get("revision") == config["gene_axis_revision"],
+            and axis_source.metadata.get("revision") == config["gene_axis_revision"]
+            and axis_source.metadata.get("revision") == config["gene_axis_file_sha256"],
         )
         token_rows = list(axis_source.hf())
         axis_source.close()

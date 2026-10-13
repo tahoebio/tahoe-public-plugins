@@ -11,6 +11,7 @@
   "population_product": "",
   "gene_axis_product": "",
   "gene_axis_revision": "",
+  "gene_axis_file_sha256": "",
   "expected_gene_count": 0,
   "expected_gene_axis_tokens_sha256": "",
   "cell_line_id": "",

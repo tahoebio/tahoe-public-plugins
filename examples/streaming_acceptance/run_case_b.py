@@ -221,6 +221,8 @@ def run(config: dict) -> dict:
             if (
                 axis_source.metadata.get("product") != config["gene_axis_product"]
                 or axis_source.metadata.get("revision") != config["gene_axis_revision"]
+                or axis_source.metadata.get("revision")
+                != config["gene_axis_file_sha256"]
             ):
                 raise ValueError("gene_axis_source_binding_mismatch")
             gene_tokens = [row["token_id"] for row in axis_source.hf()]
