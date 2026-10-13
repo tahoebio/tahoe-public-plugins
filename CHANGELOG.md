@@ -3,7 +3,16 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
-## 0.3.1 — unreleased
+## 0.3.2 — unreleased
+
+- Decline out-of-scope parts of a question in one sentence and offer the nearest
+  analysis the served data can answer; never name or hint at a route outside
+  Tahoe's tools.
+- Add the end-to-end correctness eval run (Codex, two models) with expected
+  values frozen against server 0.3.9–0.3.10 (`evals/tara/frozen-expected-0.3.x.md`)
+  and record it in `docs/install-verification.md`.
+
+## 0.3.1
 
 - Route gene-set discovery, differential pathway scores, phenotype readouts and
   matched embedding distances alongside the existing tools; synchronize the

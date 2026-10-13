@@ -29,7 +29,7 @@ live service; nothing that is not yet served is named.
 | Tell the maintainers something | `send_feedback(text=...)` (optional) |
 | A join, aggregation or table a bounded tool does not expose | `run_sql(statement, max_rows)` (see `references/sql-guidance.md`) |
 | Aggregates over per-cell expression | `run_sql` over advertised `single_cell_expression`; 1,000 rows / 40 KB, not a cell-matrix export |
-| Per-cell embeddings, bulk download | not served; the public Hugging Face release |
+| Per-cell embeddings, bulk download | not served by these tools; see the public release |
 | Plate-level centroid vectors | `run_sql` over the advertised centroid table; vectors are distinct from the scalar distance-tool output |
 | Anything outside Tahoe-100M | not available through these tools |
 

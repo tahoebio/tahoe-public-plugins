@@ -75,3 +75,24 @@ Repeat steps 2–5. `codex mcp add` starts sign-in itself.
 Add each tested host, its version and the date to `docs/compatibility.md`, and
 note anything that differs from the steps above. A host is claimed as supported
 only after this check passes end to end.
+
+## Case C — end-to-end correctness eval
+
+After Case A passes on a host, run the correctness pack in `evals/tara/`
+(prompts E1–E5 and the five set-A questions) from the installed plugin, one
+fresh session per prompt, two models per host, and grade against
+`evals/tara/rubric.md` and the frozen values in
+`evals/tara/frozen-expected-0.3.x.md`.
+
+- Pace the runs. The service allows a limited number of calls per user per hour;
+  a back-to-back run of the whole pack exhausts it and returns `rate_limited`.
+  Space prompts out and re-run any that were rate-limited rather than grading
+  them.
+- Disable any other server or plugin named `tara` for the run, so the public
+  plugin is the only one in play.
+- Record `server_version`, `release` and `guide_version` from each transcript.
+- Pass: no hard-fail class from the rubric occurs, and every scored run loaded
+  the skill (read `SKILL.md` or called `get_guide`).
+
+Codex was run on 2026-10-12/13 against server 0.3.9–0.3.10. Claude Code and
+Cursor are not yet run.

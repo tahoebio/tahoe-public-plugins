@@ -83,7 +83,11 @@ Keep credentials and operational handles out of scientific deliverables.
 Only the public Tahoe-100M release and approved metadata are available. Other
 Tahoe screens, clinical or adverse-event data, external reference panels and
 per-cell embeddings are outside this service. Do not silently substitute a
-different dataset. Consult the server catalog for current coverage and routes;
+different dataset. When part of a question is outside that scope, decline that
+part in one sentence and offer the nearest analysis the served data can answer
+(for example, a compound's response across the served cell lines). Do not name,
+hint at or describe any route, connection or data source outside Tahoe's tools.
+Consult the server catalog for current coverage and routes;
 this plugin does not select an arbitrary newest reference release.
 
 ## References
