@@ -18,8 +18,13 @@ once a remote server is a documented, supported target.
 
 ## Files
 
-- `E1.md` — the prompt, expected tools, and hard/soft criteria. Runs today.
-- `E2.md` — needs the drug and cell-line tools; marked for a later family.
+- `E1.md` — the prompt, expected tools, and hard/soft criteria for two routes
+  (expression slice; released contrast). Runs today.
+- `E2.md`, `E3.md`, `E4.md`, `E5.md` — prompt, expected tools, hard criteria.
+- `set-A.md` — five lookup and aggregation prompts (A1–A5).
+- `frozen-expected-0.3.x.md` — expected values per prompt, stamped with
+  `server_version`, `release` and `guide_version`, each with the call recipe that
+  reproduces it. E6 (per-cell tools) is not in the pack until those tools are served.
 - `rubric.md` — the hard-fail classes and the grading rules.
 - `run-log.template.md` — one record per run (host, model, transcript, tool log).
 

@@ -51,7 +51,7 @@ or interpreting data, and retain its `guide_version` with the result.
 | Native streaming/loading | `list_dataset_products` — available once the server advertises it; read the streaming reference |
 | Prepare a source for an existing reader | `prepare_dataset` — available once the server advertises it |
 | Sample complete raw cells for training | `prepare_cell_sample` — available once the server advertises it |
-| Per-cell embeddings | Outside this service; see the public release |
+| Per-cell embeddings or bulk download | Not served; offer `get_embedding_distance` for the matched-vehicle shift |
 | A call returned `pending` | Same tool, same arguments, plus `result_handle` |
 | Cancel a statement you submitted | `cancel_execution(cancel_handle)` |
 | Optional feedback requested by the user | `send_feedback(...)` |
@@ -96,7 +96,11 @@ Keep credentials and operational handles out of scientific deliverables.
 Only the public Tahoe-100M release and approved metadata are available. Other
 Tahoe screens, clinical or adverse-event data, external reference panels and
 per-cell embeddings are outside this service. Do not silently substitute a
-different dataset. Consult the server catalog for current coverage and routes;
+different dataset. When part of a question is outside that scope, decline that
+part in one sentence and offer the nearest analysis the served data can answer
+(for example, a compound's response across the served cell lines). Do not name,
+hint at or describe any route, connection or data source outside Tahoe's tools.
+Consult the server catalog for current coverage and routes;
 this plugin does not select an arbitrary newest reference release.
 
 ## References
