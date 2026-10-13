@@ -25,9 +25,16 @@ def source_rows(source):
     import pyarrow.parquet as pq
 
     for url in source.parquet_files():
-        with fsspec.open(url, "rb") as file:
-            for batch in pq.ParquetFile(file).iter_batches(batch_size=128):
-                yield from pa.Table.from_batches([batch]).to_pylist()
+        with fsspec.open(url, "rb", block_size=256 * 1024, cache_type="readahead") as file:
+            parquet = pq.ParquetFile(file)
+            # Arrow can coalesce all selected row groups into one read even when
+            # iter_batches yields small batches. Select one group per read so a
+            # bounded client batch cannot become a whole-population range request.
+            for group in range(parquet.num_row_groups):
+                for batch in parquet.iter_batches(
+                    batch_size=128, row_groups=[group], use_threads=False
+                ):
+                    yield from pa.Table.from_batches([batch]).to_pylist()
 
 
 def sparse_counts(row, encoding, axis):
