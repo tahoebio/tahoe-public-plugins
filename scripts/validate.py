@@ -110,6 +110,12 @@ def validate_manifests(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError(
             "plugin.json must not carry a license field until licensing is decided"
         )
+    interface = manifest.get("extensions", {}).get("com.openai", {}).get("interface", {})
+    for field in ("logo", "composerIcon"):
+        if interface.get(field) != "./assets/tahoe-logo.png":
+            raise common.RepoError(
+                f"plugin.json interface.{field} must reference the reviewed Tahoe logo"
+            )
     # No `skills` field: both hosts discover ``skills/`` by convention, and the
     # portable schema forbids unknown fields (`additionalProperties: false`).
 

@@ -2,8 +2,8 @@
 
     uv run python scripts/package.py --out dist
 
-The archive contains exactly the allowlisted plugin manifest files and nothing
-else. A listed path that is missing, symlinked, escaping or generated is refused
+The archive contains exactly the allowlisted plugin files, including the
+reviewed logo. A path that is missing, symlinked, escaping or generated is refused
 rather than skipped. The built archive is scanned for internal residue and
 secrets and is discarded if any are found. A SHA-256 checksum is written next to
 the archive.

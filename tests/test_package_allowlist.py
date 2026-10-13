@@ -1,4 +1,4 @@
-"""Packaging: the exact manifest files only, with loud refusal of unsafe paths."""
+"""Packaging: exact manifests and reviewed assets, refusing unsafe paths."""
 
 import shutil
 
@@ -16,13 +16,17 @@ MANIFESTS = {
     "plugins/tara/skills/tara/references/data-catalog.md": "# Catalog\n",
     "plugins/tara/skills/tara/references/tool-routing.md": "# Routing\n",
     "plugins/tara/skills/tara/references/sql-guidance.md": "# SQL\n",
+    common.LOGO_REL: (common.REPO_ROOT / common.LOGO_REL).read_bytes(),
 }
 
 
 def _write(root, rel, content="x\n"):
     path = root / rel
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content)
+    if isinstance(content, bytes):
+        path.write_bytes(content)
+    else:
+        path.write_text(content)
     return path
 
 

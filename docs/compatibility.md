@@ -26,7 +26,7 @@ published expected values hold.
 
 | Plugin | Minimum server | Frozen against |
 |---|---|---|
-| 0.3.3 | 0.3.9 | `evals/tara/frozen-expected-0.3.x.md` |
+| 0.3.4 | 0.3.9 | `evals/tara/frozen-expected-0.3.x.md` |
 
 The frozen expected values were taken during the 0.3.9 → 0.3.10 upgrade window
 (2026-10-12 and 2026-10-13). The prompts whose runs straddle the upgrade agree on
