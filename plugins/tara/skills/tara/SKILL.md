@@ -15,9 +15,13 @@ or interpreting data, and retain its `guide_version` with the result.
 
 1. Call `list_releases()` (or `health()`) and read `server_version`, along with
    the release and approved table aliases. This plugin is frozen against server
-   0.3.9 or later: if the served `server_version` is below that floor, warn the
-   user that the published expected values may not hold on this server, and
-   report the served version instead of assuming the values.
+   0.3.9 or later. Compare the three numbers numerically — major, then minor,
+   then patch — not as text: 0.3.10 is newer than 0.3.9. If the served
+   `server_version` is below that floor, warn the user that the published
+   expected values may not hold on this server, and report the served version
+   instead of assuming the values. If the call is unreachable or returns no
+   usable `server_version`, try the other endpoint; if neither yields one,
+   report compatibility as unknown rather than claiming the values apply.
 2. Call `get_guide()` to discover the available `topics`, then read the relevant
    sections. Start with `establish-the-analysis-contract`; use
    [references/analysis-guidelines.md](references/analysis-guidelines.md) and

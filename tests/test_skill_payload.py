@@ -230,6 +230,22 @@ def test_skill_step_one_reads_the_server_version_and_warns_below_the_minimum():
     assert "warn" in body.lower()
 
 
+def test_skill_step_one_states_a_numeric_version_comparison():
+    """A text comparison puts 0.3.10 below 0.3.9, so step 1 must say to compare
+    the numbers; both versions are in the frozen record."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    assert "numerically" in body
+    assert "0.3.10 is newer than 0.3.9" in body
+
+
+def test_skill_step_one_degrades_when_no_server_version_is_returned():
+    """Neither endpoint yielding a version must read as unknown compatibility,
+    never as the frozen values applying."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split()).lower()
+    assert "try the other endpoint" in body
+    assert "compatibility as unknown" in body
+
+
 def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
     """A decline must not hint at routes beyond Tahoe's tools, and must offer
     the nearest analysis the served data can answer."""

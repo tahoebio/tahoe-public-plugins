@@ -278,6 +278,19 @@ def min_server_version(manifest: dict) -> str | None:
     return extension.get(MIN_SERVER_VERSION_FIELD)
 
 
+def server_version_is_below(served: str, minimum: str) -> bool:
+    """True when ``served`` is numerically older than ``minimum``.
+
+    The comparison is on the three integers, never on the text: ``0.3.10`` is
+    newer than ``0.3.9``, while a string comparison puts it first.
+    """
+
+    def numbers(version: str) -> tuple[int, ...]:
+        return tuple(int(part) for part in version.split("."))
+
+    return numbers(served) < numbers(minimum)
+
+
 def parse_frontmatter(text: str) -> dict[str, str]:
     """Return a SKILL.md's flat frontmatter as a ``key -> value`` map.
 
