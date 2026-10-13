@@ -61,12 +61,17 @@ The harness needs only the existing advertised product fields `id`, `dataset`,
 `status`, `requested_cells`, `returned_cells`, `available_cells`, `seed`,
 `sampling_algorithm`, `replacement`, `condition`, `dataset_version`,
 `snapshot_version`, `gene_axis_revision`, `expression_encoding`, and
-`counts_space`; and opened-source metadata `product`, `revision`, `dataset`,
-`layer`, `grain`, and `format`.
+`counts_space`; `source_product` must be added to that sample response. Opened-
+source metadata includes `product`, `revision`, `dataset`, `layer`, `grain`,
+and `format`.
 The endpoint coordinator still needs to bind the exact ordered gene axis and
 row schema from the approved source manifest, along with the canonical drug
 SMILES and matched control condition. This harness does not request new byte
-reservation fields or a new population-revision field.
+reservation fields or a new population-revision field. PR53's sample `product`
+identifies its generated `sample-*` artifact, not the registered bank used to
+select the cells. The live assertions therefore require one additional string
+in the sample-handle response: `source_product`, the registered source bank id.
+Until the serving implementation returns it, live acceptance stays red.
 
 The 1,000 rows are a sample from the reported complete eligible population. A
 repeated 1,000-row sample is not scale evidence. These examples do not claim

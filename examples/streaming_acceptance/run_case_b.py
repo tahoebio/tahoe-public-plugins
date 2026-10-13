@@ -144,7 +144,7 @@ def run(config: dict) -> dict:
                     raise ValueError(f"{label}_dataset_version_mismatch")
                 if meta.get("snapshot_version") != config["snapshot_version"]:
                     raise ValueError(f"{label}_snapshot_mismatch")
-                if meta.get("product") != config[f"{label}_product"]:
+                if meta.get("source_product") != config[f"{label}_product"]:
                     raise ValueError(f"{label}_product_mismatch")
                 if (
                     meta.get("condition", {}).get("condition_id")

@@ -90,7 +90,7 @@ def run(config: dict) -> dict:
         )
         report.check(
             "served_source_provenance",
-            metadata.get("product") == config["population_product"]
+            metadata.get("source_product") == config["population_product"]
             and metadata.get("revision")
             and metadata.get("dataset") == "Tahoe-100M"
             and metadata.get("layer") == "single_cell"
