@@ -22,11 +22,12 @@ routes to that catalog; it does not publish a parallel scientific inventory.
 | Citation | `citation-and-provenance` |
 
 Confirm actual identifiers and measured coverage with `search_conditions`,
-`resolve_genes`, `list_cell_lines` and `search_gene_sets`. Resolve a human
-cell-line name with `list_cell_lines(query=<name or substring>)`; use the
-returned `cell_line` Cellosaurus ID (`CVCL_...`) in data-tool arguments.
-`cell_name` is for display and `depmap_id` is an external DepMap identifier,
-neither is a cell-line argument. The public tools use
+`resolve_genes`, `list_cell_lines` and `search_gene_sets`. Discover cell lines
+with `list_cell_lines(organ=...)` or resolve a name with
+`list_cell_lines(query=<name or substring>)`. For reproducible data calls,
+prefer the returned `cell_line` Cellosaurus ID (`CVCL_...`). Data tools also
+accept exact cell-line names; `cell_name` supplies the readable label, and
+`depmap_id` supports cross-reference to DepMap. The public tools use
 registered release tables; approved SQL queries them in place. Read the server
 catalog for current routes rather than assuming a plugin-shipped schema.
 

@@ -14,7 +14,7 @@ live service; nothing that is not yet served is named.
 | Several drug labels at once? | `search_conditions(drugs=[...])` (batch) |
 | Which conditions belong to one drug? | `search_conditions(drug=<exact label>)` |
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
-| Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)`, `list_cell_lines(query=...)`; pass the returned `cell_line` (`CVCL_...`) to data tools |
+| Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)` or `list_cell_lines(query=...)`; prefer the returned `cell_line` (`CVCL_...`) for reproducible data calls; data tools also accept exact cell-line names |
 | A drug's targets, mechanism class, approval or trial status | `get_drug_info(drug=...)`, or filter by `moa=` or `target=` (a filter is required) |
 | Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast |
 | Which gene sets are scored, or which collection? | `search_gene_sets(query=..., collection=..., limit=...)`; verify the set name, not just a familiar prefix |
@@ -49,6 +49,7 @@ get_expression_slice(
     measurement="raw_counts", include_matched_controls=true,
 )
 list_cell_lines(query="A549")             # resolve a name to CVCL_0023
+list_cell_lines(organ="Lung")             # discover lines by organ
 get_drug_info(target="EGFR")             # drugs annotated against a gene
 get_differential_expression(drug=["Trametinib"], cell_lines=["CVCL_0023"], top_n=20)
 search_gene_sets(collection="HALLMARK", limit=100)

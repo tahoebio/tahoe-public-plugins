@@ -21,11 +21,12 @@ or interpreting data, and retain its `guide_version` with the result.
    [references/data-catalog.md](references/data-catalog.md) to select topics.
 3. Confirm identifiers with `search_conditions`, `resolve_genes`,
    `list_cell_lines`, `get_drug_info` or `search_gene_sets`. To resolve a
-   cell-line name, call `list_cell_lines(query=<name or substring>)` and use its
-   returned `cell_line` Cellosaurus ID (`CVCL_...`) in data-tool arguments.
-   `cell_name` is the display name and `depmap_id` is a DepMap identifier; use
-   neither as a cell-line argument. Use returned labels; do not invent
-   identifiers or infer measured coverage from an annotation.
+   cell lines with `list_cell_lines(organ=...)` or resolve a name with
+   `list_cell_lines(query=<name or substring>)`. For reproducible data calls,
+   prefer its returned `cell_line` Cellosaurus ID (`CVCL_...`). Data tools also
+   accept exact cell-line names; `cell_name` supplies the readable label, and
+   `depmap_id` supports cross-reference to DepMap. Use returned labels; do not
+   invent identifiers or infer measured coverage from an annotation.
 4. Use the bounded data tool that fits the question. For a join or aggregate
    those tools cannot provide, read `get_guide(topic="querying-with-run-sql")`
    and `get_guide(topic="table-reference")` before calling `run_sql`.
@@ -40,7 +41,7 @@ or interpreting data, and retain its `guide_version` with the result.
 | Which release and table aliases are served? | `list_releases()` |
 | Which drug, dose or condition labels are covered? | `search_conditions(...)` |
 | Which gene identifier is served? | `resolve_genes(symbols=[...])` |
-| Which cell lines are served? | `list_cell_lines(...)`; to resolve a name, use `list_cell_lines(query=<name or substring>)` and pass the returned `cell_line` (`CVCL_...`) to data tools |
+| Which cell lines are served? | `list_cell_lines(organ=...)` or `list_cell_lines(query=...)`; prefer its returned canonical `cell_line` (`CVCL_...`) for data filters, and check the tool schema for accepted names |
 | Drug annotations | `get_drug_info(...)` |
 | Pseudobulk expression with matched controls | `get_expression_slice(..., include_matched_controls=true)` |
 | Released drug-versus-vehicle DE | `get_differential_expression(...)`; read `differential-expression` |

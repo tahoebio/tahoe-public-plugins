@@ -183,6 +183,7 @@ def test_worked_cell_line_lookup_matches_the_cvcl_id_used_by_data_calls():
     routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
     text = routing.read_text(encoding="utf-8")
     assert 'list_cell_lines(query="A549")' in text
+    assert 'list_cell_lines(organ="Lung")' in text
     worked_calls = text.split("## Worked calls", 1)[1].split("## Response contract", 1)[0]
     cell_arguments = []
     for line in worked_calls.splitlines():
