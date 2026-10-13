@@ -28,6 +28,12 @@ MARKETPLACE_DISPLAY_NAME = "Tahoe Bio Plugins"
 MCP_SERVER_NAME = "tahoe-public"
 MCP_ENDPOINT = "https://tara.tahoebio.io/mcp"
 
+#: Tahoe's own manifest extension: the minimum public server version the plugin
+#: is frozen against. Named in the Agent Plugins ``extensions`` map, so no
+#: schema change is needed and the field is the same in both host manifests.
+TAHOE_EXTENSION_NAMESPACE = "com.tahoebio"
+MIN_SERVER_VERSION_FIELD = "minServerVersion"
+
 #: Plugin-root files. The portable manifest and MCP config are what Codex
 #: reads; the native adapter is Claude's own manifest, with MCP inline.
 PLUGIN_MANIFEST_REL = f"plugins/{PLUGIN_NAME}/plugin.json"
@@ -260,6 +266,16 @@ def plugin_dir(root: Path = REPO_ROOT) -> Path:
 
 def load_json(path: Path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def min_server_version(manifest: dict) -> str | None:
+    """The minimum public server version a manifest declares, if any.
+
+    Read from ``extensions["com.tahoebio"]["minServerVersion"]``; ``None`` when
+    the extension or the field is absent.
+    """
+    extension = manifest.get("extensions", {}).get(TAHOE_EXTENSION_NAMESPACE, {})
+    return extension.get(MIN_SERVER_VERSION_FIELD)
 
 
 def parse_frontmatter(text: str) -> dict[str, str]:

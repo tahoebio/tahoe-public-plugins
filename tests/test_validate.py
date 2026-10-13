@@ -88,6 +88,38 @@ def test_rejects_claude_adapter_with_the_wrong_endpoint(root):
         validate.validate_manifests(root)
 
 
+def test_accepts_the_real_minimum_server_version(root):
+    validate.validate_min_server_version(root)
+
+
+def test_rejects_a_manifest_without_a_minimum_server_version(root):
+    manifest = _real(common.PLUGIN_MANIFEST_REL)
+    del manifest["extensions"][common.TAHOE_EXTENSION_NAMESPACE]
+    _write(root, common.PLUGIN_MANIFEST_REL, manifest)
+    with pytest.raises(common.RepoError):
+        validate.validate_min_server_version(root)
+
+
+def test_rejects_a_non_semver_minimum_server_version(root):
+    manifest = _real(common.PLUGIN_MANIFEST_REL)
+    manifest["extensions"][common.TAHOE_EXTENSION_NAMESPACE][
+        common.MIN_SERVER_VERSION_FIELD
+    ] = "v0.3"
+    _write(root, common.PLUGIN_MANIFEST_REL, manifest)
+    with pytest.raises(common.RepoError):
+        validate.validate_min_server_version(root)
+
+
+def test_rejects_manifests_disagreeing_on_the_minimum_server_version(root):
+    adapter = _real(common.CLAUDE_ADAPTER_REL)
+    adapter["extensions"][common.TAHOE_EXTENSION_NAMESPACE][
+        common.MIN_SERVER_VERSION_FIELD
+    ] = "9.9.9"
+    _write(root, common.CLAUDE_ADAPTER_REL, adapter)
+    with pytest.raises(common.RepoError):
+        validate.validate_min_server_version(root)
+
+
 def test_rejects_missing_layout_path(tmp_path):
     with pytest.raises(common.RepoError):
         validate.validate_layout(tmp_path)

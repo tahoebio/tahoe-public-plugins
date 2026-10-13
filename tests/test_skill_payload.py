@@ -218,6 +218,18 @@ def test_install_doc_counts_every_shipped_reference():
     assert f"{words[len(common.REFERENCE_RELS)]} references" in " ".join(install.split())
 
 
+def test_skill_step_one_reads_the_server_version_and_warns_below_the_minimum():
+    """Step 1 reads the served ``server_version`` and warns below the floor the
+    plugin is frozen against, instead of assuming the frozen values hold."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    minimum = common.min_server_version(_config(common.PLUGIN_MANIFEST_REL))
+    assert minimum, "the manifest declares no minimum server version"
+    assert "server_version" in body
+    assert minimum in body
+    assert "below that floor" in body
+    assert "warn" in body.lower()
+
+
 def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
     """A decline must not hint at routes beyond Tahoe's tools, and must offer
     the nearest analysis the served data can answer."""
