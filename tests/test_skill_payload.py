@@ -98,7 +98,6 @@ def test_no_manifest_declares_a_skills_payload():
     Draft202012Validator(common.load_schema("plugin")).validate(manifest)
     assert manifest["name"] == common.PLUGIN_NAME
     assert "skills" not in manifest
-    assert "license" not in manifest
 
 
 def test_claude_native_adapter_declares_the_same_server_inline():

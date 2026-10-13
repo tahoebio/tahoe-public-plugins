@@ -137,6 +137,11 @@ REFERENCES_MAX_BYTES = 39_000
 #: skill's mention-completeness check reads that table rather than a second list.
 TOOL_CONTRACT_REL = "docs/public-tool-contract.md"
 
+#: The code licence, single source of truth. The plugin manifests must carry it
+#: and the validator keeps them equal to it. The skill text and the docs are a
+#: separate grant (CC BY 4.0); see LICENSE, LICENSE-CC-BY-4.0 and NOTICE.
+CODE_LICENSE = "Apache-2.0"
+
 #: The exact files that make up the release archive. An explicit list, not a
 #: directory prefix: the plugin ships connection manifests, its skill and the
 #: reviewed brand logo. Dotfiles are permitted only by being named here.
@@ -164,6 +169,9 @@ GENERATED_SUFFIXES = (".pyc", ".pyo", ".zip", ".sha256", ".egg-info")
 #: Paths the repository layout is required to contain.
 REQUIRED_LAYOUT = (
     "README.md",
+    "LICENSE",
+    "LICENSE-CC-BY-4.0",
+    "NOTICE",
     "AGENTS.md",
     "SECURITY.md",
     "CONTRIBUTING.md",

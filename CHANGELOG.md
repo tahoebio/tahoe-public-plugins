@@ -23,6 +23,17 @@ Plugin ↔ server compatibility.
   is returned it reports compatibility as unknown.
 - `docs/compatibility.md` gains a plugin ↔ server version table.
 
+Repository licensing.
+
+- Added `LICENSE` (Apache-2.0) for the plugin code and `LICENSE-CC-BY-4.0`
+  (CC BY 4.0) for the skill text and documentation, with a `NOTICE` recording
+  the attribution and the path map; `README.md` and `docs/data-and-licensing.md`
+  state which paths fall under which licence.
+- Both plugin manifests declare `license: Apache-2.0`, and the validator keeps
+  the field equal to the code licence in both hosts.
+- The decision: code Apache-2.0 (attribution and a patent grant); skill text
+  and docs CC BY 4.0; the served Tahoe-100M data CC0-1.0.
+
 ## 0.3.2 — unreleased
 
 - Decline out-of-scope parts of a question in one sentence and offer the nearest

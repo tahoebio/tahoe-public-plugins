@@ -24,12 +24,6 @@ def test_plugin_identity_is_the_catalog_plugin():
     assert isinstance(manifest["version"], str) and manifest["version"]
 
 
-def test_plugin_manifest_carries_no_licence_field():
-    # Licensing is unresolved; the schema allows omitting `license` and we must
-    # not silently choose one.
-    assert "license" not in _plugin_manifest()
-
-
 def test_plugin_manifest_declares_a_semver_minimum_server_version():
     # The plugin is frozen against a public server version; the manifest names
     # it so a host can warn on an older server. Field name is Tahoe's own

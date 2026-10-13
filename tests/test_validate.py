@@ -31,10 +31,26 @@ def test_valid_root_passes(root):
     validate.validate_manifests(root)
 
 
-def test_rejects_licence_field(root):
+def test_rejects_wrong_licence_field(root):
     manifest = _real(common.PLUGIN_MANIFEST_REL)
     manifest["license"] = "MIT"
     _write(root, common.PLUGIN_MANIFEST_REL, manifest)
+    with pytest.raises(common.RepoError):
+        validate.validate_manifests(root)
+
+
+def test_rejects_missing_licence_field(root):
+    manifest = _real(common.PLUGIN_MANIFEST_REL)
+    del manifest["license"]
+    _write(root, common.PLUGIN_MANIFEST_REL, manifest)
+    with pytest.raises(common.RepoError):
+        validate.validate_manifests(root)
+
+
+def test_rejects_adapter_with_a_different_licence(root):
+    adapter = _real(common.CLAUDE_ADAPTER_REL)
+    adapter["license"] = "MIT"
+    _write(root, common.CLAUDE_ADAPTER_REL, adapter)
     with pytest.raises(common.RepoError):
         validate.validate_manifests(root)
 

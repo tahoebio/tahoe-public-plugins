@@ -1,38 +1,68 @@
 # Data and licensing
 
-> **Stub.** Licensing is unresolved and is a named publication blocker.
+Licensing is decided. This page says what each part of the repository is and
+where its licence comes from. The full licence texts are in `LICENSE`
+(Apache-2.0) and `LICENSE-CC-BY-4.0` (CC BY 4.0), and `NOTICE` carries the
+attribution and the path map.
 
-## Dataset
+## What each part is, and its licence
 
-Tara serves the public Tahoe-100M dataset and its approved metadata. Only
-approved, public-facing dataset content is served, with the release and filters
-reported on every result.
+| Part | What it is | Licence (SPDX) |
+|------|------------|----------------|
+| Plugin code | Manifests, scripts, tests, CI, configuration | `Apache-2.0` |
+| Skill text | `plugins/tara/skills/**` and its references | `CC-BY-4.0` |
+| Documentation | `docs/**` | `CC-BY-4.0` |
+| Data | The Tahoe-100M dataset the service serves | `CC0-1.0` |
+| Service guidance | Server instructions, tool descriptions, any guide the service returns | Not licensed for redistribution |
+| Gene-set names | Names from the source collections | The source collection's terms |
+| Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` | The upstream terms (`schemas/provenance.json`) |
+| Trademarks | "Tahoe", "Tara" | Not licensed |
 
-## Data and guidance are different rights
+## Plugin code — Apache-2.0
 
-- The **data is CC0** — free to use, including commercially, without conditions.
-- The **guidance is proprietary**. The service delivers it at runtime (server
-  instructions, tool descriptions, and any guide the service returns); it may not
-  be redistributed.
+The code, manifests, tooling, tests and CI are licensed under the Apache
+License 2.0 (see `LICENSE`). That licence grants a patent licence as well as
+copyright permissions, and requires the attribution in `NOTICE` to be kept.
 
-These are separate grants. Nothing about the data's CC0 status makes the
-guidance or the wrapper free to reuse.
+## Skill text and documentation — CC BY 4.0
 
-The plugin also ships the `tara` skill, which routes a question to the right
-tool and loads scientific guidance from `get_guide`. It is covered by the
-unresolved repository licence below, not by the data's CC0 grant.
+The `tara` skill (`plugins/tara/skills/**`) and the documentation (`docs/**`)
+are licensed under Creative Commons Attribution 4.0 International (see
+`LICENSE-CC-BY-4.0`). You may share and adapt them, including commercially,
+provided you give appropriate credit to Tahoe Bio, link to the licence and
+indicate if changes were made.
 
-## Licensing — placeholder, not a decision
+## Data — CC0
 
-This page is a placeholder note, not a licence. No licence has been chosen.
+The Tahoe-100M data is released under CC0 1.0: free to use, including
+commercially, without conditions. The licence comes from the dataset card at
+<https://huggingface.co/datasets/tahoebio/Tahoe-100M>, which declares `cc0-1.0`.
+The data is not stored in this repository.
 
-This repository has **no LICENSE file** and no `license` field. The software,
-documentation, dataset and trademark rights are distinct and are not yet
-decided. Until that decision is recorded:
+## Guidance — not licensed for redistribution
 
-- nothing here may be published or redistributed,
-- no licence may be assumed,
-- the repository stays private.
+The service's guidance is not in this repository. It lives only on the service
+and is delivered at runtime. It is not covered by either licence here and may
+not be redistributed. The data's CC0 status does not make the guidance or the
+service free to reuse; these are separate grants.
 
-This is a named publication blocker, not an oversight. Do not add a `LICENSE`
-file or a `license` field in the meantime.
+## Gene-set names
+
+Gene-set names keep the terms of their source collections: MSigDB, GO,
+Reactome, KEGG, WikiPathways, BioCarta and PID.
+
+## Vendored schemas
+
+`schemas/plugin.schema.json` and `schemas/mcp.schema.json` are vendored
+verbatim from agent-plugins.org and remain under their upstream terms;
+`schemas/provenance.json` records each source and its checksum.
+
+## Trademarks
+
+"Tahoe" and "Tara" are trademarks. No licence in this repository grants any
+right to use them.
+
+## No warranty
+
+The software and documentation are provided "as is", without warranty of any
+kind, express or implied.

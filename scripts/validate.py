@@ -21,6 +21,18 @@ from jsonschema import Draft202012Validator  # noqa: E402
 from scripts import common  # noqa: E402
 
 
+def _require_code_license(mapping: dict, rel: str) -> None:
+    """Raise unless ``mapping`` declares the code licence.
+
+    The licence is decided in one place (``common.CODE_LICENSE``); every
+    manifest that ships it must carry that value, so both hosts agree.
+    """
+    if mapping.get("license") != common.CODE_LICENSE:
+        raise common.RepoError(
+            f"{rel}: license must be the code licence {common.CODE_LICENSE!r}"
+        )
+
+
 def _plugin_source(catalog: dict, rel: str, root: Path) -> str:
     """Return a catalog's declared source, checking the path is the plugin dir."""
     entries = catalog.get("plugins", [])
@@ -84,6 +96,7 @@ def _validate_claude_adapter(root: Path) -> None:
         raise common.RepoError(
             f"{common.CLAUDE_ADAPTER_REL}: name must be {common.PLUGIN_NAME!r}"
         )
+    _require_code_license(adapter, common.CLAUDE_ADAPTER_REL)
 
     servers = adapter.get("mcpServers", {})
     if list(servers) != [common.MCP_SERVER_NAME]:
@@ -106,10 +119,7 @@ def validate_manifests(root: Path = common.REPO_ROOT) -> None:
 
     if manifest["name"] != common.PLUGIN_NAME:
         raise common.RepoError(f"plugin name must be {common.PLUGIN_NAME!r}")
-    if "license" in manifest:
-        raise common.RepoError(
-            "plugin.json must not carry a license field until licensing is decided"
-        )
+    _require_code_license(manifest, common.PLUGIN_MANIFEST_REL)
     interface = manifest.get("extensions", {}).get("com.openai", {}).get("interface", {})
     for field in ("logo", "composerIcon"):
         if interface.get(field) != "./assets/tahoe-logo.png":
