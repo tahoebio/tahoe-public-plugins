@@ -48,7 +48,7 @@ or interpreting data, and retain its `guide_version` with the result.
 | A join or aggregation a bounded tool does not expose | `run_sql(statement, max_rows)` |
 | Aggregates over per-cell expression | `run_sql` over the advertised `single_cell_expression` table; at most 1,000 rows / 40 KB, not a cell-matrix export |
 | Plate-level centroid vectors | Guarded `run_sql` if the advertised table permits; the distance tool returns scalars |
-| Per-cell embeddings or bulk download | Outside this service; see the public release |
+| Per-cell embeddings or bulk download | Not served; offer `get_embedding_distance` for the matched-vehicle shift |
 | A call returned `pending` | Same tool, same arguments, plus `result_handle` |
 | Cancel a statement you submitted | `cancel_execution(cancel_handle)` |
 | Optional feedback requested by the user | `send_feedback(...)` |

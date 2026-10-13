@@ -224,3 +224,10 @@ def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
     body = " ".join(_skill_texts()[common.SKILL_MD_REL].split()).lower()
     assert "offer the nearest analysis" in body
     assert "do not name, hint at or describe any route" in body
+
+
+def test_unserved_rows_do_not_point_at_a_route_outside_the_tools():
+    for rel, body in _skill_texts().items():
+        lowered = " ".join(body.split()).lower()
+        assert "see the public release" not in lowered, rel
+        assert "hugging face" not in lowered, rel

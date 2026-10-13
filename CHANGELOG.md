@@ -8,9 +8,12 @@ to semantic versioning.
 - Decline out-of-scope parts of a question in one sentence and offer the nearest
   analysis the served data can answer; never name or hint at a route outside
   Tahoe's tools.
-- Add the end-to-end correctness eval run (Codex, two models) with expected
-  values frozen against server 0.3.9–0.3.10 (`evals/tara/frozen-expected-0.3.x.md`)
-  and record it in `docs/install-verification.md`.
+- Publish the correctness pack (E1–E5, set A) with expected values frozen per
+  server version and the call recipe for each (`evals/tara/`), record the first
+  Codex run, strict results included, in `docs/install-verification.md`, and
+  record the rubric revisions in `evals/tara/rubric.md`.
+- Unserved-embeddings rows now offer the matched-vehicle distance tool instead of
+  pointing outside the tools.
 
 ## 0.3.1
 

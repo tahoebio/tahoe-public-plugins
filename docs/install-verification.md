@@ -79,20 +79,30 @@ only after this check passes end to end.
 ## Case C — end-to-end correctness eval
 
 After Case A passes on a host, run the correctness pack in `evals/tara/`
-(prompts E1–E5 and the five set-A questions) from the installed plugin, one
-fresh session per prompt, two models per host, and grade against
-`evals/tara/rubric.md` and the frozen values in
-`evals/tara/frozen-expected-0.3.x.md`.
+(prompts E1–E5 and A1–A5) from the installed plugin, one fresh session per
+prompt, and grade against `evals/tara/rubric.md` with the values in
+`evals/tara/frozen-expected-0.3.x.md`. **Pass is the rubric's rule: every hard
+criterion.** Also report separately whether any hard-fail class occurred; that
+is information, not the pass rule.
 
 - Pace the runs. The service allows a limited number of calls per user per hour;
-  a back-to-back run of the whole pack exhausts it and returns `rate_limited`.
-  Space prompts out and re-run any that were rate-limited rather than grading
-  them.
-- Disable any other server or plugin named `tara` for the run, so the public
-  plugin is the only one in play.
+  a back-to-back run of the whole pack returns `rate_limited`. Re-run a
+  rate-limited prompt after the window rather than grading it, and mark it
+  incomplete if it stays limited.
+- Disable any other server or plugin named `tara` for the run, and check the
+  transcript for reads of it.
 - Record `server_version`, `release` and `guide_version` from each transcript.
-- Pass: no hard-fail class from the rubric occurs, and every scored run loaded
-  the skill (read `SKILL.md` or called `get_guide`).
 
-Codex was run on 2026-10-12/13 against server 0.3.9–0.3.10. Claude Code and
-Cursor are not yet run.
+First recorded run, Codex, two models, server 0.3.9–0.3.10 (2026-10-12/13):
+
+- No hard-fail class occurred in any scored run, and every scored run loaded the
+  skill.
+- **Strict result: A1–A5 and E5 pass; E1, E2, E3 and E4 do not.** E1 omitted
+  `n_cells` per contrast, E2 listed lines without Cellosaurus ids, E3 stopped at
+  the survival score without the arrest/Augur cross-check, and E4 did not call a
+  NULL `padj` "untested". One E4 run was also incomplete because the per-user
+  call allowance was exhausted.
+- Limitations: runs were first rate-limited and re-run paced; a second plugin
+  named `tara` was present on the host and was read in some transcripts without
+  being relied on.
+- Claude Code and Cursor have not been run.

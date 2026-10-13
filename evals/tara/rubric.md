@@ -44,3 +44,23 @@ For each run, record:
 | Hard criteria | pass / fail, one line each |
 | Soft criteria | noted, one line each |
 | Verdict | PASS / FAIL |
+
+## Rubric revisions
+
+Criteria are never loosened to make a run pass. A change is made here, with its
+reason, before any run is graded against it.
+
+- **0.3.2, E1 — second route added, original kept.** The released differential
+  expression tool was added after E1 was written. E1 keeps its expression-slice
+  criteria unchanged; E1-DE adds route-specific criteria that keep the same hard
+  requirements (direction, exact label, stated control, `n_cells` per contrast)
+  and name the released log2 fold change as the measurement instead of
+  `cpm_log1p`. A run is graded against the route it followed.
+- **0.3.2, E2 — reference corrected.** An earlier reference line count (11) came
+  from a first-row probe, not the tool; the tool lists 22. The criteria are
+  unchanged; only the frozen value is corrected.
+- **0.3.2, E5 — no expected biological pattern.** The prompt is new in the
+  repository pack. It fixes no expected BRAF pattern in advance; the measured
+  result is frozen instead.
+- **0.3.2, E3–E5 and set A** are published as written; no criterion elsewhere
+  changed.
