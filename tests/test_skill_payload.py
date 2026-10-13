@@ -6,6 +6,8 @@ discover ``skills/`` by convention (Claude Code and the Agent Plugins fixed
 location both).
 """
 
+import re
+
 from jsonschema import Draft202012Validator
 
 from helpers import j
@@ -181,8 +183,16 @@ def test_worked_cell_line_lookup_matches_the_cvcl_id_used_by_data_calls():
     routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
     text = routing.read_text(encoding="utf-8")
     assert 'list_cell_lines(query="A549")' in text
-    assert 'cell_lines=["CVCL_0023"]' in text
-    assert 'cell_line="CVCL_0023"' in text
+    worked_calls = text.split("## Worked calls", 1)[1].split("## Response contract", 1)[0]
+    cell_arguments = []
+    for line in worked_calls.splitlines():
+        if "cell_lines=" in line or "cell_line=" in line:
+            matches = re.findall(r'cell_lines?=\[?"([^"\]]+)"', line)
+            assert matches, f"worked cell-line call has no quoted identifier: {line}"
+            cell_arguments.extend(matches)
+            assert all(identifier.startswith("CVCL_") for identifier in matches), line
+    assert cell_arguments, "no worked data-tool call uses a cell-line identifier"
+    assert set(cell_arguments) == {"CVCL_0023"}
 
 
 def test_no_shipped_text_says_there_is_no_sql():
