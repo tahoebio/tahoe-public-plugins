@@ -1,0 +1,128 @@
+{
+  "base_url": "",
+  "authorized_base_url": "",
+  "allowed_source_hosts": [],
+  "auth_mode": "public_plugin_oauth",
+  "identity_mode": "public_user_equivalent",
+  "quota_policy": "",
+  "live_test_approval_ref": "",
+  "dataset_version": "Tahoe-100M-v1",
+  "snapshot_version": "delta-obs20-expression77-genes2-real-condition-v1",
+  "population_product": "smp_1784",
+  "gene_axis_product": "real-gene-axis",
+  "gene_axis_revision": "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
+  "expected_gene_count": 62710,
+  "expected_gene_axis_sha256": "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
+  "cell_line_id": "CVCL_0131",
+  "drug_id": "pubchem:9562059",
+  "expected_drug": "Chlorhexidine (diacetate)",
+  "expected_smiles": "CC(=O)O.CC(=O)O.C1=CC(=CC=C1NC(=NC(=NCCCCCCN=C(N)N=C(N)NC2=CC=C(C=C2)Cl)N)N)Cl",
+  "expected_count_encoding": "delta_sparse_counts_v1",
+  "expected_row_schema": [
+    "cell_id",
+    "plate",
+    "sample",
+    "BARCODE_SUB_LIB_ID",
+    "cell_line_id",
+    "drug",
+    "dose",
+    "canonical_smiles",
+    "pubchem_cid",
+    "moa_fine",
+    "gene_count",
+    "tscp_count",
+    "dose_unit",
+    "timepoint",
+    "timepoint_unit",
+    "timepoint_provenance",
+    "is_control",
+    "drug_id",
+    "genes",
+    "expressions"
+  ],
+  "expected_timepoint_provenance": "study protocol, bioRxiv 2025.02.20.639398v2 Figure 1A; no row-level timepoint column",
+  "expected_condition": {
+    "condition_id": "smp_1784",
+    "cell_line_id": "CVCL_0131",
+    "drug_id": "pubchem:9562059",
+    "drug": "Chlorhexidine (diacetate)",
+    "dose": 0.05,
+    "dose_unit": "uM",
+    "timepoint": 24,
+    "timepoint_unit": "h",
+    "plate": "plate4",
+    "sample": "smp_1784"
+  },
+  "expected_treated_condition": {
+    "condition_id": "smp_1784",
+    "cell_line_id": "CVCL_0131",
+    "drug_id": "pubchem:9562059",
+    "drug": "Chlorhexidine (diacetate)",
+    "dose": 0.05,
+    "dose_unit": "uM",
+    "timepoint": 24,
+    "timepoint_unit": "h",
+    "plate": "plate4",
+    "sample": "smp_1784"
+  },
+  "treated_product": "smp_1784",
+  "expected_control_cells": 4876,
+  "expected_plate": "plate4",
+  "expected_timepoint_unit": "h",
+  "sample_size": 1000,
+  "seed": 7,
+  "state_seed": 13,
+  "batch_size": 16,
+  "minimum_eligible_cells": 1001,
+  "max_decoded_bytes": 134217728,
+  "source_pins": {
+    "source_table_versions": {
+      "obs": 20,
+      "single_cell_expression": 77,
+      "gene_metadata": 2
+    },
+    "file_sha256": {
+      "smp_1784/cells.parquet": "278aef98b3fa71b35690f71df40d8fe1d2167dbcca78e3d8f5f1897c1ee20637",
+      "smp_1784/cell-index.json": "885ddead4ced7cdc60a0ada31a260cd1bcfa26f25a016b8a704e1988ae3d3f05",
+      "smp_1877/cells.parquet": "ae172e2de07adc4be6509ba4946a19a27536212c0ef5ba04d445bdb7b7867c04",
+      "smp_1877/cell-index.json": "7e9434b80feabe9553d2cf2d8eb49d6ba4dee4f3527f3ee4c12a8ba794816c4e",
+      "gene-axis.parquet": "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
+      "smp_1878/cells.parquet": "cf1bedd25fe1e4ee47b94b21e5026687f94b2c7b239af8426c95861d5715b6e1",
+      "smp_1878/cell-index.json": "24b6298e391251a08a21561e573b5d4b3c5b2970d308aee3b421cd16ac75a050"
+    }
+  },
+  "control_products": [
+    "smp_1877",
+    "smp_1878"
+  ],
+  "expected_control_conditions": {
+    "smp_1877": {
+      "condition_id": "smp_1877",
+      "cell_line_id": "CVCL_0131",
+      "drug_id": "vehicle:DMSO_TF",
+      "drug": "DMSO_TF",
+      "dose": 0.0,
+      "dose_unit": "uM",
+      "timepoint": 24,
+      "timepoint_unit": "h",
+      "plate": "plate4",
+      "sample": "smp_1877"
+    },
+    "smp_1878": {
+      "condition_id": "smp_1878",
+      "cell_line_id": "CVCL_0131",
+      "drug_id": "vehicle:DMSO_TF",
+      "drug": "DMSO_TF",
+      "dose": 0.0,
+      "dose_unit": "uM",
+      "timepoint": 24,
+      "timepoint_unit": "h",
+      "plate": "plate4",
+      "sample": "smp_1878"
+    }
+  },
+  "expected_control_counts": {
+    "smp_1877": 2246,
+    "smp_1878": 2630
+  }
+}

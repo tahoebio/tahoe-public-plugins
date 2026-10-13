@@ -90,11 +90,13 @@ python examples/streaming_acceptance/preflight.py --case all
 The preflight is offline and reads no credential values. It prints a red/green
 JSON checklist of missing endpoint, product, release, condition, population,
 gene-axis, SMILES, and quota bindings. It never initiates OAuth or sends a
-request. Supply the exact authorized endpoint and source bindings in the JSON
-config described by `config.example.json`; bind `base_url` to
-`authorized_base_url`, set `auth_mode` to `public_plugin_oauth`, set
-`identity_mode` to `public_user_equivalent`, and provide the quota policy and
-live-test approval reference. Do not add tokens or passwords to the file. The
+request. The credential-free `config.tahoe-100m-v1.json` records the currently verified
+source metadata, product conditions, control wells, row schema, gene axis and
+source digests. It deliberately leaves the endpoint, allowed hosts, quota
+policy, and live-test approval blank. The coordinator must confirm the source
+pins against the staged deployment and fill those service bindings before the
+preflight can turn green. For a different source, use `config.example.json`.
+Do not add tokens or passwords to either file. The
 runtime uses `tara_data.connect()` and its existing public OAuth flow. There is
 no option for a generic endpoint bearer token.
 
