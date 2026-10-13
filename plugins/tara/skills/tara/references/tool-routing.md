@@ -48,7 +48,7 @@ get_expression_slice(
     genes=["TP53"], conditions=["Trametinib"],
     measurement="raw_counts", include_matched_controls=true,
 )
-list_cell_lines(query="COLO 205")        # resolve a name; use returned cell_line CVCL id
+list_cell_lines(query="A549")             # resolve a name to CVCL_0023
 get_drug_info(target="EGFR")             # drugs annotated against a gene
 get_differential_expression(drug=["Trametinib"], cell_lines=["CVCL_0023"], top_n=20)
 search_gene_sets(collection="HALLMARK", limit=100)

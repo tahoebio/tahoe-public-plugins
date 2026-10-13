@@ -177,6 +177,14 @@ def test_every_pinned_tool_is_named_in_the_routing_reference():
         assert f"`{name}" in text, name
 
 
+def test_worked_cell_line_lookup_matches_the_cvcl_id_used_by_data_calls():
+    routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
+    text = routing.read_text(encoding="utf-8")
+    assert 'list_cell_lines(query="A549")' in text
+    assert 'cell_lines=["CVCL_0023"]' in text
+    assert 'cell_line="CVCL_0023"' in text
+
+
 def test_no_shipped_text_says_there_is_no_sql():
     surfaces = dict(_skill_texts())
     for rel in ("plugins/tara/plugin.json", "plugins/tara/.claude-plugin/plugin.json"):
