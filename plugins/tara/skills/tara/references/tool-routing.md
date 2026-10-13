@@ -14,7 +14,7 @@ live service; nothing that is not yet served is named.
 | Several drug labels at once? | `search_conditions(drugs=[...])` (batch) |
 | Which conditions belong to one drug? | `search_conditions(drug=<exact label>)` |
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
-| Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)`, `list_cell_lines(query=...)` |
+| Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)`, `list_cell_lines(query=...)`; pass the returned `cell_line` (`CVCL_...`) to data tools |
 | A drug's targets, mechanism class, approval or trial status | `get_drug_info(drug=...)`, or filter by `moa=` or `target=` (a filter is required) |
 | Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast |
 | Which gene sets are scored, or which collection? | `search_gene_sets(query=..., collection=..., limit=...)`; verify the set name, not just a familiar prefix |
@@ -48,15 +48,16 @@ get_expression_slice(
     genes=["TP53"], conditions=["Trametinib"],
     measurement="raw_counts", include_matched_controls=true,
 )
-list_cell_lines(organ="Lung")            # discover cell-line ids and names
+list_cell_lines(query="COLO 205")        # resolve a name; use returned cell_line CVCL id
 get_drug_info(target="EGFR")             # drugs annotated against a gene
-get_differential_expression(drug=["Trametinib"], cell_lines=["A549"], top_n=20)
+get_differential_expression(drug=["Trametinib"], cell_lines=["CVCL_0023"], top_n=20)
 search_gene_sets(collection="HALLMARK", limit=100)
-get_pathway_scores(gene_sets=["HALLMARK_APOPTOSIS"], drug=["Trametinib"], cell_lines=["A549"])
-get_phenotype_scores(drug=["Trametinib"], cell_lines=["A549"], phenotypes=["survival"])
-get_embedding_distance(drug=["Trametinib"], cell_lines=["A549"])
-get_perturbation_markers(drug="Trametinib", cell_line="A549")
-get_guide()                              # the whole guide
+get_pathway_scores(gene_sets=["HALLMARK_APOPTOSIS"], drug=["Trametinib"], cell_lines=["CVCL_0023"])
+get_phenotype_scores(drug=["Trametinib"], cell_lines=["CVCL_0023"], phenotypes=["survival"])
+get_embedding_distance(drug=["Trametinib"], cell_lines=["CVCL_0023"])
+get_perturbation_markers(drug="Trametinib", cell_line="CVCL_0023")
+get_guide(topic="establish-the-analysis-contract")  # starting guidance, topics and version
+get_guide()                              # optional full guide
 get_guide(topic="conditions-and-controls")   # one guide section
 cancel_execution(cancel_handle="<cancel_handle from the pending response>")
 send_feedback(text="...", task_category="exploration", useful=true)
