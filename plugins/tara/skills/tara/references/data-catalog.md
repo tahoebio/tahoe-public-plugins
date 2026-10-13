@@ -36,4 +36,5 @@ scores, use the server's definition and result provenance for the selected
 phenotype; survival, Gini, arrest and Augur are different statistics.
 
 Other Tahoe datasets, clinical or adverse-event data, and external reference
-panels are outside this service. Report unavailable coverage explicitly.
+panels are outside this service. Report unavailable coverage explicitly, then
+offer the nearest analysis the served data can answer.

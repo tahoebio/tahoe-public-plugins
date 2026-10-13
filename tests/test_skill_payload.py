@@ -216,3 +216,18 @@ def test_install_doc_counts_every_shipped_reference():
     install = (common.REPO_ROOT / "docs" / "install.md").read_text(encoding="utf-8")
     words = {3: "three", 4: "four", 5: "five"}
     assert f"{words[len(common.REFERENCE_RELS)]} references" in " ".join(install.split())
+
+
+def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
+    """A decline must not hint at routes beyond Tahoe's tools, and must offer
+    the nearest analysis the served data can answer."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split()).lower()
+    assert "offer the nearest analysis" in body
+    assert "do not name, hint at or describe any route" in body
+
+
+def test_unserved_rows_do_not_point_at_a_route_outside_the_tools():
+    for rel, body in _skill_texts().items():
+        lowered = " ".join(body.split()).lower()
+        assert "see the public release" not in lowered, rel
+        assert "hugging face" not in lowered, rel
