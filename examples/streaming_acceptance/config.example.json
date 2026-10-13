@@ -12,7 +12,7 @@
   "gene_axis_product": "",
   "gene_axis_revision": "",
   "expected_gene_count": 0,
-  "expected_gene_axis_sha256": "",
+  "expected_gene_axis_tokens_sha256": "",
   "cell_line_id": "",
   "drug_id": "",
   "expected_drug": "",

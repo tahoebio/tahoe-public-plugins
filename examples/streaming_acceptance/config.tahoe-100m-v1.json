@@ -12,7 +12,7 @@
   "gene_axis_product": "real-gene-axis",
   "gene_axis_revision": "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
   "expected_gene_count": 62710,
-  "expected_gene_axis_sha256": "2ddb0bb763b6e06f995812422be601e23ef4a334e4ae2d111e204739b3180892",
+  "expected_gene_axis_tokens_sha256": "",
   "cell_line_id": "CVCL_0131",
   "drug_id": "pubchem:9562059",
   "expected_drug": "Chlorhexidine (diacetate)",

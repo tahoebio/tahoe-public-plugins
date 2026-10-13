@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import json
+import os
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 
 from contract import (
     decode_sparse_row,
+    gene_axis_digest,
     payload_types_valid,
     safe_failure_kind,
     source_hosts_allowed,
@@ -71,6 +77,57 @@ class _FakeConnection:
 
 
 class ContractTests(unittest.TestCase):
+    def test_gene_axis_digest_hashes_ordered_token_json(self):
+        self.assertEqual(
+            gene_axis_digest([3, 4, 9]),
+            "ecd40fbc71d6fe48e5b426b5f7b9a16587d95e37edde011b315d34b2e08ef6f4",
+        )
+        self.assertNotEqual(gene_axis_digest([3, 4, 9]), gene_axis_digest([4, 3, 9]))
+
+    def test_prepared_parquet_hash_is_not_misused_as_semantic_gene_axis_digest(self):
+        repo_root = Path(__file__).resolve().parents[2]
+        config = json.loads(
+            (repo_root / "examples/streaming_acceptance/config.tahoe-100m-v1.json")
+            .read_text(encoding="utf-8")
+        )
+        parquet_hash = config["source_pins"]["file_sha256"]["gene-axis.parquet"]
+        self.assertEqual(config["gene_axis_revision"], parquet_hash)
+        self.assertEqual(config["expected_gene_axis_tokens_sha256"], "")
+        self.assertNotIn("expected_gene_axis_sha256", config)
+        result = inspect(config, "a")
+        check_map = {check["name"]: check["ok"] for check in result["checks"]}
+        self.assertTrue(check_map["no_embedded_credentials"])
+        self.assertFalse(check_map["expected_gene_axis_tokens_sha256"])
+
+    def test_documented_runners_resolve_plugin_imports_without_pythonpath(self):
+        repo_root = Path(__file__).resolve().parents[2]
+        probe = r"""
+import importlib.util
+import runpy
+import sys
+from pathlib import Path
+
+runner, module, expected = sys.argv[1:]
+sys.path.insert(0, str(Path(runner).resolve().parent))
+runpy.run_path(runner, run_name="acceptance_import_probe")
+spec = importlib.util.find_spec(module)
+assert spec is not None and spec.origin == expected, (module, spec)
+"""
+        env = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
+        scripts = repo_root / "plugins/tara/skills/tara/scripts"
+        for case, module in (("a", "tara_data"), ("b", "tara_state_loader")):
+            runner = f"examples/streaming_acceptance/run_case_{case}.py"
+            expected = scripts / f"{module}.py"
+            with self.subTest(runner=runner):
+                subprocess.run(
+                    [sys.executable, "-c", probe, runner, module, str(expected)],
+                    cwd=repo_root,
+                    env=env,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+
     def test_raw_count_schema_and_gene_axis_are_exact(self):
         schema = {
             "cell_id",

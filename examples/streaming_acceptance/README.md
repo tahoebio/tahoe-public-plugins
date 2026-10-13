@@ -29,6 +29,16 @@ selected cell ids, so a 1,000-row replay cannot be reported as a larger
 population. The exact row schema and ordered gene axis are pinned from the
 authorized source binding and checked against every received row.
 
+The source-pinned config keeps `source_pins.file_sha256["gene-axis.parquet"]`
+as the byte-level integrity hash of the Parquet source. The separately named
+`expected_gene_axis_tokens_sha256` is the semantic SHA-256 of the ordered
+`token_id` integer array encoded as compact UTF-8 JSON, matching
+`gene_axis_digest()`. The prepared metadata available offline contains the
+Parquet file hash and product revision, but not the ordered token IDs, so this
+semantic digest is intentionally blank in `config.tahoe-100m-v1.json`. The
+preflight stays red until an authorized source binding provides that digest;
+the runner must never use the Parquet file hash as its substitute.
+
 For each cell row, the schema must contain `cell_id` (integer), `cell_line_id`,
 `drug_id`, `drug`, `sample`, `plate`, `dose_unit`, and `timepoint_unit`
 (nonempty strings), `dose` and `timepoint` (finite numbers), `is_control`
@@ -89,14 +99,14 @@ python examples/streaming_acceptance/preflight.py --case all
 
 The preflight is offline and reads no credential values. It prints a red/green
 JSON checklist of missing endpoint, product, release, condition, population,
-gene-axis, SMILES, and quota bindings. It never initiates OAuth or sends a
-request. The credential-free `config.tahoe-100m-v1.json` records the currently verified
-source metadata, product conditions, control wells, row schema, gene axis and
-source digests. It deliberately leaves the endpoint, allowed hosts, quota
-policy, and live-test approval blank. The coordinator must confirm the source
-pins against the staged deployment and fill those service bindings before the
-preflight can turn green. For a different source, use `config.example.json`.
-Do not add tokens or passwords to either file. The
+gene-axis semantic digest, SMILES, and quota bindings. It never initiates OAuth
+or sends a request. The credential-free `config.tahoe-100m-v1.json` records the
+currently verified source metadata, product conditions, control wells, row
+schema, gene axis and source digests. It deliberately leaves the endpoint,
+allowed hosts, quota policy, and live-test approval blank. The coordinator must
+confirm the source pins against the staged deployment and fill those service
+bindings before the preflight can turn green. For a different source, use
+`config.example.json`. Do not add tokens or passwords to either file. The
 runtime uses `tara_data.connect()` and its existing public OAuth flow. There is
 no option for a generic endpoint bearer token.
 

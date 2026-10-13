@@ -146,6 +146,12 @@ def cells_digest(rows: list[dict]) -> str:
 
 
 def gene_axis_digest(tokens: list[int]) -> str:
+    """Hash ordered token IDs as a compact UTF-8 JSON integer array.
+
+    This semantic digest is distinct from the SHA-256 of the source Parquet
+    file, which verifies file integrity but says nothing about the ordered IDs
+    returned by the prepared gene-axis product.
+    """
     return hashlib.sha256(
         json.dumps(tokens, separators=(",", ":")).encode()
     ).hexdigest()

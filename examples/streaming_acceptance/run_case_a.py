@@ -24,7 +24,7 @@ from preflight import inspect
 from protocol import PublicTaraTools, product_index
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[2]
+REPO = HERE.parents[1]
 sys.path.insert(0, str(REPO / "plugins/tara/skills/tara/scripts"))
 
 
@@ -160,7 +160,8 @@ def run(config: dict) -> dict:
         )
         report.check(
             "exact_gene_axis_digest",
-            gene_axis_digest(gene_tokens) == config["expected_gene_axis_sha256"],
+            gene_axis_digest(gene_tokens)
+            == config["expected_gene_axis_tokens_sha256"],
         )
         if metadata.get("gene_count") is not None and int(
             metadata["gene_count"]
@@ -245,7 +246,7 @@ def run(config: dict) -> dict:
                 "sample_count_digest_sha256": cells_digest(rows),
                 "gene_axis_revision": config["gene_axis_revision"],
                 "gene_axis_size": len(gene_tokens),
-                "gene_axis_sha256": gene_axis_digest(gene_tokens),
+                "gene_axis_tokens_sha256": gene_axis_digest(gene_tokens),
                 "nonzero_count_entries": nonzero,
                 "logical_decoded_bytes": 16 * nonzero,
                 "raw_count_sum": raw_sum,

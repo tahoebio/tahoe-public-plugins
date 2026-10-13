@@ -23,7 +23,10 @@ REQUIRED = {
     "gene_axis_product": "served gene-axis product id",
     "gene_axis_revision": "immutable gene-axis revision",
     "expected_gene_count": "exact number of genes in the pinned axis",
-    "expected_gene_axis_sha256": "SHA-256 of the ordered pinned gene-token axis",
+    "expected_gene_axis_tokens_sha256": (
+        "SHA-256 of compact UTF-8 JSON for the ordered token_id integer array; "
+        "not the source Parquet file hash"
+    ),
     "cell_line_id": "exact cell-line id",
     "drug_id": "resolved drug id",
     "expected_drug": "exact served drug label",
@@ -45,13 +48,34 @@ REQUIRED = {
 
 def inspect(config: dict, case: str) -> dict:
     checks = []
+    sensitive_suffixes = (
+        "_token",
+        "_password",
+        "_authorization",
+        "_credential",
+        "_secret",
+    )
+    sensitive_prefixes = (
+        "token_",
+        "password_",
+        "authorization_",
+        "credential_",
+        "secret_",
+    )
     forbidden = {
         key
         for key in config
-        if any(
-            term in key.lower()
-            for term in ("token", "password", "authorization", "credential", "secret")
-        )
+        if key.lower() in {
+            "token",
+            "password",
+            "authorization",
+            "credential",
+            "credentials",
+            "secret",
+            "secrets",
+        }
+        or key.lower().startswith(sensitive_prefixes)
+        or key.lower().endswith(sensitive_suffixes)
     }
     checks.append(
         {
@@ -110,7 +134,7 @@ def inspect(config: dict, case: str) -> dict:
                     for k, v in value.items()
                 )
             )
-        elif key == "expected_gene_axis_sha256":
+        elif key == "expected_gene_axis_tokens_sha256":
             okay = (
                 isinstance(value, str)
                 and len(value) == 64
