@@ -135,6 +135,7 @@ ARCHIVE_ALLOWLIST = (
     CLAUDE_ADAPTER_REL,
     *SKILL_FILES,
     f"{SKILL_DIR_REL}/scripts/tara_data.py",
+    f"{SKILL_DIR_REL}/scripts/tara_state_loader.py",
     f"{SKILL_DIR_REL}/scripts/requirements.txt",
 )
 

@@ -18,6 +18,7 @@ MANIFESTS = {
     "plugins/tara/skills/tara/references/sql-guidance.md": "# SQL\n",
     "plugins/tara/skills/tara/references/streaming.md": "# Streaming\n",
     "plugins/tara/skills/tara/scripts/tara_data.py": "# Connection helper\n",
+    "plugins/tara/skills/tara/scripts/tara_state_loader.py": "# Sparse training helper\n",
     "plugins/tara/skills/tara/scripts/requirements.txt": "fastmcp==4.1.0\n",
 }
 

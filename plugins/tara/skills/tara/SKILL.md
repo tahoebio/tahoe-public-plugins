@@ -50,6 +50,7 @@ or interpreting data, and retain its `guide_version` with the result.
 | Plate-level centroid vectors | Guarded `run_sql` if the advertised table permits; the distance tool returns scalars |
 | Native streaming/loading | `list_dataset_products` — available once the server advertises it; read the streaming reference |
 | Prepare a source for an existing reader | `prepare_dataset` — available once the server advertises it |
+| Sample complete raw cells for training | `prepare_cell_sample` — available once the server advertises it |
 | Per-cell embeddings | Outside this service; see the public release |
 | A call returned `pending` | Same tool, same arguments, plus `result_handle` |
 | Cancel a statement you submitted | `cancel_execution(cancel_handle)` |

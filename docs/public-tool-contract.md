@@ -37,6 +37,7 @@ the caller's own state and are not reads.
 |------|---------|
 | `list_dataset_products` | Approved pinned products and row grain; available once the server advertises it. |
 | `prepare_dataset` | Account-bound renewable access for native readers; available once the server advertises it. |
+| `prepare_cell_sample` | Seeded complete-cell sample with explicit condition, population size and version pins; available once the server advertises it. |
 
 Bulk file or Arrow reads use a separate metered data API. These tools are not
 claimed live until the server advertises them. Preparing access changes only

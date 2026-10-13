@@ -403,6 +403,19 @@ class TaraConnection:
                 "not_found",
                 "service_paused",
                 "service_unavailable",
+                "pinned_export_required",
+                "resolved_ids_and_version_required",
+                "treatment_unit_required",
+                "sampling_population_not_available",
+                "sampling_population_incomplete",
+                "sample_scan_budget_exceeded",
+                "sample_cache_capacity",
+                "sample_preparation_in_progress",
+                "sample_decoded_work_exceeded",
+                "sample_export_too_large",
+                "sample_batch_too_large",
+                "source_row_group_too_large",
+                "source_condition_mismatch",
             }:
                 reason = "request_failed"
             raise DataAccessError(f"Dataset request refused ({response.status_code}: {reason}).")
@@ -445,6 +458,39 @@ class TaraConnection:
         metadata = self._run(
             self._request("POST", "/data/access", {"access_handle": access_handle})
         )
+        source = TaraSource(self, metadata)
+        self._sources.add(source)
+        return source
+
+    def sample_cells(
+        self,
+        *,
+        cell_line_id,
+        drug_id,
+        dataset_version,
+        snapshot_version,
+        sample_size=1000,
+        seed=0,
+        **condition,
+    ):
+        """Seeded complete-cell sample; return selection/empty metadata when no source is prepared."""
+        metadata = self._run(
+            self._request(
+                "POST",
+                "/data/sample",
+                {
+                    "cell_line_id": cell_line_id,
+                    "drug_id": drug_id,
+                    "dataset_version": dataset_version,
+                    "snapshot_version": snapshot_version,
+                    "sample_size": sample_size,
+                    "seed": seed,
+                    **condition,
+                },
+            )
+        )
+        if "access_handle" not in metadata:
+            return metadata
         source = TaraSource(self, metadata)
         self._sources.add(source)
         return source

@@ -1,8 +1,9 @@
 # Stream or load Tahoe data with your existing Python reader
 
-Streaming is available once the server advertises the two data-access tools:
+Streaming is available once the server advertises the data-access tools:
 `list_dataset_products` — available once the server advertises it;
 `prepare_dataset` — available once the server advertises it.
+`prepare_cell_sample` — available once the server advertises it.
 Until then, the examples below describe the new interface; the existing expression
 slice and bounded SQL tools do not issue streaming sources.
 
@@ -38,15 +39,18 @@ Record the returned revision, filters, gene axis and native checkpoint with your
 | Product | Row grain | Use |
 |---|---|---|
 | Single-cell Parquet | One cell, paired sparse gene/count lists | HF streaming, lazy Polars, training |
-| Single-cell Arrow condition | One cell, paired sparse gene/count lists | Selected line + sample, sparse analysis |
-| Pseudobulk Arrow condition | One gene × cell-line × sample | Raw aggregated counts and normalized expression |
+| Single-cell Arrow condition | One cell, paired sparse gene/count lists | Future source-bound selected line + sample analysis |
+| Pseudobulk Arrow condition | One gene × cell-line × sample | Future source-bound raw aggregated counts and normalized expression |
 | Gene metadata Parquet | One gene | Stable token/Ensembl/symbol axis |
 | Safe typed MDS | One cell/sample | Repeated training with native cache and resume |
 
 Pseudobulk is not single-cell data. Published differential-expression results are
 contrasts, not a raw pseudobulk-count download. Gene token ids are not matrix column
-positions. In the single-cell arrays, token 1 paired with count -2 is a CLS marker;
-exclude that pair from biological expression. Missing stored gene entries mean zero.
+positions. In the declared HF sparse-token encoding, token 1 paired with count -2
+is a CLS marker; exclude that pair from biological expression. Raw sparse-count
+products can legitimately contain gene 1: use the product's declared encoding.
+Missing stored gene entries mean zero. SQL-backed Arrow products are withheld until
+their physical source reads have a verified bound; an estimated scan size is insufficient.
 
 ## HF Datasets: same training loop, a new source
 
@@ -117,8 +121,87 @@ with connect() as tara:
 
 Both paths can prune columns and eligible row groups. A row filter does not guarantee
 cheap reads when file statistics cannot exclude the unwanted rows. Selecting a
-file does not select one biological condition. Use a registered condition Arrow
-product when line/sample filtering must happen at the source.
+file does not select one biological condition. Use a registered complete condition
+population or prepared cell sample when line/sample filtering must happen at the source.
+
+## Ask for 1,000 complete cells
+
+Resolve the public cell-line and drug ids using the coverage tools. Use the dataset
+and snapshot versions reported by the products service, not an unpinned latest label.
+The values here are variables obtained from those responses:
+
+```python
+from tara_data import connect
+
+with connect() as tara:
+    source = tara.sample_cells(
+        cell_line_id=confirmed_cell_line_id, drug_id=confirmed_drug_id,
+        dataset_version=dataset_version, snapshot_version=snapshot_version,
+        sample_size=1000, seed=7,
+    )
+    if isinstance(source, dict):
+        # Multiple dose/timepoint/plate choices, or a complete empty population.
+        print(source)
+    else:
+        with source:
+            print(source.metadata)  # requested/returned/available counts and condition
+            cells = source.hf()     # complete sparse counts plus aligned cell metadata
+            first_batch = list(cells.take(16))
+            # Or source.polars().select(...).collect(engine="streaming").
+```
+
+When the response requests condition selection, choose one returned condition and
+repeat with `condition_id=chosen_condition_id`. Dose, timepoint, sample and plate
+are never silently pooled. A complete 800-cell population explicitly returns 800,
+with status `fewer_than_requested`; an incomplete population is refused. Sampling
+is deterministic without replacement. Rows retain raw counts and paired sparse
+gene ids; there is no automatic normalization or gene truncation.
+
+Preparation is a bounded read of an approved pinned population and its immutable
+cell index. It refuses oversized sources before reading cell identities or counts,
+and never falls back to a broad SQL scan. Reader startup and sample preparation
+are separate costs. Full-atlas streaming needs separately registered bounded shards;
+this sample endpoint does not promise every atlas condition is ready.
+
+## Plate-matched control/treated batches
+
+The plugin also bundles [tara_state_loader.py](../scripts/tara_state_loader.py).
+Keep PyTorch, NumPy, PyArrow and fsspec in your usual reader environment. Prepare a
+treated source and an explicit control source for each plate/line/timepoint, then
+build the local index before spawning dataloader workers:
+
+```python
+from tara_state_loader import build_index, StatePairs
+
+# Sources stay open during this bounded local indexing step.
+build_index(
+    "training-pool.sqlite", [(treated_source, treated_encoding),
+                             (control_source, control_encoding)],
+    gene_tokens=pinned_gene_tokens, gene_axis_revision=pinned_gene_axis_revision,
+    pool_scope="declared prepared targets and control population",
+)
+pairs = StatePairs("training-pool.sqlite", seed=42, target_mode="treated_only")
+for batch in pairs.loader(batch_size=16, plate_homogeneous=True):
+    control = batch["control_counts"]  # sparse [B, 1, G]
+    treated = batch["treated_counts"]  # sparse [B, 1, G]
+    smiles = batch["drug_smiles"]      # aligned strings; control SMILES may be null
+    process_batch(control, treated, smiles)
+    for checkpoint in batch["checkpoints"]:
+        pairs.acknowledge(checkpoint)  # save pairs.state_dict() after processing
+```
+
+Sentence length one means one complete treated cell and one independently sampled
+control cell. Controls match plate, cell-line id and timepoint, and may be reused.
+Missing exact controls fail by default; `missing_controls="skip"` reports explicit
+skip counts. The control pool is the complete delivered declared pool; a selected
+control sample does not become a census of all atlas controls. Set `rank`,
+`world_size`, and `workers_per_rank` explicitly for disjoint treated examples;
+resume requires the same layout, seed, epoch, pool and gene axis.
+
+This loader returns raw sparse counts and SMILES. It does not reproduce STATE's
+preprocessed dense HVG representation, encode SMILES into numeric `pert_emb`, or
+launch training. Supply those model-specific steps explicitly. Preserve sample and
+dose identity; identical drug SMILES can correspond to different doses.
 
 ## Filtered single-cell analysis: Arrow, Polars or sparse CSR
 
@@ -205,6 +288,8 @@ product/revision to avoid reusing a different release.
 - "Load raw pseudobulk counts for a treatment and its matched vehicle, preserving plate and sample."
 - "Show how to resume a seeded MDS training run with a bounded local cache."
 - "Use the data-access handle from this chat in my existing Python reader."
+- "Get 1,000 complete cells for this line and drug, with seed 7 and an explicit dose and plate."
+- "Build plate-matched raw control/treated batches with aligned SMILES and sentence length one."
 
 The chat can prepare an account-bound access handle. In Python, `tara.open(access_handle)`
 redeems it after sign-in; its helper supplies data outside the model's context.
