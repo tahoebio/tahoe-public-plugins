@@ -1,8 +1,8 @@
 """Shared helpers for validation, residue scanning and packaging.
 
-Scans are textual: they cover tracked files, the built archive and git history,
-and report content that cannot be read as text rather than skipping it. Nothing
-here reads, writes or prints credentials.
+Scans cover tracked files, the built archive and git history. The exact approved
+brand logo is verified by digest; all other content must be readable as text.
+Nothing here reads, writes or prints credentials.
 """
 
 from __future__ import annotations
@@ -39,6 +39,12 @@ MIN_SERVER_VERSION_FIELD = "minServerVersion"
 PLUGIN_MANIFEST_REL = f"plugins/{PLUGIN_NAME}/plugin.json"
 MCP_CONFIG_REL = f"plugins/{PLUGIN_NAME}/mcp.json"
 CLAUDE_ADAPTER_REL = f"plugins/{PLUGIN_NAME}/.claude-plugin/plugin.json"
+LOGO_REL = f"plugins/{PLUGIN_NAME}/assets/tahoe-logo.png"
+# A file extension is not approval. Only these exact reviewed bytes at this
+# exact path may be treated as a known binary brand asset.
+APPROVED_BINARY_ASSETS = {
+    LOGO_REL: "4de2eae11a4a73cfd38117772ea51e94f1a3ef61f5ad336e2949782d95239219",
+}
 
 #: Repository catalogs. The two hosts use different shapes, so these are not
 #: byte-identical; they must agree on identity and source instead.
@@ -132,13 +138,14 @@ REFERENCES_MAX_BYTES = 39_000
 TOOL_CONTRACT_REL = "docs/public-tool-contract.md"
 
 #: The exact files that make up the release archive. An explicit list, not a
-#: directory prefix: the plugin ships connection manifests and its skill, and
-#: nothing else. Dotfiles are permitted only by being named here.
+#: directory prefix: the plugin ships connection manifests, its skill and the
+#: reviewed brand logo. Dotfiles are permitted only by being named here.
 ARCHIVE_ALLOWLIST = (
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
     *SKILL_FILES,
+    LOGO_REL,
 )
 
 GENERATED_DIRS = frozenset(
@@ -167,6 +174,7 @@ REQUIRED_LAYOUT = (
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
+    LOGO_REL,
     SKILL_MD_REL,
     "docs/install.md",
     "docs/install-verification.md",
@@ -482,29 +490,32 @@ def scan_repo(
     findings: list[dict] = []
     for rel in paths:
         try:
-            text = (root / rel).read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            findings.append(_unscannable("worktree", rel))
-            continue
+            data = (root / rel).read_bytes()
         except OSError:
             continue
-        findings.extend(_scan_lines("worktree", rel, enumerate(text.splitlines(), 1)))
+        findings.extend(_scan_member("worktree", rel, data))
     return findings
 
 
+def _scan_member(source: str, path: str, data: bytes) -> list[dict]:
+    expected = APPROVED_BINARY_ASSETS.get(path)
+    if expected is not None:
+        if hashlib.sha256(data).hexdigest() == expected:
+            return []
+        return [_unscannable(source, path)]
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return [_unscannable(source, path)]
+    return _scan_lines(source, path, enumerate(text.splitlines(), 1))
+
+
 def scan_archive(path: Path) -> list[dict]:
-    """Scan the text members of a built zip archive for residue and secrets."""
+    """Scan archive text and verify reviewed binary assets by digest."""
     findings: list[dict] = []
     with zipfile.ZipFile(path) as archive:
         for name in archive.namelist():
-            try:
-                text = archive.read(name).decode("utf-8")
-            except UnicodeDecodeError:
-                findings.append(_unscannable("archive", name))
-                continue
-            findings.extend(
-                _scan_lines("archive", name, enumerate(text.splitlines(), 1))
-            )
+            findings.extend(_scan_member("archive", name, archive.read(name)))
     return findings
 
 
@@ -748,6 +759,40 @@ def scan_tag_messages(root: Path = REPO_ROOT, *, ref: str | None = None) -> list
     return findings
 
 
+def _approved_asset_change(root: Path, path: str, commit: str) -> bool:
+    """Verify the asset on both sides of a historical change.
+
+    Check each parent as well as the resulting commit: replacing or deleting
+    an unapproved image must not hide its earlier bytes from the scan.
+    """
+    expected = APPROVED_BINARY_ASSETS.get(path)
+    if expected is None:
+        return False
+    revisions = _git_output(root, "rev-list", "--parents", "-n", "1", commit)
+    if revisions.returncode:
+        return False
+    found = False
+    for revision in revisions.stdout.split():
+        tree = _git_output(root, "ls-tree", revision, "--", path)
+        if tree.returncode:
+            return False
+        if not tree.stdout.strip():
+            continue  # Asset addition or deletion on this side of the change.
+        fields = tree.stdout.split()
+        if len(fields) < 3 or fields[1] != "blob":
+            return False
+        blob = subprocess.run(
+            ["git", "-C", str(root), "cat-file", "blob", fields[2]],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if blob.returncode or hashlib.sha256(blob.stdout).hexdigest() != expected:
+            return False
+        found = True
+    return found
+
+
 def scan_history(
     root: Path = REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
 ) -> list[dict]:
@@ -806,6 +851,13 @@ def scan_history(
         findings: list[dict] = []
         for path, group in itertools.groupby(lines, key=lambda entry: entry[0]):
             entries = list(group)
+            if path in APPROVED_BINARY_ASSETS:
+                for commit in dict.fromkeys(entry[3] for entry in entries):
+                    if not _approved_asset_change(root, path, commit):
+                        finding = _unscannable("history", path)
+                        finding["commit"] = commit
+                        findings.append(finding)
+                continue
             binary = next((entry for entry in entries if entry[2] is None), None)
             if binary is not None:
                 finding = _unscannable("history", path)

@@ -3,6 +3,13 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.3.4 — unreleased
+
+- Add the existing Tahoe brand mark as Tara's Codex listing logo and composer
+  icon, and include it in release archives.
+- Pin the approved logo's SHA-256 digest for working-tree, archive and history
+  validation. Unknown or modified binary content still fails the residue scan.
+
 ## 0.3.3 — unreleased
 
 Plugin ↔ server compatibility.
