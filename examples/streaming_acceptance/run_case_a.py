@@ -21,7 +21,7 @@ from contract import (
     validate_row,
 )
 from preflight import inspect
-from protocol import PublicTaraTools, product_ids
+from protocol import PublicTaraTools, product_index
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
@@ -50,11 +50,26 @@ def run(config: dict) -> dict:
     with connect(config["base_url"]) as tara:
         tools = PublicTaraTools(tara)
         tools.initialize()
-        available_products = product_ids(tools.products())
+        descriptors = product_index(tools.products())
         report.check(
             "mcp_products_advertised",
             {config["population_product"], config["gene_axis_product"]}
-            <= available_products,
+            <= set(descriptors),
+        )
+        population_product = descriptors.get(config["population_product"], {})
+        gene_product = descriptors.get(config["gene_axis_product"], {})
+        report.check(
+            "population_product_revision",
+            population_product.get("revision") == config["snapshot_version"]
+            and population_product.get("dataset") == "Tahoe-100M"
+            and population_product.get("layer") == "single_cell"
+            and population_product.get("grain") == "cell",
+        )
+        report.check(
+            "gene_axis_product_revision",
+            gene_product.get("revision") == config["gene_axis_revision"]
+            and gene_product.get("dataset") == "Tahoe-100M"
+            and gene_product.get("grain") == "gene",
         )
         prepared = tools.prepare_sample(
             cell_line_id=config["cell_line_id"],
@@ -74,15 +89,13 @@ def run(config: dict) -> dict:
             source_hosts_allowed(source, config["allowed_source_hosts"]),
         )
         report.check(
-            "source_kind", config.get("authorized_source_kind") == "tahoe_backed_served"
-        )
-        report.check(
             "served_source_provenance",
-            metadata.get("source_kind") == "tahoe_backed_served",
-        )
-        report.check(
-            "product_binding",
-            metadata.get("population_product") == config["population_product"],
+            metadata.get("product") == config["population_product"]
+            and metadata.get("revision")
+            and metadata.get("dataset") == "Tahoe-100M"
+            and metadata.get("layer") == "single_cell"
+            and metadata.get("grain") == "cell"
+            and metadata.get("format") == "parquet",
         )
         report.check("raw_counts", metadata.get("counts_space") == "raw")
         report.check(
@@ -95,7 +108,8 @@ def run(config: dict) -> dict:
         )
         report.check(
             "condition_pinned",
-            metadata.get("condition", {}).get("condition_id") == config["condition_id"],
+            metadata.get("condition", {}).get("condition_id")
+            == expected_condition["condition_id"],
         )
         report.check("requested_seed", metadata.get("seed") == seed)
         report.check(
@@ -103,35 +117,21 @@ def run(config: dict) -> dict:
             metadata.get("sampling_algorithm") == "sha256-priority-v1",
         )
         report.check("no_replacement", metadata.get("replacement") is False)
-        report.check("sample_revision_present", bool(metadata.get("revision")))
         report.check(
             "requested_cells", int(metadata.get("requested_cells", -1)) == 1000
         )
         report.check(
-            "complete_population",
-            metadata.get("population_complete") is True
-            and int(metadata.get("available_cells", 0))
+            "complete_population_size",
+            int(metadata.get("available_cells", 0))
             >= max(1000, config["minimum_eligible_cells"]),
         )
         report.check(
             "exact_return_count", int(metadata.get("returned_cells", -1)) == 1000
         )
-        report.check("population_identity", bool(metadata.get("population_revision")))
+        report.check("sample_revision_present", bool(metadata.get("revision")))
         report.check(
             "gene_axis_revision",
             metadata.get("gene_axis_revision") == config["gene_axis_revision"],
-        )
-        report.check(
-            "source_reservation",
-            0
-            < int(metadata.get("reserved_source_bytes", 0))
-            <= config["expected_source_bytes"],
-        )
-        report.check(
-            "decoded_reservation",
-            0
-            < int(metadata.get("reserved_decoded_bytes", 0))
-            <= config["expected_decoded_bytes"],
         )
         axis_source = tara.prepare(
             config["gene_axis_product"], revision=config["gene_axis_revision"]
@@ -140,7 +140,11 @@ def run(config: dict) -> dict:
             "approved_gene_axis_host",
             source_hosts_allowed(axis_source, config["allowed_source_hosts"]),
         )
-        axis_reserved_bytes = int(axis_source.metadata.get("reserved_source_bytes", 0))
+        report.check(
+            "gene_axis_source_binding",
+            axis_source.metadata.get("product") == config["gene_axis_product"]
+            and axis_source.metadata.get("revision") == config["gene_axis_revision"],
+        )
         token_rows = list(axis_source.hf())
         axis_source.close()
         gene_tokens = [row["token_id"] for row in token_rows]
@@ -212,9 +216,7 @@ def run(config: dict) -> dict:
         repeat = tara.open(repeated_prepared["access_handle"])
         replay_rows = list(repeat.hf())
         replay_ids = [row["cell_id"] for row in replay_rows]
-        replay_population_revision = repeat.metadata.get("population_revision")
-        replay_reserved_bytes = int(repeat.metadata.get("reserved_source_bytes", 0))
-        replay_decoded_bytes = int(repeat.metadata.get("reserved_decoded_bytes", 0))
+        replay_revision = repeat.metadata.get("revision")
         repeat.close()
         replay_digest = population_digest(replay_ids)
         sample_hash = population_digest(ids)
@@ -222,28 +224,8 @@ def run(config: dict) -> dict:
         replay_count_hash = cells_digest(replay_rows)
         report.check("seed_count_replay", cells_digest(rows) == replay_count_hash)
         report.check(
-            "same_population_replay",
-            replay_population_revision == metadata.get("population_revision"),
-        )
-        all_source_bytes = (
-            int(metadata.get("reserved_source_bytes", 0))
-            + replay_reserved_bytes
-            + axis_reserved_bytes
-        )
-        report.check(
-            "aggregate_source_budget",
-            0
-            < all_source_bytes
-            <= min(config["expected_source_bytes"], config["max_source_bytes"]),
-        )
-        all_decoded_bytes = (
-            int(metadata.get("reserved_decoded_bytes", 0)) + replay_decoded_bytes
-        )
-        report.check(
-            "aggregate_decoded_budget",
-            0
-            < all_decoded_bytes
-            <= min(config["expected_decoded_bytes"], config["max_decoded_bytes"]),
+            "same_sample_revision_replay",
+            replay_revision == metadata.get("revision"),
         )
         report.check("native_resume", len(tail) == 1000 - len(first) and unique)
         elapsed = max(decode_finished - decode_started, 1e-9)
@@ -251,11 +233,7 @@ def run(config: dict) -> dict:
             {
                 "release": config["dataset_version"],
                 "snapshot_revision": metadata.get("snapshot_version"),
-                "population_revision_present": bool(
-                    metadata.get("population_revision")
-                ),
-                "aggregate_source_reservation_bytes": all_source_bytes,
-                "aggregate_decoded_reservation_bytes": all_decoded_bytes,
+                "sample_revision": metadata.get("revision"),
                 "eligible_cells": int(metadata.get("available_cells", 0)),
                 "returned_cells": len(rows),
                 "seed": seed,

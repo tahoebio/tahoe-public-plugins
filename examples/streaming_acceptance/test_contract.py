@@ -203,7 +203,7 @@ class ContractTests(unittest.TestCase):
                 "auth_mode",
                 "identity_mode",
                 "population_product",
-                "condition_id",
+                "expected_condition",
             }
             <= names
         )

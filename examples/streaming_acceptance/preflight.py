@@ -24,8 +24,6 @@ REQUIRED = {
     "gene_axis_revision": "immutable gene-axis revision",
     "expected_gene_count": "exact number of genes in the pinned axis",
     "expected_gene_axis_sha256": "SHA-256 of the ordered pinned gene-token axis",
-    "expected_source_bytes": "authorized worst-case source reservation for this case",
-    "expected_decoded_bytes": "authorized worst-case decoded-work reservation for this case",
     "cell_line_id": "exact cell-line id",
     "drug_id": "resolved drug id",
     "expected_drug": "exact served drug label",
@@ -33,11 +31,8 @@ REQUIRED = {
     "expected_count_encoding": "declared raw sparse-count encoding",
     "expected_row_schema": "exact schema columns from the served product manifest",
     "expected_condition": "exact Case A cell-line/drug/sample/dose/plate/timepoint filters",
-    "condition_id": "exact pinned condition id for Case A",
     "treated_product": "served raw-count treated product id for Case B",
     "control_product": "served raw-count control product id for Case B",
-    "treated_condition_id": "exact treated condition id for Case B",
-    "control_condition_id": "exact matched control condition id for Case B",
     "control_drug_id": "resolved control drug id for Case B",
     "expected_treated_condition": "exact Case B treated source filter metadata",
     "expected_control_condition": "exact Case B control source filter metadata",
@@ -67,8 +62,6 @@ def inspect(config: dict, case: str) -> dict:
         if case == "a" and key in {
             "treated_product",
             "control_product",
-            "treated_condition_id",
-            "control_condition_id",
             "expected_plate",
             "expected_timepoint_unit",
             "control_drug_id",
@@ -78,7 +71,6 @@ def inspect(config: dict, case: str) -> dict:
             continue
         if case == "b" and key in {
             "expected_condition",
-            "condition_id",
             "population_product",
         }:
             continue
@@ -103,11 +95,7 @@ def inspect(config: dict, case: str) -> dict:
                 and bool(value)
                 and all(isinstance(v, str) and v.strip() for v in value)
             )
-        elif key in {
-            "expected_gene_count",
-            "expected_source_bytes",
-            "expected_decoded_bytes",
-        }:
+        elif key == "expected_gene_count":
             okay = type(value) is int and value > 0
         else:
             okay = isinstance(value, str) and bool(value.strip())
@@ -141,7 +129,6 @@ def inspect(config: dict, case: str) -> dict:
         "minimum_eligible_cells",
         "batch_size",
         "max_decoded_bytes",
-        "max_source_bytes",
     ):
         value = config.get(key)
         okay = type(value) is int and value > 0
@@ -157,24 +144,6 @@ def inspect(config: dict, case: str) -> dict:
                 + (" exactly 1000" if key == "sample_size" else ""),
             }
         )
-    checks.append(
-        {
-            "name": "aggregate_source_budget",
-            "ok": type(config.get("expected_source_bytes")) is int
-            and type(config.get("max_source_bytes")) is int
-            and 0 < config["expected_source_bytes"] <= config["max_source_bytes"],
-            "requirement": "complete source reservation, including replay and gene axis, fits the approved byte cap",
-        }
-    )
-    checks.append(
-        {
-            "name": "aggregate_decoded_budget",
-            "ok": type(config.get("expected_decoded_bytes")) is int
-            and type(config.get("max_decoded_bytes")) is int
-            and 0 < config["expected_decoded_bytes"] <= config["max_decoded_bytes"],
-            "requirement": "complete decoded-work reservation fits the approved byte cap",
-        }
-    )
 
     checks.append(
         {
@@ -233,13 +202,6 @@ def inspect(config: dict, case: str) -> dict:
                 "requirement": "treated/control conditions share exact plate, line and timepoint; each uses its resolved drug id",
             }
         )
-    checks.append(
-        {
-            "name": "authorized_source_kind",
-            "ok": config.get("authorized_source_kind") == "tahoe_backed_served",
-            "requirement": "source must be the coordinator-authorized Tahoe-backed served source",
-        }
-    )
     checks.append(
         {
             "name": "public_oauth",

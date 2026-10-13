@@ -147,9 +147,9 @@ class PublicTaraTools:
         return sample
 
 
-def product_ids(products: list[dict]) -> set[str]:
+def product_index(products: list[dict]) -> dict[str, dict]:
     return {
-        str(item.get("product", item.get("id")))
+        str(item.get("id", item.get("product"))): item
         for item in products
-        if isinstance(item, dict) and item.get("product", item.get("id")) is not None
+        if isinstance(item, dict) and item.get("id", item.get("product")) is not None
     }

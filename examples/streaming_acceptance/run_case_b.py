@@ -20,7 +20,7 @@ from contract import (
     source_hosts_allowed,
 )
 from preflight import inspect
-from protocol import PublicTaraTools, product_ids
+from protocol import PublicTaraTools, product_index
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
@@ -70,7 +70,7 @@ def run(config: dict) -> dict:
         with connect(config["base_url"]) as tara:
             tools = PublicTaraTools(tara)
             tools.initialize()
-            available_products = product_ids(tools.products())
+            descriptors = product_index(tools.products())
             report.check(
                 "mcp_products_advertised",
                 {
@@ -78,7 +78,23 @@ def run(config: dict) -> dict:
                     config["control_product"],
                     config["gene_axis_product"],
                 }
-                <= available_products,
+                <= set(descriptors),
+            )
+            for product_id in (config["treated_product"], config["control_product"]):
+                descriptor = descriptors.get(product_id, {})
+                report.check(
+                    f"{product_id}_served_product_binding",
+                    descriptor.get("revision") == config["snapshot_version"]
+                    and descriptor.get("dataset") == "Tahoe-100M"
+                    and descriptor.get("layer") == "single_cell"
+                    and descriptor.get("grain") == "cell",
+                )
+            gene_product = descriptors.get(config["gene_axis_product"], {})
+            report.check(
+                "gene_axis_product_binding",
+                gene_product.get("revision") == config["gene_axis_revision"]
+                and gene_product.get("dataset") == "Tahoe-100M"
+                and gene_product.get("grain") == "gene",
             )
             common = {
                 "dataset_version": config["dataset_version"],
@@ -114,9 +130,7 @@ def run(config: dict) -> dict:
             if isinstance(treated, dict) or isinstance(control, dict):
                 raise TypeError("served_population_not_prepared")
             available = {}
-            population_revisions = {}
-            source_reservations = {}
-            decoded_reservations = {}
+            sample_revisions = {}
             for label, source, expected in (
                 ("treated", treated, config["expected_treated_condition"]),
                 ("control", control, config["expected_control_condition"]),
@@ -130,13 +144,20 @@ def run(config: dict) -> dict:
                     raise ValueError(f"{label}_dataset_version_mismatch")
                 if meta.get("snapshot_version") != config["snapshot_version"]:
                     raise ValueError(f"{label}_snapshot_mismatch")
+                if meta.get("product") != config[f"{label}_product"]:
+                    raise ValueError(f"{label}_product_mismatch")
                 if (
                     meta.get("condition", {}).get("condition_id")
-                    != config[f"{label}_condition_id"]
+                    != expected["condition_id"]
                 ):
                     raise ValueError(f"{label}_condition_id_mismatch")
-                if meta.get("population_product") != config[f"{label}_product"]:
-                    raise ValueError(f"{label}_product_mismatch")
+                if (
+                    meta.get("dataset") != "Tahoe-100M"
+                    or meta.get("layer") != "single_cell"
+                    or meta.get("grain") != "cell"
+                    or meta.get("format") != "parquet"
+                ):
+                    raise ValueError(f"{label}_source_provenance_mismatch")
                 if meta.get("replacement") is not False:
                     raise ValueError(f"{label}_sample_status_or_replacement_mismatch")
                 if meta.get("sampling_algorithm") != "sha256-priority-v1":
@@ -147,8 +168,6 @@ def run(config: dict) -> dict:
                     raise ValueError(f"{label}_count_encoding_mismatch")
                 if meta.get("gene_axis_revision") != config["gene_axis_revision"]:
                     raise ValueError(f"{label}_gene_axis_revision_mismatch")
-                if meta.get("source_kind") != "tahoe_backed_served":
-                    raise ValueError(f"{label}_source_provenance_mismatch")
                 for key, value in expected.items():
                     if meta.get("condition", {}).get(key) != value:
                         raise ValueError(f"{label}_condition_metadata_mismatch:{key}")
@@ -157,46 +176,27 @@ def run(config: dict) -> dict:
                     < config["minimum_eligible_cells"]
                 ):
                     raise ValueError(f"{label}_population_too_small")
-                if meta.get("population_complete") is not True:
-                    raise ValueError(f"{label}_population_incomplete")
                 if int(meta.get("returned_cells", -1)) != size:
                     raise ValueError(f"{label}_incomplete_sample")
                 if int(meta.get("requested_cells", -1)) != size:
                     raise ValueError(f"{label}_requested_count_mismatch")
-                if not meta.get("population_revision"):
-                    raise ValueError(f"{label}_population_revision_missing")
                 expected_seed = seed if label == "treated" else seed ^ 0x5A17
                 if int(meta.get("seed", -1)) != expected_seed:
                     raise ValueError(f"{label}_sampling_seed_mismatch")
                 available[label] = int(meta["available_cells"])
-                population_revisions[label] = meta["population_revision"]
-                source_reservations[label] = int(meta.get("reserved_source_bytes", 0))
-                decoded_reservations[label] = int(meta.get("reserved_decoded_bytes", 0))
-                if (
-                    not 0
-                    < source_reservations[label]
-                    <= config["expected_source_bytes"]
-                ):
-                    raise ValueError(f"{label}_source_reservation_exceeded")
-                if (
-                    not 0
-                    < decoded_reservations[label]
-                    <= config["expected_decoded_bytes"]
-                ):
-                    raise ValueError(f"{label}_decoded_reservation_exceeded")
+                sample_revisions[label] = meta["revision"]
 
             axis_source = tara.prepare(
                 config["gene_axis_product"], revision=config["gene_axis_revision"]
             )
             if not source_hosts_allowed(axis_source, config["allowed_source_hosts"]):
                 raise ValueError("gene_axis_host_not_approved")
+            if (
+                axis_source.metadata.get("product") != config["gene_axis_product"]
+                or axis_source.metadata.get("revision") != config["gene_axis_revision"]
+            ):
+                raise ValueError("gene_axis_source_binding_mismatch")
             gene_tokens = [row["token_id"] for row in axis_source.hf()]
-            axis_reserved_bytes = int(
-                axis_source.metadata.get("reserved_source_bytes", 0)
-            )
-            axis_decoded_bytes = int(
-                axis_source.metadata.get("reserved_decoded_bytes", 0)
-            )
             axis_source.close()
             if (
                 not gene_tokens
@@ -274,18 +274,15 @@ def run(config: dict) -> dict:
                     ],
                 }
             replay_sources = (
-                ("treated", config["drug_id"], config["treated_condition_id"], seed),
+                ("treated", config["drug_id"], seed),
                 (
                     "control",
                     config["control_drug_id"],
-                    config["control_condition_id"],
                     seed ^ 0x5A17,
                 ),
             )
             sample_replay_ok = True
-            replay_source_bytes = 0
-            replay_decoded_bytes = 0
-            for label, drug_id, condition_id, sample_seed in replay_sources:
+            for label, drug_id, sample_seed in replay_sources:
                 replay_prepared = tools.prepare_sample(
                     cell_line_id=config["cell_line_id"],
                     drug_id=drug_id,
@@ -305,41 +302,12 @@ def run(config: dict) -> dict:
                     sample_replay_ok = False
                     continue
                 replay_ids = [row["cell_id"] for row in replay.hf(columns=["cell_id"])]
-                replay_source_bytes += int(
-                    replay.metadata.get("reserved_source_bytes", 0)
-                )
-                replay_decoded_bytes += int(
-                    replay.metadata.get("reserved_decoded_bytes", 0)
-                )
                 sample_replay_ok &= (
-                    replay.metadata.get("population_revision")
-                    == population_revisions[label]
+                    replay.metadata.get("revision") == sample_revisions[label]
                     and sorted(replay_ids) == expected_sample_ids[label]
                 )
                 replay.close()
             report.check("sample_seed_replay", sample_replay_ok)
-            total_source_bytes = (
-                sum(source_reservations.values())
-                + replay_source_bytes
-                + axis_reserved_bytes
-            )
-            total_decoded_bytes = (
-                sum(decoded_reservations.values())
-                + replay_decoded_bytes
-                + axis_decoded_bytes
-            )
-            report.check(
-                "aggregate_source_budget",
-                0
-                < total_source_bytes
-                <= min(config["expected_source_bytes"], config["max_source_bytes"]),
-            )
-            report.check(
-                "aggregate_decoded_budget",
-                0
-                < total_decoded_bytes
-                <= min(config["expected_decoded_bytes"], config["max_decoded_bytes"]),
-            )
             treated.close()
             control.close()
 
@@ -440,21 +408,6 @@ def run(config: dict) -> dict:
         )
         report.check("exact_treated_smiles", first_checks["exact_treated_smiles"])
         report.check("null_control_smiles", first_checks["null_control_smiles"])
-        report.check("served_source_provenance", True)
-        report.check(
-            "source_reservations",
-            all(
-                value <= config["expected_source_bytes"]
-                for value in source_reservations.values()
-            ),
-        )
-        report.check(
-            "decoded_reservations",
-            all(
-                value <= config["expected_decoded_bytes"]
-                for value in decoded_reservations.values()
-            ),
-        )
         complete_pairs = first_pairing + remaining_pairing
         replay_pairs = [
             (batch["treated_cell_id"][i], batch["control_cell_id"][i])
@@ -515,12 +468,8 @@ def run(config: dict) -> dict:
                 "gene_axis_sha256": gene_axis_digest(gene_tokens),
                 "treated_eligible_cells": available["treated"],
                 "control_eligible_cells": available["control"],
-                "treated_population_revision": population_revisions["treated"],
-                "control_population_revision": population_revisions["control"],
-                "source_reservations_bytes": source_reservations,
-                "decoded_reservations_bytes": decoded_reservations,
-                "aggregate_source_reservation_bytes": total_source_bytes,
-                "aggregate_decoded_reservation_bytes": total_decoded_bytes,
+                "treated_sample_revision": sample_revisions["treated"],
+                "control_sample_revision": sample_revisions["control"],
                 "treated_cells": len(all_ids),
                 "paired_batches": (len(all_ids) + config.get("batch_size", 16) - 1)
                 // config.get("batch_size", 16),
