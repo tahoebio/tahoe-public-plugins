@@ -71,16 +71,17 @@ def run(config: dict) -> dict:
             tools = PublicTaraTools(tara)
             tools.initialize()
             descriptors = product_index(tools.products())
+            control_products = config["control_products"]
             report.check(
                 "mcp_products_advertised",
                 {
                     config["treated_product"],
-                    config["control_product"],
                     config["gene_axis_product"],
+                    *control_products,
                 }
                 <= set(descriptors),
             )
-            for product_id in (config["treated_product"], config["control_product"]):
+            for product_id in (config["treated_product"], *control_products):
                 descriptor = descriptors.get(product_id, {})
                 report.check(
                     f"{product_id}_served_product_binding",
@@ -108,49 +109,47 @@ def run(config: dict) -> dict:
                 seed=seed,
                 **common,
             )
-            control_prepared = tools.prepare_sample(
-                cell_line_id=config["cell_line_id"],
-                drug_id=config["control_drug_id"],
-                condition=config["expected_control_condition"],
-                seed=seed ^ 0x5A17,
-                **common,
-            )
-            report.check(
-                "mcp_sample_ready",
-                treated_prepared.get("status") == "ready"
-                and control_prepared.get("status") == "ready",
-            )
+            control_prepared = {
+                product_id: tools.prepare_product(
+                    product_id, config["snapshot_version"]
+                )
+                for product_id in control_products
+            }
+            report.check("mcp_sample_ready", treated_prepared.get("status") == "ready")
             treated = tara.open(treated_prepared["access_handle"])
-            control = tara.open(control_prepared["access_handle"])
+            controls = {
+                product_id: tara.open(prepared["access_handle"])
+                for product_id, prepared in control_prepared.items()
+            }
             report.check(
-                "mcp_sample_handles",
+                "mcp_access_handles",
                 bool(treated_prepared.get("access_handle"))
-                and bool(control_prepared.get("access_handle")),
+                and all(p.get("access_handle") for p in control_prepared.values()),
             )
-            if isinstance(treated, dict) or isinstance(control, dict):
+            if isinstance(treated, dict) or any(
+                isinstance(source, dict) for source in controls.values()
+            ):
                 raise TypeError("served_population_not_prepared")
             available = {}
+            available_control_by_product = {}
             sample_revisions = {}
-            for label, source, expected in (
-                ("treated", treated, config["expected_treated_condition"]),
-                ("control", control, config["expected_control_condition"]),
-            ):
+            sources = [
+                ("treated", treated, config["expected_treated_condition"], None)
+            ] + [
+                (
+                    "control",
+                    controls[product_id],
+                    config["expected_control_conditions"][product_id],
+                    product_id,
+                )
+                for product_id in control_products
+            ]
+            for label, source, expected, source_product in sources:
                 meta = source.metadata
                 if not source_hosts_allowed(source, config["allowed_source_hosts"]):
                     raise ValueError(f"{label}_source_host_not_approved")
                 if meta.get("counts_space") != "raw":
                     raise ValueError(f"{label}_not_raw_counts")
-                if meta.get("dataset_version") != config["dataset_version"]:
-                    raise ValueError(f"{label}_dataset_version_mismatch")
-                if meta.get("snapshot_version") != config["snapshot_version"]:
-                    raise ValueError(f"{label}_snapshot_mismatch")
-                if meta.get("source_product") != config[f"{label}_product"]:
-                    raise ValueError(f"{label}_product_mismatch")
-                if (
-                    meta.get("condition", {}).get("condition_id")
-                    != expected["condition_id"]
-                ):
-                    raise ValueError(f"{label}_condition_id_mismatch")
                 if (
                     meta.get("dataset") != "Tahoe-100M"
                     or meta.get("layer") != "single_cell"
@@ -158,37 +157,65 @@ def run(config: dict) -> dict:
                     or meta.get("format") != "parquet"
                 ):
                     raise ValueError(f"{label}_source_provenance_mismatch")
-                if meta.get("replacement") is not False:
-                    raise ValueError(f"{label}_sample_status_or_replacement_mismatch")
-                if meta.get("sampling_algorithm") != "sha256-priority-v1":
-                    raise ValueError(f"{label}_sampling_algorithm_mismatch")
-                if not meta.get("revision"):
-                    raise ValueError(f"{label}_sample_revision_missing")
                 if meta.get("expression_encoding") != config["expected_count_encoding"]:
                     raise ValueError(f"{label}_count_encoding_mismatch")
                 if meta.get("gene_axis_revision") != config["gene_axis_revision"]:
                     raise ValueError(f"{label}_gene_axis_revision_mismatch")
-                for key, value in expected.items():
-                    if meta.get("condition", {}).get(key) != value:
-                        raise ValueError(f"{label}_condition_metadata_mismatch:{key}")
-                if (
-                    int(meta.get("available_cells", 0))
-                    < config["minimum_eligible_cells"]
-                ):
-                    raise ValueError(f"{label}_population_too_small")
-                if int(meta.get("returned_cells", -1)) != size:
-                    raise ValueError(f"{label}_incomplete_sample")
-                if int(meta.get("requested_cells", -1)) != size:
-                    raise ValueError(f"{label}_requested_count_mismatch")
-                expected_seed = seed if label == "treated" else seed ^ 0x5A17
-                if int(meta.get("seed", -1)) != expected_seed:
-                    raise ValueError(f"{label}_sampling_seed_mismatch")
-                available[label] = int(meta["available_cells"])
-                sample_revisions[label] = meta["revision"]
+                if label == "treated":
+                    if meta.get("dataset_version") != config["dataset_version"]:
+                        raise ValueError("treated_dataset_version_mismatch")
+                    if meta.get("snapshot_version") != config["snapshot_version"]:
+                        raise ValueError("treated_snapshot_mismatch")
+                    if meta.get("source_product") != config["treated_product"]:
+                        raise ValueError("treated_product_mismatch")
+                    if meta.get("replacement") is not False:
+                        raise ValueError("treated_sample_replacement_mismatch")
+                    if meta.get("sampling_algorithm") != "sha256-priority-v1":
+                        raise ValueError("treated_sampling_algorithm_mismatch")
+                    if not meta.get("revision"):
+                        raise ValueError("treated_sample_revision_missing")
+                    for key, value in expected.items():
+                        if meta.get("condition", {}).get(key) != value:
+                            raise ValueError(
+                                f"treated_condition_metadata_mismatch:{key}"
+                            )
+                    if (
+                        int(meta.get("available_cells", 0))
+                        < config["minimum_eligible_cells"]
+                    ):
+                        raise ValueError("treated_population_too_small")
+                    if int(meta.get("returned_cells", -1)) != size:
+                        raise ValueError("treated_incomplete_sample")
+                    if int(meta.get("requested_cells", -1)) != size:
+                        raise ValueError("treated_requested_count_mismatch")
+                    if int(meta.get("seed", -1)) != seed:
+                        raise ValueError("treated_sampling_seed_mismatch")
+                    sample_revisions[label] = meta["revision"]
+                else:
+                    if meta.get("product") != source_product:
+                        raise ValueError("control_product_mismatch")
+                    if meta.get("revision") != config["snapshot_version"]:
+                        raise ValueError("control_snapshot_mismatch")
+                    if meta.get("condition_id") != expected["condition_id"]:
+                        raise ValueError("control_condition_id_mismatch")
+                    if (
+                        int(meta.get("available_cells", -1))
+                        != config["expected_control_counts"][source_product]
+                    ):
+                        raise ValueError("control_population_size_mismatch")
+                    available_control_by_product[source_product] = int(
+                        meta["available_cells"]
+                    )
+                if label == "treated":
+                    available[label] = int(meta["available_cells"])
+            available["control"] = sum(available_control_by_product.values())
+            if available["control"] != config["expected_control_cells"]:
+                raise ValueError("control_total_population_size_mismatch")
 
-            axis_source = tara.prepare(
-                config["gene_axis_product"], revision=config["gene_axis_revision"]
+            axis_prepared = tools.prepare_product(
+                config["gene_axis_product"], config["gene_axis_revision"]
             )
+            axis_source = tara.open(axis_prepared["access_handle"])
             if not source_hosts_allowed(axis_source, config["allowed_source_hosts"]):
                 raise ValueError("gene_axis_host_not_approved")
             if (
@@ -215,15 +242,20 @@ def run(config: dict) -> dict:
             index_path = workdir / "state-pools.sqlite"
             index_metadata = build_index(
                 index_path,
-                [
-                    (treated, config["expected_count_encoding"]),
-                    (control, config["expected_count_encoding"]),
+                [(treated, config["expected_count_encoding"])]
+                + [
+                    (source, config["expected_count_encoding"])
+                    for source in controls.values()
                 ],
                 gene_tokens=gene_tokens,
                 gene_axis_revision=config["gene_axis_revision"],
-                pool_scope="two explicitly pinned complete prepared samples; treated and matched control",
+                pool_scope="1,000 sampled treated cells and all pinned complete same-plate control wells",
                 max_bytes=config["max_decoded_bytes"],
-                max_cells=2 * size + 100,
+                max_cells=size + config["expected_control_cells"],
+            )
+            report.check(
+                "complete_indexed_populations",
+                index_metadata["cell_count"] == size + config["expected_control_cells"],
             )
             with sqlite3.connect(f"file:{index_path}?mode=ro", uri=True) as index_conn:
                 index_conn.execute("PRAGMA query_only=ON")
@@ -240,7 +272,9 @@ def run(config: dict) -> dict:
                         payload, control=bool(is_control)
                     )
                     declared = (
-                        config["expected_control_condition"]
+                        config["expected_control_conditions"].get(
+                            payload.get("sample"), {}
+                        )
                         if is_control
                         else config["expected_treated_condition"]
                     )
@@ -248,6 +282,10 @@ def run(config: dict) -> dict:
                         payload.get(key) == value
                         for key, value in declared.items()
                         if key in payload
+                    )
+                    exact_schema &= (
+                        payload.get("timepoint_provenance")
+                        == config["expected_timepoint_provenance"]
                     )
                     exact_schema &= (
                         (payload.get("canonical_smiles") is None)
@@ -259,57 +297,43 @@ def run(config: dict) -> dict:
                 report.check("exact_source_row_schema_and_metadata", exact_schema)
                 if not exact_schema:
                     raise ValueError("source_row_schema_or_metadata_mismatch")
-                expected_sample_ids = {
-                    "treated": [
-                        r[0]
-                        for r in index_conn.execute(
-                            "SELECT id FROM cells WHERE is_control=0 ORDER BY id"
-                        )
-                    ],
-                    "control": [
-                        r[0]
-                        for r in index_conn.execute(
-                            "SELECT id FROM cells WHERE is_control=1 ORDER BY id"
-                        )
-                    ],
-                }
-            replay_sources = (
-                ("treated", config["drug_id"], seed),
-                (
-                    "control",
-                    config["control_drug_id"],
-                    seed ^ 0x5A17,
-                ),
+                expected_treated_ids = [
+                    r[0]
+                    for r in index_conn.execute(
+                        "SELECT id FROM cells WHERE is_control=0 ORDER BY id"
+                    )
+                ]
+                expected_control_ids = [
+                    r[0]
+                    for r in index_conn.execute(
+                        "SELECT id FROM cells WHERE is_control=1 ORDER BY id"
+                    )
+                ]
+            report.check(
+                "complete_control_population_indexed",
+                len(expected_control_ids) == config["expected_control_cells"],
             )
-            sample_replay_ok = True
-            for label, drug_id, sample_seed in replay_sources:
-                replay_prepared = tools.prepare_sample(
-                    cell_line_id=config["cell_line_id"],
-                    drug_id=drug_id,
-                    dataset_version=config["dataset_version"],
-                    snapshot_version=config["snapshot_version"],
-                    sample_size=size,
-                    seed=sample_seed,
-                    condition=(
-                        config["expected_treated_condition"]
-                        if label == "treated"
-                        else config["expected_control_condition"]
-                    ),
-                )
-                sample_replay_ok &= replay_prepared.get("status") == "ready"
-                replay = tara.open(replay_prepared["access_handle"])
-                if isinstance(replay, dict):
-                    sample_replay_ok = False
-                    continue
-                replay_ids = [row["cell_id"] for row in replay.hf(columns=["cell_id"])]
-                sample_replay_ok &= (
-                    replay.metadata.get("revision") == sample_revisions[label]
-                    and sorted(replay_ids) == expected_sample_ids[label]
-                )
-                replay.close()
-            report.check("sample_seed_replay", sample_replay_ok)
+            replay_prepared = tools.prepare_sample(
+                cell_line_id=config["cell_line_id"],
+                drug_id=config["drug_id"],
+                dataset_version=config["dataset_version"],
+                snapshot_version=config["snapshot_version"],
+                sample_size=size,
+                seed=seed,
+                condition=config["expected_treated_condition"],
+            )
+            replay = tara.open(replay_prepared["access_handle"])
+            replay_ids = [row["cell_id"] for row in replay.hf(columns=["cell_id"])]
+            report.check(
+                "treated_sample_seed_replay",
+                replay_prepared.get("status") == "ready"
+                and replay.metadata.get("revision") == sample_revisions["treated"]
+                and sorted(replay_ids) == expected_treated_ids,
+            )
+            replay.close()
             treated.close()
-            control.close()
+            for source in controls.values():
+                source.close()
 
         source_ready = time.perf_counter()
         pairs = StatePairs(
@@ -469,7 +493,7 @@ def run(config: dict) -> dict:
                 "treated_eligible_cells": available["treated"],
                 "control_eligible_cells": available["control"],
                 "treated_sample_revision": sample_revisions["treated"],
-                "control_sample_revision": sample_revisions["control"],
+                "control_source_revision": config["snapshot_version"],
                 "treated_cells": len(all_ids),
                 "paired_batches": (len(all_ids) + config.get("batch_size", 16) - 1)
                 // config.get("batch_size", 16),

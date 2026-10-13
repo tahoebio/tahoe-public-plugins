@@ -10,7 +10,7 @@ with public-user-equivalent access.
 | Case | User workflow | Required green checks |
 |---|---|---|
 | A | Request 1,000 cells for one exact cell-line and drug condition | A listed Tahoe-100M single-cell product and immutable snapshot are pinned; the sample reports its revision and complete eligible count; exactly 1,000 unique matching cells arrive with raw-count schema; seed replay returns the same sample; every gene/count pair is aligned, unique, nonnegative integer raw counts on the pinned gene axis; resume after a saved checkpoint has no gaps or duplicates. |
-| B | Feed random control/treated cells to a sentence-length-one STATE-style loader, grouped by plate | Raw sparse counts reconstruct exactly from source rows; treated SMILES equal the pinned canonical SMILES and control SMILES are null; each treated cell pairs with one independently seeded control from the same plate, line, timepoint and units; deterministic seed, acknowledged resume, and two-rank/two-worker treatment sharding have no lost or duplicated targets. |
+| B | Feed random control/treated cells to a sentence-length-one STATE-style loader, grouped by plate | Prepare the treated sample with `prepare_cell_sample` and each complete pinned control well with `prepare_dataset`; raw sparse counts reconstruct exactly from source rows; treated SMILES equal the pinned canonical SMILES and control SMILES are null; each treated cell pairs with one independently seeded control from the same plate, line, timepoint and units; deterministic seed, acknowledged resume, and two-rank/two-worker treatment sharding have no lost or duplicated targets. |
 
 Both cases record source and gene-axis revisions, schema, eligible and returned
 population sizes, row/nonzero totals, deterministic sample digests, time to
@@ -34,7 +34,10 @@ For each cell row, the schema must contain `cell_id` (integer), `cell_line_id`,
 (nonempty strings), `dose` and `timepoint` (finite numbers), `is_control`
 (boolean), `canonical_smiles` (the exact pinned canonical SMILES for treated
 cells and null for controls), plus `genes` and `expressions` (aligned sparse
-arrays). Each gene token must be an integer on the exact ordered pinned axis;
+arrays). Pinned exports may also include `BARCODE_SUB_LIB_ID`, `pubchem_cid`,
+`moa_fine`, `gene_count`, `tscp_count`, and `timepoint_provenance`; the exact
+column list is bound per source. Known optional column types are checked too.
+Each gene token must be an integer on the exact ordered pinned axis;
 tokens must be unique per row; each raw count must be finite, nonnegative, and
 integral. Both column names and row value types are checked exactly, with no
 extra or missing columns. The State batch is then compared against its source
@@ -60,18 +63,16 @@ The harness needs only the existing advertised product fields `id`, `dataset`,
 `layer`, `revision`, `format`, and `grain`; sample fields `access_handle`,
 `status`, `requested_cells`, `returned_cells`, `available_cells`, `seed`,
 `sampling_algorithm`, `replacement`, `condition`, `dataset_version`,
-`snapshot_version`, `gene_axis_revision`, `expression_encoding`, and
-`counts_space`; `source_product` must be added to that sample response. Opened-
-source metadata includes `product`, `revision`, `dataset`, `layer`, `grain`,
-and `format`.
+`snapshot_version`, `gene_axis_revision`, `expression_encoding`,
+`counts_space`, and `source_product`. Opened-source metadata includes `product`,
+`revision`, `dataset`, `layer`, `grain`, and `format`.
 The endpoint coordinator still needs to bind the exact ordered gene axis and
 row schema from the approved source manifest, along with the canonical drug
 SMILES and matched control condition. This harness does not request new byte
 reservation fields or a new population-revision field. PR53's sample `product`
 identifies its generated `sample-*` artifact, not the registered bank used to
-select the cells. The live assertions therefore require one additional string
-in the sample-handle response: `source_product`, the registered source bank id.
-Until the serving implementation returns it, live acceptance stays red.
+select the cells. The sample response's `source_product` identifies that
+registered source bank; Case A and the treated side of Case B assert it.
 
 The 1,000 rows are a sample from the reported complete eligible population. A
 repeated 1,000-row sample is not scale evidence. These examples do not claim

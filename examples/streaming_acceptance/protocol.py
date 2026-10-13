@@ -146,6 +146,16 @@ class PublicTaraTools:
             raise RuntimeError("mcp_prepare_handle_missing")
         return sample
 
+    def prepare_product(self, product: str, revision: str) -> dict:
+        response = self.call(
+            "prepare_dataset",
+            {"product": product, "revision": revision, "options": {}},
+        )
+        prepared = response.get("data", response)
+        if not isinstance(prepared, dict) or not prepared.get("access_handle"):
+            raise RuntimeError("mcp_prepare_handle_missing")
+        return prepared
+
 
 def product_index(products: list[dict]) -> dict[str, dict]:
     return {

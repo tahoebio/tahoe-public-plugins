@@ -72,6 +72,8 @@ def validate_row(
         raise ValueError("row_schema_mismatch")
     if RAW_ROW_FIELDS - actual_schema:
         raise ValueError("required_raw_count_field_missing")
+    if not optional_row_fields_valid(row):
+        raise TypeError("invalid_optional_row_field_type")
     if type(row["cell_id"]) is not int:
         raise ValueError("invalid_cell_identity")
     for key in (
@@ -163,6 +165,8 @@ def payload_types_valid(row: dict, *, control: bool) -> bool:
         return False
     if not all(isinstance(row.get(key), str) and row[key] for key in text_fields):
         return False
+    if not optional_row_fields_valid(row):
+        return False
     for key in ("dose", "timepoint"):
         if isinstance(row.get(key), bool) or not isinstance(row.get(key), (int, float)):
             return False
@@ -181,6 +185,8 @@ def payload_types_valid(row: dict, *, control: bool) -> bool:
         return False
     if not isinstance(row.get("values"), list):
         return False
+    if len(row["indices"]) != len(row["values"]):
+        return False
     return all(
         not isinstance(value, bool)
         and isinstance(value, (int, float))
@@ -189,6 +195,30 @@ def payload_types_valid(row: dict, *, control: bool) -> bool:
         and float(value).is_integer()
         for value in row["values"]
     )
+
+
+def optional_row_fields_valid(row: dict) -> bool:
+    if "BARCODE_SUB_LIB_ID" in row and not isinstance(row["BARCODE_SUB_LIB_ID"], str):
+        return False
+    if "timepoint_provenance" in row and (
+        not isinstance(row["timepoint_provenance"], str)
+        or not row["timepoint_provenance"]
+    ):
+        return False
+    if (
+        "moa_fine" in row
+        and row["moa_fine"] is not None
+        and not isinstance(row["moa_fine"], str)
+    ):
+        return False
+    if "pubchem_cid" in row and (
+        row["pubchem_cid"] is not None and type(row["pubchem_cid"]) is not int
+    ):
+        return False
+    for key in ("gene_count", "tscp_count"):
+        if key in row and (type(row[key]) is not int or row[key] < 0):
+            return False
+    return True
 
 
 def safe_failure_kind(error: Exception) -> str:

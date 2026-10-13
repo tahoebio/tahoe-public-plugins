@@ -19,12 +19,14 @@
   "expected_smiles": "",
   "expected_count_encoding": "",
   "expected_row_schema": [],
+  "expected_timepoint_provenance": "",
   "expected_condition": {},
   "expected_treated_condition": {},
-  "expected_control_condition": {},
+  "expected_control_conditions": {},
   "treated_product": "",
-  "control_product": "",
-  "control_drug_id": "",
+  "control_products": [],
+  "expected_control_counts": {},
+  "expected_control_cells": 0,
   "expected_plate": "",
   "expected_timepoint_unit": "",
   "sample_size": 1000,
@@ -32,5 +34,5 @@
   "state_seed": 42,
   "batch_size": 16,
   "minimum_eligible_cells": 1001,
-  "max_decoded_bytes": 67108864
+  "max_decoded_bytes": 134217728
 }

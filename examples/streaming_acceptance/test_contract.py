@@ -240,6 +240,8 @@ class ContractTests(unittest.TestCase):
             seed=5,
         )
         self.assertEqual(prepared["access_handle"], "opaque-test-handle")
+        product = tools.prepare_product("genes", "axis-rev")
+        self.assertEqual(product["access_handle"], "opaque-test-handle")
         self.assertEqual(connection._http.calls[0][0], "/mcp")
         self.assertEqual(connection._http.calls[0][1]["method"], "initialize")
         self.assertEqual(
@@ -249,7 +251,14 @@ class ContractTests(unittest.TestCase):
             connection._http.calls[-1][2]["MCP-Session-Id"], "session-test"
         )
         self.assertEqual(
-            connection._http.calls[-1][1]["params"]["name"], "prepare_cell_sample"
+            connection._http.calls[-2][1]["params"]["name"], "prepare_cell_sample"
+        )
+        self.assertEqual(
+            connection._http.calls[-1][1]["params"]["name"], "prepare_dataset"
+        )
+        self.assertEqual(
+            connection._http.calls[-1][1]["params"]["arguments"],
+            {"product": "genes", "revision": "axis-rev", "options": {}},
         )
 
     def test_source_host_allowlist_rejects_hugging_face(self):
@@ -282,6 +291,22 @@ class ContractTests(unittest.TestCase):
         self.assertFalse(payload_types_valid({**row, "dose": True}, control=False))
         self.assertFalse(
             payload_types_valid({**row, "canonical_smiles": None}, control=False)
+        )
+        pinned = {
+            **row,
+            "BARCODE_SUB_LIB_ID": "barcode-1",
+            "pubchem_cid": 9562059,
+            "moa_fine": None,
+            "gene_count": 2,
+            "tscp_count": 7,
+            "timepoint_provenance": "study protocol",
+        }
+        self.assertTrue(payload_types_valid(pinned, control=False))
+        self.assertFalse(
+            payload_types_valid({**pinned, "pubchem_cid": "9562059"}, control=False)
+        )
+        self.assertFalse(
+            payload_types_valid({**pinned, "timepoint_provenance": 24}, control=False)
         )
 
 

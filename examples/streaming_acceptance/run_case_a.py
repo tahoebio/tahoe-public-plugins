@@ -133,9 +133,10 @@ def run(config: dict) -> dict:
             "gene_axis_revision",
             metadata.get("gene_axis_revision") == config["gene_axis_revision"],
         )
-        axis_source = tara.prepare(
-            config["gene_axis_product"], revision=config["gene_axis_revision"]
+        axis_prepared = tools.prepare_product(
+            config["gene_axis_product"], config["gene_axis_revision"]
         )
+        axis_source = tara.open(axis_prepared["access_handle"])
         report.check(
             "approved_gene_axis_host",
             source_hosts_allowed(axis_source, config["allowed_source_hosts"]),
@@ -192,7 +193,10 @@ def run(config: dict) -> dict:
                 row,
                 gene_tokens=set(gene_tokens),
                 encoding=expected_encoding,
-                expected=expected_condition,
+                expected={
+                    **expected_condition,
+                    "timepoint_provenance": config["expected_timepoint_provenance"],
+                },
                 expected_smiles=config["expected_smiles"],
                 expected_schema=expected_schema,
                 control=False,

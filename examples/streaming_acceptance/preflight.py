@@ -30,12 +30,14 @@ REQUIRED = {
     "expected_smiles": "canonical SMILES pinned from authorized drug metadata",
     "expected_count_encoding": "declared raw sparse-count encoding",
     "expected_row_schema": "exact schema columns from the served product manifest",
+    "expected_timepoint_provenance": "exact source annotation for the staged timepoint",
     "expected_condition": "exact Case A cell-line/drug/sample/dose/plate/timepoint filters",
     "treated_product": "served raw-count treated product id for Case B",
-    "control_product": "served raw-count control product id for Case B",
-    "control_drug_id": "resolved control drug id for Case B",
+    "control_products": "pinned complete control-well product ids for Case B",
     "expected_treated_condition": "exact Case B treated source filter metadata",
-    "expected_control_condition": "exact Case B control source filter metadata",
+    "expected_control_conditions": "exact condition metadata keyed by control product id",
+    "expected_control_counts": "complete control-well row counts keyed by product id",
+    "expected_control_cells": "total complete control cells across the pinned wells",
     "expected_plate": "plate required for control matching",
     "expected_timepoint_unit": "timepoint unit required for control matching",
 }
@@ -61,12 +63,13 @@ def inspect(config: dict, case: str) -> dict:
     for key, description in REQUIRED.items():
         if case == "a" and key in {
             "treated_product",
-            "control_product",
+            "control_products",
+            "expected_control_conditions",
+            "expected_control_counts",
             "expected_plate",
             "expected_timepoint_unit",
-            "control_drug_id",
+            "expected_control_cells",
             "expected_treated_condition",
-            "expected_control_condition",
         }:
             continue
         if case == "b" and key in {
@@ -83,6 +86,30 @@ def inspect(config: dict, case: str) -> dict:
                 and bool(value)
                 and all(isinstance(v, str) for v in value)
             )
+        elif key == "control_products":
+            okay = (
+                isinstance(value, list)
+                and bool(value)
+                and all(isinstance(v, str) and bool(v.strip()) for v in value)
+            )
+        elif key == "expected_control_conditions":
+            okay = (
+                isinstance(value, dict)
+                and bool(value)
+                and all(
+                    isinstance(k, str) and isinstance(v, dict) and bool(v)
+                    for k, v in value.items()
+                )
+            )
+        elif key == "expected_control_counts":
+            okay = (
+                isinstance(value, dict)
+                and bool(value)
+                and all(
+                    isinstance(k, str) and type(v) is int and v > 0
+                    for k, v in value.items()
+                )
+            )
         elif key == "expected_gene_axis_sha256":
             okay = (
                 isinstance(value, str)
@@ -95,7 +122,7 @@ def inspect(config: dict, case: str) -> dict:
                 and bool(value)
                 and all(isinstance(v, str) and v.strip() for v in value)
             )
-        elif key == "expected_gene_count":
+        elif key in {"expected_gene_count", "expected_control_cells"}:
             okay = type(value) is int and value > 0
         else:
             okay = isinstance(value, str) and bool(value.strip())
@@ -145,6 +172,20 @@ def inspect(config: dict, case: str) -> dict:
             }
         )
 
+    if case == "b":
+        control_cells = config.get("expected_control_cells")
+        control_counts = config.get("expected_control_counts", {})
+        checks.append(
+            {
+                "name": "expected_control_cells",
+                "ok": type(control_cells) is int
+                and control_cells > config.get("sample_size", 1000)
+                and isinstance(control_counts, dict)
+                and sum(control_counts.values()) == control_cells,
+                "requirement": "positive integer greater than the treated sample size",
+            }
+        )
+
     checks.append(
         {
             "name": "endpoint_binding",
@@ -184,22 +225,36 @@ def inspect(config: dict, case: str) -> dict:
         )
     if case == "b":
         treated = config.get("expected_treated_condition", {})
-        control = config.get("expected_control_condition", {})
+        controls = config.get("expected_control_conditions", {})
+        control_counts = config.get("expected_control_counts", {})
         checks.append(
             {
                 "name": "plate_control_binding",
                 "ok": bool(treated)
-                and bool(control)
+                and bool(controls)
+                and set(config.get("control_products", [])) == set(controls)
+                and set(controls) == set(control_counts)
                 and all(
-                    treated.get(key) == control.get(key)
-                    for key in ("cell_line_id", "plate", "timepoint", "timepoint_unit")
+                    all(
+                        treated.get(key) == control.get(key)
+                        for key in (
+                            "cell_line_id",
+                            "plate",
+                            "timepoint",
+                            "timepoint_unit",
+                        )
+                    )
+                    and isinstance(control.get("drug_id"), str)
+                    and bool(control.get("drug_id"))
+                    and isinstance(control.get("drug"), str)
+                    and bool(control.get("drug"))
+                    for control in controls.values()
                 )
                 and treated.get("plate") == config.get("expected_plate")
                 and treated.get("timepoint_unit")
                 == config.get("expected_timepoint_unit")
-                and treated.get("drug_id") == config.get("drug_id")
-                and control.get("drug_id") == config.get("control_drug_id"),
-                "requirement": "treated/control conditions share exact plate, line and timepoint; each uses its resolved drug id",
+                and treated.get("drug_id") == config.get("drug_id"),
+                "requirement": "treated/control conditions share exact plate, line and timepoint; the control identity is explicitly pinned",
             }
         )
     checks.append(
