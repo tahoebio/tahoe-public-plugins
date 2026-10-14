@@ -223,7 +223,7 @@ FORBIDDEN_PATTERNS = [
     ("internal-mcp-repo", re.compile(_frag("tara", "-mcp"))),
     ("excluded-table-name", re.compile(_frag("tx1", "_embeddings"))),
     ("non-public-dataset", re.compile(_frag("Casp", "ian"), re.I)),
-    ("databricks-host-id", re.compile(r"dbc-[0-9a-f]{6,}")),
+    ("databricks-host-id", re.compile(_frag("db", "c-[0-9a-f]{6,}"))),
     (
         "private-planning-doc",
         re.compile(
