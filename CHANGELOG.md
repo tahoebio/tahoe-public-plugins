@@ -5,6 +5,9 @@ to semantic versioning.
 
 ## 0.3.4 — unreleased
 
+- Quote the one-line install prompt verbatim in `docs/install.md`, and replace
+  the promised GitHub sign-in across the install docs, README and the
+  clean-machine verification script with Google-or-email sign-in in the browser.
 - Add the existing Tahoe brand mark as Tara's Codex listing logo and composer
   icon, and include it in release archives.
 - Pin the approved logo's SHA-256 digest for working-tree, archive and history

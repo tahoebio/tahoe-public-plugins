@@ -11,7 +11,8 @@ Code). Its result is recorded in `docs/compatibility.md`.
 
 - A machine that has never had the plugin or the `tahoe-public` server
   installed, with a current Codex CLI **and** Claude Code.
-- A GitHub account, and a browser available for the sign-in redirect.
+- A Google account or an email address, and a browser available for the sign-in
+  redirect.
 - No Databricks account or credentials.
 
 ## Case A — plugin install from the marketplace (primary)
@@ -34,9 +35,9 @@ Run once per host.
    claude plugin install tara@tahoe-public
    ```
 
-2. Complete the sign-in: approve the GitHub consent screen in the browser the
-   client opens. If Codex shows a **Run without daemon** prompt, continue
-   without a daemon — the endpoint is remote.
+2. Complete the sign-in: approve the Google-or-email consent screen in the
+   browser the client opens. If Codex shows a **Run without daemon** prompt,
+   continue without a daemon — the endpoint is remote.
 3. Reload the plugin or start a new session, so the tools appear.
 4. Call `list_releases` through the agent. Record the release identifiers.
 5. Call `get_expression_slice` for a small, known request (for example two genes
@@ -64,7 +65,8 @@ Repeat steps 2–5. `codex mcp add` starts sign-in itself.
 
 - The plugin installs from the marketplace and reaches sign-in; the direct add
   also works.
-- Sign-in succeeds with a GitHub account and no manual token handling.
+- Sign-in succeeds with a Google account or an email address and no manual token
+  handling.
 - The tools become callable after the reload/new-session step.
 - Both calls return data, and the slice carries release, filters, measurement
   semantics, missing-value meaning and a repeatable request manifest.

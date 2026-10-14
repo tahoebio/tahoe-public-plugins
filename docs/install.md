@@ -30,12 +30,15 @@ claude plugin install tara@tahoe-public
 ### One prompt instead
 
 Ask your agent to install the plugin from the marketplace above. The prompt
-installs the **plugin**, not just a bare server entry.
+installs the **plugin**, not just a bare server entry. Paste it verbatim:
+
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. I'll sign in with Google or email in the browser.
 
 ### Finish the install
 
-- Complete the **GitHub sign-in** the client opens. Approve the consent screen;
-  the credential is stored by the client and no token is copied by hand.
+- Complete the **Google or email sign-in** the client opens in the browser.
+  Approve the consent screen; the credential is stored by the client and no
+  token is copied by hand.
 - **Reload the plugin or start a new session** so the tools appear. A plugin
   installed without an interactive terminal connects in the next session.
 

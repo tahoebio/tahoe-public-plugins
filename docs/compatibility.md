@@ -14,7 +14,7 @@ No other client is claimed.
 ## Requirements
 
 - The Codex CLI or Claude Code.
-- A GitHub account for sign-in.
+- A Google account or an email address, and a browser, for sign-in.
 - No Databricks account or credentials are required.
 
 ## Plugin and server versions

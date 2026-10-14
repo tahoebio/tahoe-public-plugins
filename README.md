@@ -31,9 +31,9 @@ claude plugin marketplace add tahoebio/tahoe-public-plugins
 claude plugin install tara@tahoe-public
 ```
 
-Either way, complete the GitHub sign-in that the client opens, then **reload the
-plugin or start a new session** so the tools appear. Full steps, including the
-one-prompt variant and the advanced direct-server option, are in
+Either way, sign in with Google or email in the browser the client opens, then
+**reload the plugin or start a new session** so the tools appear. Full steps,
+including the one-prompt variant and the advanced direct-server option, are in
 `docs/install.md`.
 
 ## Layout
