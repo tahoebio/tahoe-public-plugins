@@ -317,3 +317,23 @@ def test_tool_contract_validator_accepts_the_pinned_tools(tmp_path):
         f"## Tools\n\n| Tool | Purpose |\n|---|---|\n{rows}", encoding="utf-8"
     )
     validate.validate_tool_contract(tmp_path)
+
+
+def test_error_vocabulary_validator_rejects_a_missing_error_table(tmp_path):
+    # _write_skill writes bare references, so no error table is present.
+    _write_skill(tmp_path)
+    with pytest.raises(common.RepoError, match="error vocabulary drifted"):
+        validate.validate_error_vocabulary(tmp_path)
+
+
+def test_error_vocabulary_validator_accepts_the_pinned_errors(tmp_path):
+    routing = tmp_path / common.ROUTING_REL
+    routing.parent.mkdir(parents=True, exist_ok=True)
+    rows = "".join(
+        f"| `{t}` | x. |\n" for t in sorted(common.PINNED_SERVER_ERROR_TYPES)
+    )
+    routing.write_text(
+        f"## Errors worth recognizing\n\n| error_type | Meaning |\n|---|---|\n{rows}",
+        encoding="utf-8",
+    )
+    validate.validate_error_vocabulary(tmp_path)

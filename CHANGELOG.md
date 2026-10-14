@@ -3,6 +3,28 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.3.5 — unreleased
+
+Skill drift against server 0.3.21 (ML-420).
+
+- Re-freeze the expected values against server **0.3.21**: the provenance now pins
+  `server_version` 0.3.21 and the served `guide_version`
+  (`2352b2b2…`, changed at 0.3.19), and records a re-freeze date. E2, E3 and E5
+  were re-verified live on 0.3.21; E2's `get_drug_info` route is corrected to the
+  release's lowercase, case-sensitive label `palbociclib`.
+- Document the full error vocabulary the public service can return. The routing
+  reference's error table now covers every `error_type` in `server/contracts.py`
+  plus the admission-gate denials (`service_paused`, `store_unavailable`), grouped
+  as caller-fixable, operational and service-side; the `Retry-After` hint on
+  `rate_limited` is named in both the reference and the skill body.
+- A test and the validator (`scripts/validate.py`) pin the server error
+  vocabulary and fail when any type is undocumented or invented.
+- Name Google sign-in (not GitHub) in the install and compatibility docs, and
+  drop the preview wording; the skill's identity guidance says to sign in with
+  Google.
+- Note in the skill that if another installed skill also claims the name `tara`,
+  this one is the one wired to the public tools.
+
 ## 0.3.4 — unreleased
 
 - Correct the public docs for the open Google sign-in: drop the private-preview

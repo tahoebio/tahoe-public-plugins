@@ -86,21 +86,51 @@ instead of a `manifest`.
 
 ## Errors worth recognizing
 
-| `error_type` | Meaning |
+Every failure is `ok=false` with a fixed `error_type` and a message that never
+echoes your input; a truncated success is `ok=true` with `truncated=true` —
+report it as partial, never as complete. Fix the request and retry when the error
+is caller-fixable; wait when it is operational; report it when it is service-side.
+
+Caller-fixable — correct the request and retry:
+
+| error_type | Meaning |
 |---|---|
 | `bad_request` | An argument is out of range or malformed. |
-| `not_found` | The named condition, gene, topic or handle is not in the release. |
-| `rate_limited` | Too many calls; wait and retry. |
-| `too_large` | The request exceeds a bound; narrow it. |
-| `missing_identity` | Sign in through the connector, then retry. |
+| `not_found` | The named condition, gene, topic, table or handle is not in the release. |
+| `missing_identity` | Sign in with Google through the connector, then retry. |
+| `too_large` | The request body exceeds the service's bound; send a smaller request. |
+| `response_too_large` | The response could not be trimmed to fit; narrow the request (aggregate in SQL, fewer genes or lines). |
+| `not_read_only` | A `run_sql` statement was not a read-only `SELECT`/`WITH`/`UNION`. |
+| `multiple_statements` | A `run_sql` request carried more than one statement; send one. |
+| `parse_failed` | A `run_sql` statement could not be parsed; fix the SQL syntax. |
 | `table_not_allowed` | A `run_sql` statement named a table that is not approved. |
 | `filter_required` | A `run_sql` statement read a large table without a literal key filter. |
 | `query_too_costly` | A `run_sql` statement used a cross join, an unqualified join, or too many tables. |
 | `function_not_allowed` | A `run_sql` statement used a refused function or table source. |
 
-A failure is `ok=false` with a fixed message that never echoes your input. A
-truncated success is `ok=true` with `truncated=true`: report it as partial, never
-as complete.
+Operational — wait the hint, then retry; do not hammer:
+
+| error_type | Meaning |
+|---|---|
+| `rate_limited` | Too many calls (HTTP 429). The response carries a `Retry-After` hint (whole seconds) — wait that long before retrying, and never retry immediately. |
+| `service_paused` | The operator has paused the service (HTTP 503). `health()` may still read healthy; wait and retry later. |
+| `store_unavailable` | The admission store is unreachable (HTTP 503); retry shortly (its `Retry-After` hint is short). |
+
+Service-side — report the failure; a retry rarely helps:
+
+| error_type | Meaning |
+|---|---|
+| `warehouse_not_found` | The query warehouse is not reachable. |
+| `permission_denied` | The service's own identity lacks access. |
+| `databricks_error` | The warehouse returned an error. |
+| `execution_failed` | The statement failed while running. |
+| `timeout` | The statement exceeded the service's runtime bound. |
+| `canceled` | The statement was canceled (by you or by the service's reaper). |
+| `conflict` | The statement is already terminal or in a conflicting state. |
+| `server_misconfigured` | The service is misconfigured. |
+| `registry_stale` | A served table's registration must be re-verified before it routes again. |
+| `schema_unavailable` | A served table has no schema authority today. |
+| `unknown` | An unclassified failure. |
 
 ## Guide topics
 
