@@ -1,15 +1,8 @@
 # Tahoe Bio Plugins
 
-Private preview — not published, not a supported release.
-
 The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
 plugin is **Tara**, which connects your own agent to the public Tahoe-100M
 dataset service.
-
-> **Status: private preview.** Nothing here is published or supported yet, but
-> its licensing is decided (see [Licence](#licence) below). The plugin ships the
-> `tahoe-public` server endpoint; the clean-machine install and sign-in have not
-> yet been verified end to end (see `docs/install-verification.md`).
 
 ## Install
 
@@ -19,10 +12,15 @@ Tahoe-100M question to the right tool; the service then serves the data.
 
 ### Codex CLI
 
+Run these in a terminal, in order:
+
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
+codex mcp login tahoe-public      # opens the browser: Allow Access → Google
 ```
+
+Then start a **new Codex session** so the tools load.
 
 ### Claude Code
 
@@ -31,10 +29,16 @@ claude plugin marketplace add tahoebio/tahoe-public-plugins
 claude plugin install tara@tahoe-public
 ```
 
-Either way, complete the GitHub sign-in that the client opens, then **reload the
-plugin or start a new session** so the tools appear. Full steps, including the
-one-prompt variant and the advanced direct-server option, are in
-`docs/install.md`.
+Restart Claude Code, then sign in with `/mcp` (or on first use).
+
+### Ask your agent instead
+
+Any agent that can add a plugin (it installs and stops; **you** sign in
+yourself). Paste this prompt:
+
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, approving the permission prompt if asked. Then stop. Do not try to sign in or open a browser. Tell me to sign in myself and start a new session.
+
+Full steps, including the advanced direct-server option, are in `docs/install.md`.
 
 ## Layout
 
@@ -64,8 +68,8 @@ uv run python scripts/package.py --out dist
 
 The leak/history scan is per-branch: CI judges the commit under test on its own
 history, so one stale branch cannot fail an unrelated one. To widen the scan to
-every ref locally, or to report every remote branch (the pre-publication gate),
-see `docs/releasing.md`.
+every ref locally, or to report every remote branch (the every-ref sweep), see
+`docs/releasing.md`.
 
 ## Data and guidance
 

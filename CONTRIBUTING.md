@@ -17,4 +17,4 @@ Keep every file public-safe (see `AGENTS.md`).
 ## Pull requests
 
 Changes are proposed as draft pull requests. Nothing is merged without review.
-Publication and deployment are separate, authorised steps.
+Releasing a package and deployment are separate, authorised steps.

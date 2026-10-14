@@ -339,7 +339,7 @@ def test_ci_scans_the_pushed_tag_object():
 
 def test_sweep_workflow_keeps_a_credential_to_fetch_every_branch():
     text = (common.REPO_ROOT / ".github/workflows/sweep.yml").read_text(encoding="utf-8")
-    # The origin is private until publication: the sweep's fetch needs a token.
+    # The sweep's fetch needs a token.
     assert "persist-credentials: false" not in text
     assert "fetch" in text
 

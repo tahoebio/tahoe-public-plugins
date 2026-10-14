@@ -213,7 +213,7 @@ def validate_residue(
     function of this ref and cannot be failed by another branch or tag. When
     ``ref`` is an annotated tag, the tag object's own message is scanned too.
     ``all_refs=True`` sweeps every ref and every annotated tag — a
-    developer/pre-publication check, never the CI default.
+    developer/every-ref check, never the CI default.
 
     Fails rather than reporting clean when the history cannot be read in full.
     """
@@ -353,7 +353,7 @@ def main(argv: list[str] | None = None) -> int:
         "--all-refs",
         action="store_true",
         help="scan every ref's history and every annotated tag (developer/"
-        "pre-publication sweep; CI scans the ref under test only)",
+        "every-ref sweep; CI scans the ref under test only)",
     )
     args = parser.parse_args(argv)
     try:

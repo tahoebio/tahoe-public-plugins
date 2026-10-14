@@ -5,6 +5,26 @@ to semantic versioning.
 
 ## 0.3.4 — unreleased
 
+- Correct the public docs for the open Google sign-in: drop the private-preview
+  and publication-blocker claims from the README, promise Google (not GitHub, not
+  email self-sign-up) across the install docs, and quote the one-line install
+  prompt verbatim in `docs/install.md`.
+- Give the Codex **terminal commands first** in the README and `docs/install.md`,
+  and make the agent install prompt **install-then-stop**: an agent can neither
+  connect the server nor sign the user in (MCP sign-in is the client's job, and a
+  plugin install writes outside the agent's sandbox), so the prompt installs,
+  approves the permission prompt, and stops — it no longer says "connect to
+  Tara" or asks the agent to sign in or open a browser. The prompt is identical
+  to the server landing page's `ASK_AGENT_PROMPT`.
+- Name the private vulnerability-reporting route in `SECURITY.md` (GitHub private
+  vulnerability reporting, with `tara@tahoebio.ai` as the fallback) and drop the
+  unnamed-contact stub.
+- Describe the repository's public state in `docs/releasing.md`, the README and
+  the branch-sweep workflow: keep the leak-sweep gate, drop the "publication is
+  blocked" and "pre-publication" framing.
+- Document the restart step — tools load at session start — and the Codex
+  `codex mcp login tahoe-public` sign-in, and note that a `tahoe-public`
+  connection from before 2026-10-14 must be removed and re-added.
 - Add the existing Tahoe brand mark as Tara's Codex listing logo and composer
   icon, and include it in release archives.
 - Pin the approved logo's SHA-256 digest for working-tree, archive and history
