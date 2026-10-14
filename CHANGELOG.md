@@ -35,6 +35,9 @@ Repository licensing.
   its root, so a recipient has the terms and the attribution without the
   repository. The vendored `schemas/**` are named as the upstream's own
   Apache-2.0 files, separate from this repository's grants.
+- The Tahoe brand mark (`plugins/tara/assets/tahoe-logo.png`) is carved out of
+  the Apache-2.0 map as not licensed (all rights reserved) in README, NOTICE and
+  the licensing doc, and the catch-all row names `evals/**` and root Markdown.
 - The decision: code Apache-2.0 (attribution and a patent grant); skill text
   and docs CC BY 4.0; the served Tahoe-100M data CC0-1.0.
 

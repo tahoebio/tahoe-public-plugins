@@ -59,6 +59,18 @@ def test_readme_names_the_file_licence_map():
     text = _read("README.md")
     assert "skills/**" in text and "docs/**" in text
     assert "CC BY 4.0" in text and "Apache-2.0" in text
+    # The catch-all names the prose it covers, not only code.
+    assert "evals/**" in text and "Markdown" in text
+
+
+def test_brand_mark_is_not_licensed_in_the_map_notice_and_doc():
+    # The logo is a first-party asset with no open grant; the map, the notice
+    # and the licensing doc must all say so, so it is not swept into the
+    # Apache-2.0 catch-all row.
+    for rel in ("README.md", "NOTICE", "docs/data-and-licensing.md"):
+        text = _read(rel)
+        assert "assets/tahoe-logo.png" in text, rel
+        assert "all rights reserved" in text.lower(), rel
 
 
 def test_licensing_doc_records_the_decision():

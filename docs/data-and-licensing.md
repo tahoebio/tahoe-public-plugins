@@ -9,13 +9,14 @@ attribution and the path map.
 
 | Part | What it is | Licence (SPDX) |
 |------|------------|----------------|
-| Plugin code | Manifests, scripts, tests, CI, configuration | `Apache-2.0` |
+| Plugin code | Manifests, scripts, tests, CI, configuration, the eval pack and root Markdown | `Apache-2.0` |
 | Skill text | `plugins/tara/skills/**` and its references | `CC-BY-4.0` |
 | Documentation | `docs/**` | `CC-BY-4.0` |
 | Data | The Tahoe-100M dataset the service serves | `CC0-1.0` |
 | Service guidance | Server instructions, tool descriptions, any guide the service returns | Not licensed for redistribution |
 | Gene-set names | Names from the source collections | The source collection's terms |
 | Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` (from agent-plugins.org) | `Apache-2.0` (upstream; `schemas/provenance.json`) |
+| Brand assets | `plugins/tara/assets/tahoe-logo.png` — the Tahoe brand mark | Not licensed (all rights reserved) |
 | Trademarks | "Tahoe", "Tara" | Not licensed |
 
 ## Plugin code — Apache-2.0
@@ -58,6 +59,14 @@ verbatim from agent-plugins.org and are the upstream's own files, licensed
 Apache-2.0 upstream — they are not covered by this repository's CC BY 4.0
 grant. `schemas/provenance.json` records each source, its licence and its
 checksum.
+
+## Brand assets
+
+`plugins/tara/assets/tahoe-logo.png` is the Tahoe brand mark, used for the
+plugin's listing logo and composer icon. It ships in the release archive but is
+not licensed for reuse: it is all rights reserved and is a trademark of Tahoe
+Bio, and neither licence in this repository covers it. It is not swept into the
+Apache-2.0 grant that covers Tahoe's code.
 
 ## Trademarks
 
