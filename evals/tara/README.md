@@ -30,8 +30,8 @@ once a remote server is a documented, supported target.
 
 ## How to run
 
-1. Install the plugin from the local checkout (pre-publication) against the live
-   host, or from the marketplace once published:
+1. Install the plugin from the local checkout against the live host, or from the
+   marketplace:
    `claude plugin install ./plugins/tara` (Claude Code) and the Codex
    equivalent.
 2. One **fresh session per prompt per host**. Record the host, its version and

@@ -5,7 +5,7 @@
 
 CI validates the commit under test on its own history. This sweep is the other
 half of the design: a reporting-only pass over **every** remote branch **and
-every tag** (annotated and lightweight), so the pre-publication gate ("every
+every tag** (annotated and lightweight), so the every-ref sweep gate ("every
 remote branch's scan is green") has an artifact and a dirty ref names the commit
 that introduced the offence and its author. Annotated tags are included because a
 tag object carries its own message, which no commit walk reads; a lightweight

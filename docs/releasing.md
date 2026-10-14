@@ -1,7 +1,7 @@
 # Releasing
 
-> Validation, packaging and the leak scans are in place. Publication itself is
-> still blocked (see below).
+> Validation, packaging and the leak scans are in place. The repository is
+> public; cutting a release package is a separate, authorised step (see below).
 
 ## Validation
 
@@ -13,7 +13,7 @@ ref under test**: the history scan is a function of the commit, so one stale
 branch cannot fail an unrelated branch or `main`. A developer can widen the scan
 to every ref with `uv run python scripts/validate.py --all-refs`.
 
-## Branch and tag leak sweep (pre-publication gate)
+## Branch and tag leak sweep
 
 `scripts/sweep_branches.py` runs the same per-ref scan once for **every** remote
 branch and **every tag** (annotated and lightweight) and prints a report
@@ -26,10 +26,9 @@ git fetch --prune origin "+refs/heads/*:refs/remotes/origin/*" "+refs/tags/*:ref
 uv run python scripts/sweep_branches.py
 ```
 
-**Gate:** before publishing, run the sweep and confirm every remote branch and
-tag is clean. A dirty ref is a leak that would enter `main` if it merged; the
-report names the commit that introduced it and its author, so it can be fixed
-before publication.
+**Gate:** run the sweep and confirm every remote branch and tag is clean. A
+dirty ref is a leak that would enter `main` if it merged; the report names the
+commit that introduced it and its author, so it can be fixed.
 
 Each ref is judged on its own: a tag never changes a branch's verdict, and a
 branch never reads a tag object. An annotated tag carries its own message, which
@@ -46,9 +45,8 @@ escaping or generated is refused rather than skipped; the built archive is
 scanned for internal residue and secrets and discarded if any are found; a
 SHA-256 checksum is written next to the archive.
 
-## Publication
+## Releasing a package
 
-Publication is a separate, authorised step. Licensing is decided (see
-`LICENSE`, `LICENSE-CC-BY-4.0` and `NOTICE`); publication is blocked until the
-live acceptance checks pass. Making the repository public is not a side effect
-of any other step.
+Cutting a release package is a separate, authorised step. Licensing is decided
+(see `LICENSE`, `LICENSE-CC-BY-4.0` and `NOTICE`). The repository is already
+public; a release package is cut only once the live acceptance checks pass.

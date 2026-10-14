@@ -6,7 +6,7 @@ name: Branch leak sweep
 # author — without failing unrelated work. It never fails on a dirty ref; it
 # reports and exits 0.
 #
-# Pre-publication gate: run this and confirm every branch is clean.
+# Run this and confirm every branch is clean.
 on:
   workflow_dispatch:
   schedule:
@@ -25,9 +25,9 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-          # The origin is private until publication, so the fetch below needs the
-          # checkout token. Keep it for this read-only job; the job's permissions
-          # are contents:read, so the token can only read.
+          # The fetch below needs the checkout token. Keep it for this read-only
+          # job; the job's permissions are contents:read, so the token can only
+          # read.
           persist-credentials: true
 
       - name: Set up uv

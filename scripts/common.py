@@ -826,7 +826,7 @@ def scan_history(
     Scans the history reachable from ``ref`` (default ``HEAD``), so a scan is a
     function of the commit under test and not of whatever other branches happen
     to be fetched. ``all_refs=True`` restores the whole-repository sweep over
-    every ref — a developer convenience, and the pre-publication sweep's engine;
+    every ref — a developer convenience, and the every-ref sweep's engine;
     it is never the CI default, because one stale branch would otherwise fail
     every unrelated branch and ``main``.
 

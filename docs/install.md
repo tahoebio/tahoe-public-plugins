@@ -48,8 +48,13 @@ session** so they appear. A plugin installed without an interactive terminal
 connects in the next session.
 
 > **Remove and re-add an older connection.** A `tahoe-public` connection added
-> before 2026-10-14 predates the Google sign-in. Remove that connection and add
-> it again so it signs in with Google.
+> before 2026-10-14 predates the Google sign-in. Remove it and add it again so
+> it signs in with Google:
+>
+> - **Codex CLI** — `codex mcp remove tahoe-public`, then re-add the server or
+>   reinstall the plugin, and sign in with `codex mcp login tahoe-public`.
+> - **Claude Code** — `claude mcp remove tahoe-public` for a direct install, or
+>   `/mcp` → disconnect and reconnect for a plugin install.
 
 > **Codex "Run without daemon" dialog.** Codex may present a **Run without
 > daemon** prompt the first time it uses this server. Continue without a daemon:

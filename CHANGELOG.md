@@ -9,6 +9,12 @@ to semantic versioning.
   and publication-blocker claims from the README, promise Google (not GitHub, not
   email self-sign-up) across the install docs, and quote the one-line install
   prompt verbatim in `docs/install.md`.
+- Name the private vulnerability-reporting route in `SECURITY.md` (GitHub private
+  vulnerability reporting, with `tara@tahoebio.ai` as the fallback) and drop the
+  unnamed-contact stub.
+- Describe the repository's public state in `docs/releasing.md`, the README and
+  the branch-sweep workflow: keep the leak-sweep gate, drop the "publication is
+  blocked" and "pre-publication" framing.
 - Document the restart step — tools load at session start — and the Codex
   `codex mcp login tahoe-public` sign-in, and note that a `tahoe-public`
   connection from before 2026-10-14 must be removed and re-added.
