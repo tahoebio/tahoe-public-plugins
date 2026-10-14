@@ -37,15 +37,15 @@ Then **restart Claude Code** and sign in with `/mcp` (or on first use).
 
 ### Ask your agent instead
 
-An agent can install the plugin, but it **cannot sign you in**: MCP sign-in is
+Any agent that can add a plugin (it installs and stops; **you** sign in
+yourself): the agent cannot connect the server or sign you in — MCP sign-in is
 done by the client, and the install writes outside the agent's sandbox, so the
 agent must ask for permission. The prompt installs the **plugin** — not just a
 bare server entry — and then stops. Paste it verbatim:
 
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. Approve the permission prompt if it asks, then stop — do not sign in or open a browser; I'll run `codex mcp login tahoe-public` myself and start a new session.
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, approving the permission prompt if asked. Then stop. Do not try to sign in or open a browser. Tell me to sign in myself and start a new session.
 
-The agent installs and stops; **you** run the sign-in command and start a new
-session.
+The agent installs and stops; **you** sign in and start a new session.
 
 ### Finish the install
 

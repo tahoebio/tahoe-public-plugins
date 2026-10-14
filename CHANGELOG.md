@@ -10,10 +10,12 @@ to semantic versioning.
   email self-sign-up) across the install docs, and quote the one-line install
   prompt verbatim in `docs/install.md`.
 - Give the Codex **terminal commands first** in the README and `docs/install.md`,
-  and make the agent install prompt **install-then-stop**: an agent cannot sign
-  the user in (MCP sign-in is the client's job, and a plugin install writes
-  outside the agent's sandbox), so the prompt tells the agent to install,
-  approve the permission prompt, and stop — never to sign in or open a browser.
+  and make the agent install prompt **install-then-stop**: an agent can neither
+  connect the server nor sign the user in (MCP sign-in is the client's job, and a
+  plugin install writes outside the agent's sandbox), so the prompt installs,
+  approves the permission prompt, and stops — it no longer says "connect to
+  Tara" or asks the agent to sign in or open a browser. The prompt is identical
+  to the server landing page's `ASK_AGENT_PROMPT`.
 - Name the private vulnerability-reporting route in `SECURITY.md` (GitHub private
   vulnerability reporting, with `tara@tahoebio.ai` as the fallback) and drop the
   unnamed-contact stub.

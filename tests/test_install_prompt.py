@@ -14,15 +14,19 @@ INSTALL_DOC_REL = "docs/install.md"
 
 #: The single-line install prompt quoted wherever the docs quote it. An agent
 #: can install the plugin but cannot sign in, so the prompt ends install-then-stop.
+#: Identical to the server landing page's `ASK_AGENT_PROMPT` (server PR #70).
 NEW_INSTALL_PROMPT = (
     "Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, "
-    "install the tara plugin, then connect to Tara. Approve the permission prompt "
-    "if it asks, then stop — do not sign in or open a browser; I'll run "
-    "`codex mcp login tahoe-public` myself and start a new session."
+    "install the tara plugin, approving the permission prompt if asked. Then stop. "
+    "Do not try to sign in or open a browser. Tell me to sign in myself and start "
+    "a new session."
 )
 
 #: The clause that makes the prompt install-then-stop, asserted on shipped text.
-STOP_CLAUSE = "then stop — do not sign in or open a browser"
+STOP_CLAUSE = "then stop. do not try to sign in or open a browser"
+
+#: Phrasings an agent cannot act on: it cannot connect the server or sign you in.
+AGENT_CANNOT_PHRASES = ("connect to tara", "connect me to tara", "sign me in")
 
 #: Docs that quote the install prompt, so its copies cannot drift apart.
 PROMPT_DOCS = (INSTALL_DOC_REL, "README.md")
@@ -109,9 +113,13 @@ def test_install_prompt_is_quoted_verbatim_in_every_doc():
 
 
 def test_agent_prompt_installs_then_stops_before_sign_in():
-    # An agent cannot sign the user in, so the quoted prompt must end install-then-stop.
+    # An agent cannot connect the server or sign the user in, so the quoted prompt
+    # must install and stop, and must never ask the agent to connect or sign in.
     for rel in PROMPT_DOCS:
-        assert STOP_CLAUSE in _flatten(rel), f"{rel} omits the install-then-stop clause"
+        text = _flatten(rel)
+        assert STOP_CLAUSE in text, f"{rel} omits the install-then-stop clause"
+        for phrase in AGENT_CANNOT_PHRASES:
+            assert phrase not in text, f"{rel} asks the agent to {phrase!r}"
 
 
 def test_docs_name_google_sign_in():
