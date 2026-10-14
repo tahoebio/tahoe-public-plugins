@@ -48,6 +48,7 @@ SHA-256 checksum is written next to the archive.
 
 ## Publication
 
-Publication is a separate, authorised step. It is blocked until licensing is
-decided and the live acceptance checks pass. Making the repository public is
-not a side effect of any other step.
+Publication is a separate, authorised step. Licensing is decided (see
+`LICENSE`, `LICENSE-CC-BY-4.0` and `NOTICE`); publication is blocked until the
+live acceptance checks pass. Making the repository public is not a side effect
+of any other step.

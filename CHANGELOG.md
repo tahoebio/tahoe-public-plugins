@@ -23,6 +23,24 @@ Plugin ↔ server compatibility.
   is returned it reports compatibility as unknown.
 - `docs/compatibility.md` gains a plugin ↔ server version table.
 
+Repository licensing.
+
+- Added `LICENSE` (Apache-2.0) for the plugin code and `LICENSE-CC-BY-4.0`
+  (CC BY 4.0) for the skill text and documentation, with a `NOTICE` recording
+  the attribution and the path map; `README.md` and `docs/data-and-licensing.md`
+  state which paths fall under which licence.
+- Both plugin manifests declare `license: Apache-2.0`, and the validator keeps
+  the field equal to the code licence in both hosts.
+- The release archive now ships `LICENSE`, `LICENSE-CC-BY-4.0` and `NOTICE` at
+  its root, so a recipient has the terms and the attribution without the
+  repository. The vendored `schemas/**` are named as the upstream's own
+  Apache-2.0 files, separate from this repository's grants.
+- The Tahoe brand mark (`plugins/tara/assets/tahoe-logo.png`) is carved out of
+  the Apache-2.0 map as not licensed (all rights reserved) in README, NOTICE and
+  the licensing doc, and the catch-all row names `evals/**` and root Markdown.
+- The decision: code Apache-2.0 (attribution and a patent grant); skill text
+  and docs CC BY 4.0; the served Tahoe-100M data CC0-1.0.
+
 ## 0.3.2 — unreleased
 
 - Decline out-of-scope parts of a question in one sentence and offer the nearest

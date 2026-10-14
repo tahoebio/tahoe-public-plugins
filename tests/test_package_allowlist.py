@@ -1,6 +1,7 @@
 """Packaging: exact manifests and reviewed assets, refusing unsafe paths."""
 
 import shutil
+import zipfile
 
 import pytest
 
@@ -8,6 +9,9 @@ from helpers import commit_all, git_repo, j
 from scripts import common, package
 
 MANIFESTS = {
+    "LICENSE": "Apache License\nVersion 2.0, January 2004\n",
+    "LICENSE-CC-BY-4.0": "Attribution 4.0 International\n",
+    "NOTICE": "Tahoe Bio Plugins\nCopyright 2026 Tahoe Bio\n",
     "plugins/tara/plugin.json": '{"name": "tara", "version": "1.0.0"}\n',
     "plugins/tara/mcp.json": '{"mcpServers": {}}\n',
     "plugins/tara/.claude-plugin/plugin.json": '{"name": "tara"}\n',
@@ -99,6 +103,20 @@ def test_repo_archive_is_exactly_the_manifest_files():
 def test_repo_archive_has_no_residue(tmp_path):
     archive, _ = package.build_release(common.REPO_ROOT, tmp_path)
     assert common.scan_archive(archive) == []
+
+
+def test_repo_archive_carries_both_licences_and_the_notice(tmp_path):
+    # The licence texts and the attribution notice must travel with the
+    # artifact, so a recipient need not also have the repository README.
+    archive, _ = package.build_release(common.REPO_ROOT, tmp_path)
+    with zipfile.ZipFile(archive) as members:
+        assert set(common.LICENSE_PATHS) <= set(members.namelist())
+        license_text = members.read(common.LICENSE_REL).decode()
+        cc_text = members.read(common.CC_LICENSE_REL).decode()
+        notice_text = members.read(common.NOTICE_REL).decode()
+    assert "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION" in license_text
+    assert "Creative Commons Attribution 4.0 International Public License" in cc_text
+    assert "Tahoe Bio" in notice_text
 
 
 def test_build_release_refuses_an_archive_with_residue(tmp_path):

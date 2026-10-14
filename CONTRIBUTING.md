@@ -1,6 +1,8 @@
 # Contributing
 
-> **Stub.** Contribution terms depend on the unresolved licensing decision.
+> Contributions are accepted under the repository licences: `Apache-2.0` for
+> code and `CC-BY-4.0` for skill text and documentation (see `LICENSE`,
+> `LICENSE-CC-BY-4.0` and `NOTICE`).
 
 ## Before a change
 

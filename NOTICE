@@ -1,0 +1,32 @@
+Tahoe Bio Plugins
+Copyright 2026 Tahoe Bio
+
+This repository combines parts with different rights. The full texts are in
+LICENSE (Apache-2.0) and LICENSE-CC-BY-4.0 (CC BY 4.0); the map below says which
+paths each covers.
+
+  - Plugin code, tooling, configuration, tests, the eval pack and root Markdown
+    — every path except the groups below.
+    Licence: Apache-2.0 (see LICENSE).
+
+  - Skill text and documentation — plugins/tara/skills/** and docs/**.
+    Licence: CC BY 4.0 (see LICENSE-CC-BY-4.0).
+
+  - Vendored third-party schemas — schemas/** (plugin.schema.json and
+    mcp.schema.json, from agent-plugins.org).
+    Licence: Apache-2.0 (upstream); their sources and checksums are recorded in
+    schemas/provenance.json.
+
+  - The Tahoe brand mark — plugins/tara/assets/tahoe-logo.png.
+    Licence: not licensed (all rights reserved); it is a trademark of Tahoe Bio
+    and neither licence in this repository covers it.
+
+  - The Tahoe-100M dataset served by the Tara service.
+    Licence: CC0-1.0 (https://huggingface.co/datasets/tahoebio/Tahoe-100M).
+    The data is not stored in this repository.
+
+Trademarks: "Tahoe" and "Tara" are trademarks of Tahoe Bio. No licence in this
+repository grants any right to use them.
+
+The software and documentation are provided "as is", without warranty of any
+kind, express or implied.
