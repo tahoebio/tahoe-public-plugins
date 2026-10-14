@@ -39,8 +39,15 @@ Run once per host.
    without a daemon — the endpoint is remote.
 3. Reload the plugin or start a new session, so the tools appear.
 4. Call `list_releases` through the agent. Record the release identifiers.
-5. Call `get_expression_slice` for a small, known request (for example two genes
-   and two conditions) and record the returned provenance and request manifest.
+5. Call `get_expression_slice` for a small, known request and record the
+   returned provenance and request manifest. Use one gene and one drug, without
+   matched controls — for example `genes=["DUSP6"]`, `conditions=["Binimetinib"]`,
+   `include_matched_controls=false` — which returns one complete response
+   (`truncated=false`). Responses are capped by size, so a request with several
+   genes or with matched controls can come back `truncated=true`, and a later
+   gene can be missing entirely. A truncated response is reported as such and
+   is not an install failure: record `truncated` and `truncation_reasons`, and
+   narrow the request rather than reading a partial response as complete.
 
 ## Case B — direct server add (advanced fallback)
 
