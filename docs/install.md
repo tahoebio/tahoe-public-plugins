@@ -11,14 +11,20 @@ using it.
 
 ## Install the plugin
 
-This is the primary path: install the plugin from Tahoe's own marketplace.
+This is the primary path: install the plugin from Tahoe's own marketplace. Run
+the commands in a terminal — not through an agent, which cannot sign you in.
 
 ### Codex CLI
+
+Run these in a terminal, in order:
 
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
+codex mcp login tahoe-public      # opens the browser: Allow Access → Google
 ```
+
+Then start a **new Codex session** so the tools load.
 
 ### Claude Code
 
@@ -27,25 +33,26 @@ claude plugin marketplace add tahoebio/tahoe-public-plugins
 claude plugin install tara@tahoe-public
 ```
 
-### One prompt instead
+Then **restart Claude Code** and sign in with `/mcp` (or on first use).
 
-Ask your agent to install the plugin from the marketplace above. The prompt
-installs the **plugin**, not just a bare server entry. Paste it verbatim:
+### Ask your agent instead
 
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. I'll sign in with Google in the browser.
+An agent can install the plugin, but it **cannot sign you in**: MCP sign-in is
+done by the client, and the install writes outside the agent's sandbox, so the
+agent must ask for permission. The prompt installs the **plugin** — not just a
+bare server entry — and then stops. Paste it verbatim:
+
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. Approve the permission prompt if it asks, then stop — do not sign in or open a browser; I'll run `codex mcp login tahoe-public` myself and start a new session.
+
+The agent installs and stops; **you** run the sign-in command and start a new
+session.
 
 ### Finish the install
 
-Sign-in is **Google**, in the browser the client opens. The credential is stored
-by the client; no token is copied by hand.
-
-- **Codex CLI** — run `codex mcp login tahoe-public` to sign in.
-- **Claude Code** — the client prompts for sign-in on first use, or run `/mcp`
-  to connect the server.
-
-The tools load at session start, so **restart Claude Code or start a new Codex
-session** so they appear. A plugin installed without an interactive terminal
-connects in the next session.
+Sign-in is **Google**, in the browser the client opens; the credential is stored
+by the client and no token is copied by hand. The tools load at session start, so
+**restart the client** after installing — a plugin installed without an
+interactive terminal connects in the next session.
 
 > **Remove and re-add an older connection.** A `tahoe-public` connection added
 > before 2026-10-14 predates the Google sign-in. Remove it and add it again so

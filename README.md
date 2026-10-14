@@ -12,10 +12,15 @@ Tahoe-100M question to the right tool; the service then serves the data.
 
 ### Codex CLI
 
+Run these in a terminal, in order:
+
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
+codex mcp login tahoe-public      # opens the browser: Allow Access → Google
 ```
+
+Then start a **new Codex session** so the tools load.
 
 ### Claude Code
 
@@ -24,11 +29,16 @@ claude plugin marketplace add tahoebio/tahoe-public-plugins
 claude plugin install tara@tahoe-public
 ```
 
-Either way, sign in with **Google** in the browser the client opens — Codex with
-`codex mcp login tahoe-public`, Claude Code on first use or via `/mcp`. The tools
-load at session start, so **restart Claude Code or start a new Codex session**
-afterwards. Full steps, including the one-prompt variant and the advanced
-direct-server option, are in `docs/install.md`.
+Restart Claude Code, then sign in with `/mcp` (or on first use).
+
+### Ask your agent instead
+
+An agent can install the plugin but cannot sign you in. Paste this prompt; it
+installs and then stops:
+
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. Approve the permission prompt if it asks, then stop — do not sign in or open a browser; I'll run `codex mcp login tahoe-public` myself and start a new session.
+
+Full steps, including the advanced direct-server option, are in `docs/install.md`.
 
 ## Layout
 

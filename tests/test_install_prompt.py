@@ -12,12 +12,20 @@ from scripts import common
 
 INSTALL_DOC_REL = "docs/install.md"
 
-#: The single-line install prompt quoted wherever the docs quote it.
+#: The single-line install prompt quoted wherever the docs quote it. An agent
+#: can install the plugin but cannot sign in, so the prompt ends install-then-stop.
 NEW_INSTALL_PROMPT = (
     "Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, "
-    "install the tara plugin, then connect to Tara. I'll sign in with Google in "
-    "the browser."
+    "install the tara plugin, then connect to Tara. Approve the permission prompt "
+    "if it asks, then stop — do not sign in or open a browser; I'll run "
+    "`codex mcp login tahoe-public` myself and start a new session."
 )
+
+#: The clause that makes the prompt install-then-stop, asserted on shipped text.
+STOP_CLAUSE = "then stop — do not sign in or open a browser"
+
+#: Docs that quote the install prompt, so its copies cannot drift apart.
+PROMPT_DOCS = (INSTALL_DOC_REL, "README.md")
 
 #: The Codex sign-in and remove commands, composed from the server-name constant.
 CODEX_LOGIN = f"codex mcp login {common.MCP_SERVER_NAME}"
@@ -93,10 +101,17 @@ def _assert_phrases_absent(rel: str, phrases: tuple[str, ...], claim: str) -> No
         assert phrase not in text, f"{rel} {claim}: {phrase!r}"
 
 
-def test_install_doc_quotes_the_new_prompt_verbatim():
-    assert NEW_INSTALL_PROMPT in (common.REPO_ROOT / INSTALL_DOC_REL).read_text(
-        encoding="utf-8"
-    )
+def test_install_prompt_is_quoted_verbatim_in_every_doc():
+    for rel in PROMPT_DOCS:
+        assert NEW_INSTALL_PROMPT in (common.REPO_ROOT / rel).read_text(
+            encoding="utf-8"
+        ), f"{rel} quotes a different install prompt"
+
+
+def test_agent_prompt_installs_then_stops_before_sign_in():
+    # An agent cannot sign the user in, so the quoted prompt must end install-then-stop.
+    for rel in PROMPT_DOCS:
+        assert STOP_CLAUSE in _flatten(rel), f"{rel} omits the install-then-stop clause"
 
 
 def test_docs_name_google_sign_in():
