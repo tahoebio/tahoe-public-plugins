@@ -5,9 +5,13 @@ to semantic versioning.
 
 ## 0.3.4 — unreleased
 
-- Quote the one-line install prompt verbatim in `docs/install.md`, and replace
-  the promised GitHub sign-in across the install docs, README and the
-  clean-machine verification script with Google-or-email sign-in in the browser.
+- Correct the public docs for the open Google sign-in: drop the private-preview
+  and publication-blocker claims from the README, promise Google (not GitHub, not
+  email self-sign-up) across the install docs, and quote the one-line install
+  prompt verbatim in `docs/install.md`.
+- Document the restart step — tools load at session start — and the Codex
+  `codex mcp login tahoe-public` sign-in, and note that a `tahoe-public`
+  connection from before 2026-10-14 must be removed and re-added.
 - Add the existing Tahoe brand mark as Tara's Codex listing logo and composer
   icon, and include it in release archives.
 - Pin the approved logo's SHA-256 digest for working-tree, archive and history

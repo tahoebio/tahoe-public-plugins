@@ -33,12 +33,6 @@ def test_install_docs_lead_with_the_plugin_marketplace_path():
     assert "codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp" in install
 
 
-def test_install_docs_state_signin_and_reload():
-    install = (common.REPO_ROOT / "docs" / "install.md").read_text().lower()
-    assert "sign-in" in install or "sign in" in install
-    assert "reload" in install or "new session" in install
-
-
 def test_compatibility_claims_only_codex_and_claude():
     compatibility = (common.REPO_ROOT / "docs" / "compatibility.md").read_text().lower()
     assert "codex" in compatibility

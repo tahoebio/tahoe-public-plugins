@@ -32,15 +32,24 @@ claude plugin install tara@tahoe-public
 Ask your agent to install the plugin from the marketplace above. The prompt
 installs the **plugin**, not just a bare server entry. Paste it verbatim:
 
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. I'll sign in with Google or email in the browser.
+> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, then connect to Tara. I'll sign in with Google in the browser.
 
 ### Finish the install
 
-- Complete the **Google or email sign-in** the client opens in the browser.
-  Approve the consent screen; the credential is stored by the client and no
-  token is copied by hand.
-- **Reload the plugin or start a new session** so the tools appear. A plugin
-  installed without an interactive terminal connects in the next session.
+Sign-in is **Google**, in the browser the client opens. The credential is stored
+by the client; no token is copied by hand.
+
+- **Codex CLI** — run `codex mcp login tahoe-public` to sign in.
+- **Claude Code** — the client prompts for sign-in on first use, or run `/mcp`
+  to connect the server.
+
+The tools load at session start, so **restart Claude Code or start a new Codex
+session** so they appear. A plugin installed without an interactive terminal
+connects in the next session.
+
+> **Remove and re-add an older connection.** A `tahoe-public` connection added
+> before 2026-10-14 predates the Google sign-in. Remove that connection and add
+> it again so it signs in with Google.
 
 > **Codex "Run without daemon" dialog.** Codex may present a **Run without
 > daemon** prompt the first time it uses this server. Continue without a daemon:
@@ -61,8 +70,10 @@ codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp
 claude mcp add --transport http --scope user tahoe-public https://tara.tahoebio.io/mcp
 ```
 
-`codex mcp add` starts the sign-in flow itself. This route skips the plugin
-metadata, so it is documented as a fallback rather than the primary install.
+Sign in with Google as above — Codex with `codex mcp login tahoe-public`, Claude
+Code on first use or via `/mcp` — then restart the client. This route skips the
+plugin metadata, so it is documented as a fallback rather than the primary
+install.
 
 ## What the plugin ships
 

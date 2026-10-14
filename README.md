@@ -1,15 +1,8 @@
 # Tahoe Bio Plugins
 
-Private preview — not published, not a supported release.
-
 The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
 plugin is **Tara**, which connects your own agent to the public Tahoe-100M
 dataset service.
-
-> **Status: private preview.** Nothing here is published or supported yet, but
-> its licensing is decided (see [Licence](#licence) below). The plugin ships the
-> `tahoe-public` server endpoint; the clean-machine install and sign-in have not
-> yet been verified end to end (see `docs/install-verification.md`).
 
 ## Install
 
@@ -31,10 +24,11 @@ claude plugin marketplace add tahoebio/tahoe-public-plugins
 claude plugin install tara@tahoe-public
 ```
 
-Either way, sign in with Google or email in the browser the client opens, then
-**reload the plugin or start a new session** so the tools appear. Full steps,
-including the one-prompt variant and the advanced direct-server option, are in
-`docs/install.md`.
+Either way, sign in with **Google** in the browser the client opens — Codex with
+`codex mcp login tahoe-public`, Claude Code on first use or via `/mcp`. The tools
+load at session start, so **restart Claude Code or start a new Codex session**
+afterwards. Full steps, including the one-prompt variant and the advanced
+direct-server option, are in `docs/install.md`.
 
 ## Layout
 
