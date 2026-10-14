@@ -19,8 +19,9 @@ Skill drift against server 0.3.21 (ML-420).
   `rate_limited` is named in both the reference and the skill body.
 - A test and the validator (`scripts/validate.py`) pin the server error
   vocabulary and fail when any type is undocumented or invented.
-- Make the sign-in wording provider-neutral (GitHub during the preview) in the
-  install and compatibility docs.
+- Name Google sign-in (not GitHub) in the install and compatibility docs, and
+  drop the preview wording; the skill's identity guidance says to sign in with
+  Google.
 - Note in the skill that if another installed skill also claims the name `tara`,
   this one is the one wired to the public tools.
 

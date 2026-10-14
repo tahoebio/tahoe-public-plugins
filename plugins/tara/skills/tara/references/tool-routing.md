@@ -97,7 +97,7 @@ Caller-fixable — correct the request and retry:
 |---|---|
 | `bad_request` | An argument is out of range or malformed. |
 | `not_found` | The named condition, gene, topic, table or handle is not in the release. |
-| `missing_identity` | Sign in through the connector, then retry. |
+| `missing_identity` | Sign in with Google through the connector, then retry. |
 | `too_large` | The request body exceeds the service's bound; send a smaller request. |
 | `response_too_large` | The response could not be trimmed to fit; narrow the request (aggregate in SQL, fewer genes or lines). |
 | `not_read_only` | A `run_sql` statement was not a read-only `SELECT`/`WITH`/`UNION`. |

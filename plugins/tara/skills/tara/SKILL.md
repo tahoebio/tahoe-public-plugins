@@ -82,7 +82,8 @@ or paging a full single-cell matrix. A row limit is not a scan-cost cap.
 - For `pending`, poll the same tool with the same arguments and `result_handle`.
   Do not submit a duplicate query. Keep handles in the execution record.
 - A `bad_request` needs corrected arguments; `not_found` needs verified labels
-  or a valid handle. See the routing reference for the SQL refusals.
+  or a valid handle; `missing_identity` needs a Google sign-in through the
+  connector. See the routing reference for the SQL refusals.
 - Operational refusals need waiting, not retrying. `rate_limited` (HTTP 429)
   carries a `Retry-After` hint in whole seconds — wait that long, never retry
   immediately. `service_paused` (HTTP 503) means the operator paused the
