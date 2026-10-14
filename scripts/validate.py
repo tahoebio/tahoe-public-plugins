@@ -246,6 +246,22 @@ def validate_tool_contract(root: Path = common.REPO_ROOT) -> None:
         )
 
 
+def validate_error_vocabulary(root: Path = common.REPO_ROOT) -> None:
+    """Fail when the routing reference's error table drifts from the pinned
+    server error set — a server error the skill never names leaves the agent
+    without guidance."""
+    text = (root / common.ROUTING_REL).read_text(encoding="utf-8")
+    documented = common.documented_error_types(text)
+    missing = sorted(common.PINNED_SERVER_ERROR_TYPES - documented)
+    invented = sorted(documented - common.PINNED_SERVER_ERROR_TYPES)
+    if missing or invented:
+        raise common.RepoError(
+            "the error vocabulary drifted from the pinned server error set "
+            f"(revision {common.PINNED_SERVER_ERROR_TYPES_REVISION}): missing "
+            f"{missing}, unexpected {invented}"
+        )
+
+
 def validate_skill(root: Path = common.REPO_ROOT) -> None:
     """Enforce the skill payload's shape, budgets and vocabulary.
 
@@ -334,6 +350,7 @@ def validate_all(
     validate_min_server_version(root)
     validate_versions(root)
     validate_tool_contract(root)
+    validate_error_vocabulary(root)
     validate_skill(root)
     validate_residue(root, ref=ref, all_refs=all_refs)
 

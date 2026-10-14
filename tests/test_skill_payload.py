@@ -172,15 +172,13 @@ def test_the_contract_lists_exactly_the_pinned_live_tools():
 
 
 def test_every_pinned_tool_is_named_in_the_routing_reference():
-    routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
-    text = routing.read_text(encoding="utf-8")
+    text = _routing_text()
     for name in sorted(common.PINNED_PUBLIC_TOOLS):
         assert f"`{name}" in text, name
 
 
 def test_worked_cell_line_lookup_matches_the_cvcl_id_used_by_data_calls():
-    routing = (common.REPO_ROOT / common.SKILL_DIR_REL / "references" / "tool-routing.md")
-    text = routing.read_text(encoding="utf-8")
+    text = _routing_text()
     assert 'list_cell_lines(query="A549")' in text
     assert 'list_cell_lines(organ="Lung")' in text
     worked_calls = text.split("## Worked calls", 1)[1].split("## Response contract", 1)[0]
@@ -277,3 +275,67 @@ def test_unserved_rows_do_not_point_at_a_route_outside_the_tools():
         lowered = " ".join(body.split()).lower()
         assert "see the public release" not in lowered, rel
         assert "hugging face" not in lowered, rel
+
+
+# --- the error vocabulary the live server can return (pinned to server code) ---
+
+
+def _routing_text() -> str:
+    return (common.REPO_ROOT / common.ROUTING_REL).read_text(encoding="utf-8")
+
+
+def test_every_server_error_type_is_documented_in_the_routing_reference():
+    """A server error the skill never names leaves the agent with no guidance —
+    the paused-service 503 was exactly that. Every `error_type` the public MCP
+    can return must appear in the routing reference's error table."""
+    documented = common.documented_error_types(_routing_text())
+    missing = sorted(common.PINNED_SERVER_ERROR_TYPES - documented)
+    assert missing == [], (
+        f"tool-routing.md does not document: {missing} "
+        f"(server error set pinned at {common.PINNED_SERVER_ERROR_TYPES_REVISION})"
+    )
+
+
+def test_the_error_table_names_no_type_the_server_cannot_return():
+    documented = common.documented_error_types(_routing_text())
+    invented = sorted(documented - common.PINNED_SERVER_ERROR_TYPES)
+    assert invented == [], f"tool-routing.md documents unknown error types: {invented}"
+
+
+def test_the_error_table_explains_the_retry_after_hint():
+    """An exhausted allowance answers with a Retry-After hint; the reference must
+    tell the agent to read it rather than retry immediately. The presence of the
+    three operational error names is owned by the vocabulary test above."""
+    text = " ".join(_routing_text().split())
+    assert "rate_limited" in text
+    assert "Retry-After" in text
+
+
+def test_skill_response_handling_covers_the_operational_refusals():
+    """The skill body must name the operational refusals it expects an agent to
+    handle, not only the per-argument errors."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    for token in ("rate_limited", "service_paused", "store_unavailable", "Retry-After"):
+        assert token in body, token
+
+
+# --- the frozen expected values pin a served version ---
+
+
+def test_frozen_expected_values_pin_a_served_server_version_and_guide_version():
+    """The frozen pack must pin a concrete served `server_version` (at or above
+    the manifest floor) and a 64-hex `guide_version`, so a stale pin is visible.
+    (Currency — that the pin is the *current* one — is a manual re-freeze, which
+    an offline test cannot check.)"""
+    text = (common.REPO_ROOT / "evals" / "tara" / "frozen-expected-0.3.x.md").read_text(
+        encoding="utf-8"
+    )
+    assert re.search(r"guide_version[^\n]*[0-9a-f]{64}", text), (
+        "the pack pins no 64-hex guide_version"
+    )
+    match = re.search(r"server_version[^\n]*?([0-9]+\.[0-9]+\.[0-9]+)", text)
+    assert match, "the pack pins no server_version"
+    minimum = common.min_server_version(_config(common.PLUGIN_MANIFEST_REL))
+    assert not common.server_version_is_below(match.group(1), minimum)
+
+

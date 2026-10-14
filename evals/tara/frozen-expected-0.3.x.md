@@ -9,10 +9,28 @@ the prompt files and do not change with a re-freeze.
 
 | Field | Value |
 |---|---|
-| `server_version` | 0.3.9 and 0.3.10 (the service was upgraded during the window; each reference run recorded its own version, and the two models' runs of E1, E5 and A5 straddle the upgrade and agree) |
+| `server_version` | 0.3.21 (re-frozen; the values were first taken on 0.3.9 and 0.3.10 and the served `release` is unchanged, so they reproduce on either) |
 | `release` | `tahoe-100m/v1` |
-| `guide_version` | `c89b154d8b61059b778d673574d34e98259e527632b68c040c92cf10139fa3b2` |
-| Frozen | 2026-10-12 and 2026-10-13, one reference run per prompt on each of two models; numbers agree between models unless noted |
+| `guide_version` | `2352b2b233d123f30db8b04bc40fab6b35c6ad8122fe2e092e2c9118012ec8f2` |
+| Re-frozen | 2026-10-13 against server 0.3.21 (provenance re-read live, E2/E3/E5 re-verified — see below); first frozen 2026-10-12 and 2026-10-13 on 0.3.9–0.3.10, one reference run per prompt on each of two models, numbers agreeing between models unless noted |
+
+## Re-freeze record — 2026-10-13, server 0.3.21
+
+The guide's `guide_version` changed at server **0.3.19** (the worked examples were
+reformatted and the guide was fitted under the 40 KB response envelope); the
+scientific prose and the served `release` did not change, so the values below are
+unchanged and only the pin moves. Re-read live on 0.3.21: `health()` and
+`list_releases()` (`0.3.21`, `tahoe-100m/v1`) and
+`get_guide(topic="establish-the-analysis-contract")` (`guide_version` above).
+Re-verified live against 0.3.21: E5's cosine distances (all eight plate/line
+rows), E3's A549 and A-427 survival scores, and E2's `palbociclib` annotation
+(targets, mechanism, approval) and its three dose arms. E1, E4 and set A were not
+re-run: their values are release-derived, and the release is unchanged.
+
+One correction: `get_drug_info` matches `query` literally and case-sensitively,
+so E2's route uses the release's own lowercase label `palbociclib` — not
+`Palbociclib`, which returns no rows.
+
 
 Gene values are the released log2 fold change versus same-plate, same-line
 vehicle. Pathway scores are dimensionless and already vehicle-subtracted. Cell
@@ -35,7 +53,7 @@ The expression-slice route of E1 has no frozen values (no recorded run followed 
 ## E2
 
 Prompt: [E2.md](E2.md). Route: `search_conditions(query="albociclib")`,
-`get_drug_info(query="Palbociclib")`, `list_cell_lines()` filtered on the CDKN2A
+`get_drug_info(query="palbociclib")`, `list_cell_lines()` filtered on the CDKN2A
 driver annotation.
 
 - Label `palbociclib` (lowercase); doses 0.05, 0.5 and 5 µM; targets CDK4, CDK6;

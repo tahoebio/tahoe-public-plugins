@@ -59,8 +59,10 @@ SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
 #: SKILL.md frontmatter is deliberately flat (``name`` and a single-line
 #: ``description``), so a full YAML parser is unnecessary.
 _FRONTMATTER_RE = re.compile(r"\A---\n(?P<body>.*?)\n---\n", re.DOTALL)
-#: A tool-contract table row whose first cell is a backticked tool name.
-_TOOL_CONTRACT_CELL_RE = re.compile(r"^\|\s*`([a-z][a-z0-9_]*)`\s*\|")
+#: A table row whose first cell is a backticked lowercase identifier: a tool
+#: name in the tool-contract table, or an `error_type` in the routing reference's
+#: error table. One shape, so one pattern.
+_TABLE_ROW_FIRST_CELL_RE = re.compile(r"^\|\s*`([a-z][a-z0-9_]*)`\s*\|")
 #: A level-2 heading, delimiting a section of the tool-contract doc.
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 #: The tool-contract sections: the live surface, and the not-yet-served one.
@@ -89,8 +91,50 @@ PINNED_PUBLIC_TOOLS = frozenset(
         "send_feedback",
     }
 )
+
+#: The error vocabulary the public MCP can hand a caller, at the pinned server
+#: revision: `server/contracts.py`'s `ERROR_TYPES` (a tool envelope's
+#: `error_type`) plus the admission-gate denials in `server/admission.py`
+#: (`service_paused`, `store_unavailable`), which are HTTP-level refusals and so
+#: sit OUTSIDE `ERROR_TYPES`. The routing reference's error table must cover every
+#: one, so a new server error fails validation until the docs are synced.
+PINNED_SERVER_ERROR_TYPES_REVISION = "b5636902260cf65be124e9583088df4000a5cff9"
+PINNED_SERVER_ERROR_TYPES = frozenset(
+    {
+        # contracts.ERROR_TYPES -- the tool-envelope vocabulary.
+        "bad_request",
+        "not_read_only",
+        "multiple_statements",
+        "parse_failed",
+        "warehouse_not_found",
+        "permission_denied",
+        "not_found",
+        "conflict",
+        "rate_limited",
+        "timeout",
+        "execution_failed",
+        "canceled",
+        "missing_identity",
+        "server_misconfigured",
+        "databricks_error",
+        "too_large",
+        "table_not_allowed",
+        "function_not_allowed",
+        "filter_required",
+        "query_too_costly",
+        "response_too_large",
+        "registry_stale",
+        "schema_unavailable",
+        "unknown",
+        # admission-gate denials (HTTP-level, outside ERROR_TYPES).
+        "service_paused",
+        "store_unavailable",
+    }
+)
 _LIVE_TOOLS_SECTION = "Tools"
 _PLANNED_TOOLS_SECTION = "Not yet served"
+#: The routing reference's error-table heading, whose rows name `error_type`s.
+_ERRORS_SECTION = "Errors worth recognizing"
 #: The phrase that must sit beside a not-yet-served tool's name in shipped text,
 #: so a planned tool can never read as live.
 COMING_SOON_MARKER = "available once the server advertises"
@@ -120,10 +164,12 @@ _MARKDOWN_LINK_RE = re.compile(r"\]\(([^)]+)\)")
 #: ceiling, so the single-source projection never has to trim.
 SKILL_DIR_REL = f"plugins/{PLUGIN_NAME}/skills/{PLUGIN_NAME}"
 SKILL_MD_REL = f"{SKILL_DIR_REL}/SKILL.md"
+#: The routing reference, named once so its path is never re-derived by hand.
+ROUTING_REL = f"{SKILL_DIR_REL}/references/tool-routing.md"
 REFERENCE_RELS = (
     f"{SKILL_DIR_REL}/references/analysis-guidelines.md",
     f"{SKILL_DIR_REL}/references/data-catalog.md",
-    f"{SKILL_DIR_REL}/references/tool-routing.md",
+    ROUTING_REL,
     f"{SKILL_DIR_REL}/references/sql-guidance.md",
 )
 SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
@@ -333,8 +379,13 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     return fields
 
 
-def _tool_contract_rows(text: str, heading: str) -> frozenset[str]:
-    """Tool names in the table under ``heading`` of the tool-contract doc."""
+def _section_rows(text: str, heading: str) -> frozenset[str]:
+    """The first-cell names in the table under a level-2 ``heading``.
+
+    One section walker for both the tool-contract table and the routing
+    reference's error table: rows are the lines whose first cell is a backticked
+    lowercase identifier, and level-3 sub-headings do not end the section.
+    """
     sections = list(_SECTION_RE.finditer(text))
     for index, match in enumerate(sections):
         if match.group(1).strip() != heading:
@@ -344,9 +395,19 @@ def _tool_contract_rows(text: str, heading: str) -> frozenset[str]:
         return frozenset(
             row.group(1)
             for line in body.splitlines()
-            if (row := _TOOL_CONTRACT_CELL_RE.match(line))
+            if (row := _TABLE_ROW_FIRST_CELL_RE.match(line))
         )
     return frozenset()
+
+
+def documented_error_types(text: str) -> frozenset[str]:
+    """Error types named in the error table of the routing reference.
+
+    Rows are read under the level-2 heading ``## Errors worth recognizing`` and
+    must begin with a backticked ``error_type``. Sub-headings are level-3, so the
+    section's rows are collected across every group it lists.
+    """
+    return _section_rows(text, _ERRORS_SECTION)
 
 
 def known_tools(root: Path = REPO_ROOT) -> frozenset[str]:
@@ -356,7 +417,7 @@ def known_tools(root: Path = REPO_ROOT) -> frozenset[str]:
     mention check and the docs cannot drift apart.
     """
     text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
-    return _tool_contract_rows(text, _LIVE_TOOLS_SECTION)
+    return _section_rows(text, _LIVE_TOOLS_SECTION)
 
 
 def planned_tools(root: Path = REPO_ROOT) -> frozenset[str]:
@@ -365,7 +426,7 @@ def planned_tools(root: Path = REPO_ROOT) -> frozenset[str]:
     A skill may name one only beside the coming-soon marker, and never as live.
     """
     text = (root / TOOL_CONTRACT_REL).read_text(encoding="utf-8")
-    return _tool_contract_rows(text, _PLANNED_TOOLS_SECTION)
+    return _section_rows(text, _PLANNED_TOOLS_SECTION)
 
 
 def backticked_tokens(text: str) -> list[str]:

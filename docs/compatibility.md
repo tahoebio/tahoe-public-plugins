@@ -26,13 +26,15 @@ published expected values hold.
 
 | Plugin | Minimum server | Frozen against |
 |---|---|---|
-| 0.3.4 | 0.3.9 | `evals/tara/frozen-expected-0.3.x.md` |
+| 0.3.5 | 0.3.9 | `evals/tara/frozen-expected-0.3.x.md` |
 
-The frozen expected values were taken during the 0.3.9 → 0.3.10 upgrade window
-(2026-10-12 and 2026-10-13). The prompts whose runs straddle the upgrade agree on
-both versions, so 0.3.9 — the earliest server the values were taken on — is the
-floor. Values are re-frozen when `server_version`, `release` or `guide_version`
-changes.
+The frozen expected values were first taken during the 0.3.9 → 0.3.10 upgrade
+window (2026-10-12 and 2026-10-13) and **re-frozen on 2026-10-13 against server
+0.3.21**. The served `release` did not change, so the values reproduce on either,
+and 0.3.9 — the earliest server the values were taken on — remains the floor.
+Values are re-frozen when `server_version`, `release` or `guide_version` changes;
+the 0.3.21 re-freeze moved the `guide_version` pin (the guide's worked examples
+changed at 0.3.19) and re-verified the E2, E3 and E5 values live.
 
 ## Not claimed
 
