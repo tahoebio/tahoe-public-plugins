@@ -84,15 +84,16 @@ licence below, and the full texts are in `LICENSE` (Apache-2.0),
 |------|----------------|
 | `plugins/tara/skills/**` — the `tara` skill and its references | `CC-BY-4.0` |
 | `docs/**` — the public documentation | `CC-BY-4.0` |
-| Everything else — plugin code, manifests, tooling, tests, CI | `Apache-2.0` |
+| `schemas/**` — third-party schemas vendored from agent-plugins.org | `Apache-2.0` (upstream) |
+| Tahoe's plugin code, manifests, tooling, tests and CI — every other path | `Apache-2.0` |
 
 The **skill text and the documentation are CC BY 4.0**: reuse them, including
-commercially, with attribution to Tahoe Bio. The **code is Apache-2.0**:
-reuse it under the same terms, with the patent grant that licence carries.
+commercially, with attribution to Tahoe Bio. Tahoe's **code is Apache-2.0**:
+reuse it under the same terms, with the patent grant that licence carries. The
+vendored `schemas/**` are the third party's own files, licensed Apache-2.0
+upstream; `schemas/provenance.json` records each source.
 
 The Tahoe-100M dataset the service serves is a separate grant — **CC0-1.0** —
 and is not stored in this repository. The service's runtime guidance, the
 gene-set names and the "Tahoe" and "Tara" trademarks are not covered by either
-licence here; see `docs/data-and-licensing.md`. The vendored schemas under
-`schemas/` keep their upstream terms (`schemas/provenance.json` records their
-sources).
+licence here; see `docs/data-and-licensing.md`.

@@ -5,22 +5,21 @@ This repository combines parts with different rights. The full texts are in
 LICENSE (Apache-2.0) and LICENSE-CC-BY-4.0 (CC BY 4.0); the map below says which
 paths each covers.
 
-  - Plugin code, tooling, configuration and tests — every path except the two
+  - Plugin code, tooling, configuration and tests — every path except the three
     groups below.
     Licence: Apache-2.0 (see LICENSE).
 
   - Skill text and documentation — plugins/tara/skills/** and docs/**.
     Licence: CC BY 4.0 (see LICENSE-CC-BY-4.0).
 
+  - Vendored third-party schemas — schemas/** (plugin.schema.json and
+    mcp.schema.json, from agent-plugins.org).
+    Licence: Apache-2.0 (upstream); their sources and checksums are recorded in
+    schemas/provenance.json.
+
   - The Tahoe-100M dataset served by the Tara service.
     Licence: CC0-1.0 (https://huggingface.co/datasets/tahoebio/Tahoe-100M).
     The data is not stored in this repository.
-
-Third-party components:
-
-  - schemas/plugin.schema.json and schemas/mcp.schema.json are vendored from
-    agent-plugins.org and remain under their upstream terms; their sources and
-    checksums are recorded in schemas/provenance.json.
 
 Trademarks: "Tahoe" and "Tara" are trademarks of Tahoe Bio. No licence in this
 repository grants any right to use them.

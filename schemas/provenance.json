@@ -1,17 +1,19 @@
 {
   "retrieved": "2026-10-06",
-  "note": "Third-party schemas vendored verbatim so the offline test suite needs no network. Field names in this repository are taken from these schemas and the build docs below; no field is invented.",
+  "note": "Third-party schemas vendored verbatim so the offline test suite needs no network. Field names in this repository are taken from these schemas and the build docs below; no field is invented. The vendored schemas are the upstream's own files and are licensed Apache-2.0 upstream; they are not covered by this repository's CC BY 4.0 grant (see NOTICE).",
   "sources": [
     {
       "name": "Agent Plugins plugin manifest schema (1.0.0)",
       "url": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
       "vendored_as": "schemas/plugin.schema.json",
+      "license": "Apache-2.0",
       "sha256": "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
     },
     {
       "name": "Agent Plugins MCP configuration schema (1.0.0)",
       "url": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
       "vendored_as": "schemas/mcp.schema.json",
+      "license": "Apache-2.0",
       "sha256": "6539175bfcdf43085855183e86da40ea94b166547a72b47ae9a0a390516d3acb"
     },
     {

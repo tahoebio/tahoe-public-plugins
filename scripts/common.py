@@ -142,10 +142,21 @@ TOOL_CONTRACT_REL = "docs/public-tool-contract.md"
 #: separate grant (CC BY 4.0); see LICENSE, LICENSE-CC-BY-4.0 and NOTICE.
 CODE_LICENSE = "Apache-2.0"
 
+#: The licence files that must travel with the plugin: the code licence, the
+#: skill-and-docs licence, and the attribution notice. The release archive ships
+#: them at its root, so a recipient can see the terms and the attribution
+#: without the repository README.
+LICENSE_REL = "LICENSE"
+CC_LICENSE_REL = "LICENSE-CC-BY-4.0"
+NOTICE_REL = "NOTICE"
+LICENSE_PATHS = (LICENSE_REL, CC_LICENSE_REL, NOTICE_REL)
+
 #: The exact files that make up the release archive. An explicit list, not a
-#: directory prefix: the plugin ships connection manifests, its skill and the
-#: reviewed brand logo. Dotfiles are permitted only by being named here.
+#: directory prefix: the plugin ships connection manifests, its skill, its
+#: licence files and the reviewed brand logo. Dotfiles are permitted only by
+#: being named here.
 ARCHIVE_ALLOWLIST = (
+    *LICENSE_PATHS,
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
@@ -169,9 +180,7 @@ GENERATED_SUFFIXES = (".pyc", ".pyo", ".zip", ".sha256", ".egg-info")
 #: Paths the repository layout is required to contain.
 REQUIRED_LAYOUT = (
     "README.md",
-    "LICENSE",
-    "LICENSE-CC-BY-4.0",
-    "NOTICE",
+    *LICENSE_PATHS,
     "AGENTS.md",
     "SECURITY.md",
     "CONTRIBUTING.md",

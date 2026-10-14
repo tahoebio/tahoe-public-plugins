@@ -15,7 +15,7 @@ attribution and the path map.
 | Data | The Tahoe-100M dataset the service serves | `CC0-1.0` |
 | Service guidance | Server instructions, tool descriptions, any guide the service returns | Not licensed for redistribution |
 | Gene-set names | Names from the source collections | The source collection's terms |
-| Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` | The upstream terms (`schemas/provenance.json`) |
+| Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` (from agent-plugins.org) | `Apache-2.0` (upstream; `schemas/provenance.json`) |
 | Trademarks | "Tahoe", "Tara" | Not licensed |
 
 ## Plugin code — Apache-2.0
@@ -54,8 +54,10 @@ Reactome, KEGG, WikiPathways, BioCarta and PID.
 ## Vendored schemas
 
 `schemas/plugin.schema.json` and `schemas/mcp.schema.json` are vendored
-verbatim from agent-plugins.org and remain under their upstream terms;
-`schemas/provenance.json` records each source and its checksum.
+verbatim from agent-plugins.org and are the upstream's own files, licensed
+Apache-2.0 upstream — they are not covered by this repository's CC BY 4.0
+grant. `schemas/provenance.json` records each source, its licence and its
+checksum.
 
 ## Trademarks
 

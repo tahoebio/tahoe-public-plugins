@@ -31,6 +31,10 @@ Repository licensing.
   state which paths fall under which licence.
 - Both plugin manifests declare `license: Apache-2.0`, and the validator keeps
   the field equal to the code licence in both hosts.
+- The release archive now ships `LICENSE`, `LICENSE-CC-BY-4.0` and `NOTICE` at
+  its root, so a recipient has the terms and the attribution without the
+  repository. The vendored `schemas/**` are named as the upstream's own
+  Apache-2.0 files, separate from this repository's grants.
 - The decision: code Apache-2.0 (attribution and a patent grant); skill text
   and docs CC BY 4.0; the served Tahoe-100M data CC0-1.0.
 
