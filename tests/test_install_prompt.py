@@ -118,8 +118,9 @@ def test_docs_do_not_promise_a_github_sign_in():
 
 def test_docs_allow_verified_email_sign_in():
     for rel in SIGNIN_DOCS:
-        if rel != "README.md":
-            assert "verified email address" in _flatten(rel)
+        assert "verified email address" in _flatten(rel), (
+            f"{rel} does not name verified email sign-in"
+        )
 
 
 def test_public_text_does_not_claim_the_repo_is_not_public():
