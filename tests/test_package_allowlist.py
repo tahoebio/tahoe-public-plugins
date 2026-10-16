@@ -20,6 +20,8 @@ MANIFESTS = {
     "plugins/tara/skills/tara/references/data-catalog.md": "# Catalog\n",
     "plugins/tara/skills/tara/references/tool-routing.md": "# Routing\n",
     "plugins/tara/skills/tara/references/sql-guidance.md": "# SQL\n",
+    "plugins/tara/skills/tara/references/setup-preflight.md": "# Setup preflight\n",
+    "plugins/tara/scripts/preflight.py": "# Local setup planner\n",
     common.LOGO_REL: (common.REPO_ROOT / common.LOGO_REL).read_bytes(),
 }
 

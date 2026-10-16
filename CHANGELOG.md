@@ -5,6 +5,12 @@ to semantic versioning.
 
 ## 0.3.4 — unreleased
 
+- Bundle an agent-driven setup preflight: explicit installation, authentication,
+  session reload, tool discovery and current-client witness stages; durable
+  action claims prevent duplicate work across cooperating invocations.
+  The local planner accepts sanitized observations, never credentials, and
+  never treats stub tests or a public HTTP response as live readiness.
+
 - Supersede the earlier install-then-stop prompt with the canonical served
   install guide: check existing setup, start client-owned login when needed,
   let the user complete consent, reload and verify a read-only call. Keep

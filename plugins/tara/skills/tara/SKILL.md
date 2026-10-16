@@ -11,6 +11,13 @@ call routing and response handling; scientific guidance and the data catalog
 are served at runtime by `get_guide`. Read the relevant guide before querying
 or interpreting data, and retain its `guide_version` with the result.
 
+## Setup readiness
+
+When setup is requested or the public tools are missing, follow
+[setup-preflight.md](references/setup-preflight.md) and the bundled local
+`scripts/preflight.py` helper. Resume the first incomplete stage and report
+ready only after a read-only call from the active client succeeds.
+
 ## Call order
 
 1. Call `list_releases()` (or `health()`) and read `server_version`, along with

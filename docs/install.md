@@ -72,6 +72,15 @@ interactive terminal connects in the next session.
 > daemon** prompt the first time it uses this server. Continue without a daemon:
 > `tahoe-public` is a remote HTTPS endpoint, so there is nothing to run locally.
 
+## Resume setup
+
+The plugin bundles a [resumable setup checklist](../plugins/tara/skills/tara/references/setup-preflight.md)
+and a local `plugins/tara/scripts/preflight.py` planner. The agent supplies
+sanitized observations from the active host, executes the returned next action
+once, and resumes after sign-in or reload. The planner records no credentials
+and makes no network calls; a working read-only client call is required for
+`ready`. Unknown host or authentication state stays explicit.
+
 ## Verify
 
 If tools do not appear, start a new Codex session or restart Claude Code, then
@@ -108,7 +117,7 @@ Connection manifests and one skill:
 - `plugins/tara/.claude-plugin/plugin.json` — the native Claude manifest, with
   the same server inline as type `http`.
 - `plugins/tara/skills/tara/SKILL.md` — the `tara` skill: when to use it, the
-  call order, the routing table and response handling, with four
+  call order, the routing table and response handling, with five
   references under `skills/tara/references/`. It teaches the agent to route a
   Tahoe-100M question to the right tool; data and detailed scientific guidance
   are served at runtime.

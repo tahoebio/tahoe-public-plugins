@@ -46,6 +46,9 @@ Use the client's own flow; never start a second OAuth flow while one is pending.
 Never inspect, print, copy or persist credentials or callback URLs. Do not drive
 the sign-in page with browser automation. Client-owned browser launch is allowed.
 
+Setup can resume from the first incomplete stage using the bundled
+[preflight checklist](plugins/tara/skills/tara/references/setup-preflight.md).
+
 ## Layout
 
 | Path | Purpose |
