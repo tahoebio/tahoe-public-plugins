@@ -174,6 +174,12 @@ def step(evidence, journal, retry=False):
             "Inspect the client's plugin/server listing without reading credentials.",
         )
     if installed in ("absent", "failed", "never_started"):
+        if installed == "never_started" and not journal["install_claimed"]:
+            return result(
+                "installation_unverified_recovery",
+                "inspect_installation",
+                "There is no outstanding install claim to recover. Re-observe installation; do not replay a settled attempt.",
+            )
         if installed == "failed" and not retry:
             return result(
                 "installation_failed",
@@ -229,6 +235,12 @@ def step(evidence, journal, retry=False):
             "Check client authentication status; browser launch and OAuth support alone do not prove login.",
         )
     if auth == "missing":
+        if e["login"] == "never_started" and not journal["login_claimed"]:
+            return result(
+                "login_result_unknown",
+                "inspect_login",
+                "There is no outstanding login claim to recover. Re-observe authentication; do not replay a settled attempt.",
+            )
         ended = e["login"] in ("cancelled", "failed", "timed_out", "never_started")
         if ended and not retry:
             if e["login"] == "never_started":
@@ -263,7 +275,14 @@ def step(evidence, journal, retry=False):
             "start_client_login",
             "Run codex mcp login tahoe-public in a persistent terminal. Preserve host approvals; the client opens its browser.",
         )
-    journal["login_claimed"] = False
+    if journal["login_claimed"]:
+        if e["login_attempt"] != journal["login_attempt"]:
+            return result(
+                "login_result_unknown",
+                "inspect_login",
+                "Recheck the current login attempt; stale authentication evidence cannot settle a newer claim.",
+            )
+        journal["login_claimed"] = False
     if e["session"] == "reload_required":
         return result(
             "session_reload",

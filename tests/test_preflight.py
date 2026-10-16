@@ -69,7 +69,12 @@ def test_fresh_install_login_reload_and_same_client_witness(tmp_path):
     assert p.run(e, journal)["action"] == "inspect_login"
     e.update(login="pending")
     assert p.run(e, journal, retry=True)["action"] == "wait_for_user"
-    e.update(login="idle", authentication="authenticated", session="reload_required")
+    e.update(
+        login="idle",
+        login_attempt=started["login_attempt"],
+        authentication="authenticated",
+        session="reload_required",
+    )
     assert p.run(e, journal)["action"] == "reload_session"
     e.update(session="current", tools="available")
     assert p.run(e, journal)["action"] == "call_list_releases"
@@ -361,9 +366,9 @@ def test_adopted_pending_login_recovers_only_with_confirmation(tmp_path):
     e.update(login="idle")
     assert p.run(e, path)["action"] == "inspect_login"
     assert p.run(e, path, retry=True)["action"] == "inspect_login"
-    # Positive confirmation that the attempt never ran releases the claim.
-    e.update(login="never_started", login_attempt=adopted["login_attempt"])
-    assert p.run(e, path)["stage"] == "login_never_started"
+    # An observed pending flow did start: recover only after a confirmed end.
+    e.update(login="cancelled", login_attempt=adopted["login_attempt"])
+    assert p.run(e, path)["stage"] == "login_cancelled"
     recovered = p.run(e, path, retry=True)
     assert recovered["action"] == "start_client_login"
     assert recovered["login_attempt"] == 1
@@ -407,3 +412,78 @@ def test_parallel_invocations_claim_only_one_install(tmp_path):
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(invoke, range(8)))
     assert results.count("install_plugin") == 1
+
+
+@pytest.mark.parametrize("action", ["install", "login"])
+@pytest.mark.parametrize("settled", [False, True])
+@pytest.mark.parametrize("retry", [False, True])
+def test_never_started_requires_an_outstanding_claim(tmp_path, action, settled, retry):
+    path = tmp_path / "state.json"
+    e = evidence(authentication="missing")
+    if action == "install":
+        e.update(installation="absent")
+    if settled:
+        first = p.run(e, path)
+        e.update(
+            installation="plugin",
+            authentication="authenticated",
+            install_attempt=first["install_attempt"],
+            login_attempt=first["login_attempt"],
+        )
+        p.run(e, path)
+        assert json.loads(path.read_text())[action + "_claimed"] is False
+    before = json.loads(path.read_text()) if path.exists() else p.fresh_journal("codex")
+    e.update(authentication="missing")
+    e["installation" if action == "install" else "login"] = "never_started"
+    result = p.run(e, path, retry=retry)
+    assert result["action"] == ("inspect_installation" if action == "install" else "inspect_login")
+    assert result["ready"] is False
+    assert json.loads(path.read_text()) == before
+
+
+def test_stale_authenticated_success_cannot_settle_newer_login(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(authentication="missing")
+    first = p.run(e, path)
+    e.update(login="failed", login_attempt=first["login_attempt"])
+    second = p.run(e, path, retry=True)
+    e.update(
+        login="idle", authentication="authenticated",
+        witness_status="succeeded", witness=witness(),
+    )
+    stale = p.run(e, path)
+    assert stale["stage"] == "login_result_unknown"
+    assert stale["ready"] is False
+    saved = json.loads(path.read_text())
+    assert saved["login_claimed"] is True
+    assert saved["login_attempt"] == second["login_attempt"]
+    # Even a later missing-auth observation cannot duplicate the unresolved flow.
+    e.update(authentication="missing")
+    assert p.run(e, path, retry=True)["action"] == "inspect_login"
+    # The current attempt's actual success may settle it and validate the witness.
+    e.update(authentication="authenticated", login_attempt=second["login_attempt"])
+    assert p.run(e, path)["ready"] is True
+    assert json.loads(path.read_text())["login_claimed"] is False
+
+
+@pytest.mark.parametrize("action", ["install", "login"])
+def test_concurrent_never_started_recovery_issues_one_new_attempt(tmp_path, action):
+    path = tmp_path / "state.json"
+    e = evidence(authentication="missing")
+    if action == "install":
+        e.update(installation="absent")
+    first = p.run(e, path)
+    e[action + "_attempt"] = first[action + "_attempt"]
+    e["installation" if action == "install" else "login"] = "never_started"
+
+    def invoke(_):
+        try:
+            return p.run(e, path, retry=True)["action"]
+        except FileExistsError:
+            return "busy"
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(invoke, range(8)))
+    issued = "install_plugin" if action == "install" else "start_client_login"
+    assert results.count(issued) == 1
+    assert json.loads(path.read_text())[action + "_attempt"] == first[action + "_attempt"] + 1

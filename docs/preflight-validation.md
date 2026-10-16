@@ -1,11 +1,11 @@
 # Public setup preflight validation
 
-## Local inspection — 2026-10-16
+## Local inspection — 2026-10-16 UTC
 
 | Observation | Result |
 |---|---|
 | Host | macOS, Codex CLI 0.162.1 |
-| Installed public plugin | Tara 0.3.4 skill is available |
+| Observed installed skill metadata | Tara 0.3.4 skill is available; no clean-install certification implied |
 | Supported listing interface | `codex mcp list` and plugin command help inspected |
 | Public server listing | `tahoe-public`, enabled, Auth `Unknown` |
 | Active session's public tools | Not exposed in this session |
@@ -30,10 +30,13 @@ attempt numbers, interrupted locks, corrupt journals and rejection of unexpected
 input without echoing it. Claim lifecycle coverage includes successful install
 settlement followed by a real removal and a legitimate reinstall, stale
 success/failure observations held against a newer pending claim, and
-confirmed-never-started recovery for installation, claimed login and an adopted
-pending login, each requiring `--retry` and the matching attempt while a
-vanished attempt without confirmation stays blocked. Archive tests include the
-script and setup reference.
+confirmed-never-started recovery for installation and claimed login, requiring
+an outstanding matching claim and `--retry`. Fresh or settled claims cannot be
+recovered this way, and concurrent recovery issues only one new attempt. An
+adopted pending login requires a confirmed ended state; a vanished attempt
+without confirmation stays blocked. Stale authenticated evidence cannot clear
+a newer login claim or mark it ready. Archive tests include the script and setup
+reference.
 
 These tests use sanitized fixtures; they do not certify any host's live OAuth
 behavior. Use the clean-machine checklist in `install-verification.md` and the

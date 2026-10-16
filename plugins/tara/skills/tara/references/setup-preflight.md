@@ -58,10 +58,21 @@ sign-in page. Let the client open its own browser and the user complete consent.
 
 Resolve `scripts/preflight.py` under the installed plugin root (three parents
 above this reference file's directory). Do not assume a machine-specific cache
-path. Use one private, local journal file per host installation and public
-connection, shared across all setup attempts and sessions. Create its parent
-folder using normal host approval rules. Do not choose a new journal to bypass
-an outstanding action. All cooperating agents must use this same journal.
+path. Use one private, durable local journal per host installation and public
+connection, shared across all setup attempts and sessions. The conventional
+location is `~/.local/state/tara-preflight/<host>-tahoe-public.json`, where
+`<host>` is `codex` or `claude_code`. Resolve `~` to the current user's home;
+create the parent folder privately (mode 0700 where supported) using normal
+host approval rules. The helper creates the journal with mode 0600.
+
+Keep `--journal` explicit. Reuse an established journal location if setup already
+uses one; an override must be a durable path shared by every cooperating session
+for that host installation and connection. Check the setup handoff before
+choosing a path. Never use a temporary directory, invent a per-chat filename,
+or choose a new journal to bypass an outstanding action. A missing handoff does
+not prove an older attempt ended: check the client's pending state too. This
+convention coordinates cooperating agents; it cannot stop independent human
+or client actions that do not use the journal.
 
 Pass only sanitized observations on stdin; never pipe a raw client response or
 credential store into the helper. This example represents an authenticated
@@ -95,7 +106,9 @@ this journal; initially use zero. Once the journal returns an attempt number,
 echo it with every later observation about that action until the journal
 settles or replaces it. A claimed installation settles when the client shows
 the plugin or a direct connection and the observation names that same attempt;
-the claim then clears, so a later real removal can start a fresh attempt. A
+the claim then clears, so a later real removal can start a fresh attempt.
+Likewise, authenticated evidence settles a claimed login only when it names
+the current login attempt. A
 stale attempt number never settles or releases a newer claim. An ended failure
 must name the actual attempt that ended. This prevents replaying an old failure
 as permission to start a second flow. Do not label an attempt ended merely
@@ -146,15 +159,21 @@ and executing, resolve that claim against the host before continuing.
 
 A claim whose action was confirmed never started is reported as
 `never_started` for that field, naming the claimed attempt and passing
-`--retry`; the journal then issues one fresh attempt with a new number.
+`--retry`; the journal then issues one fresh attempt with a new number. An
+outstanding matching claim is required; a fresh journal or already-settled
+claim cannot authorize this recovery.
 Confirmation must be positive evidence: the agent's own record shows the
 returned action was never executed, and the client shows no pending or running
 attempt. An idle or absent status, a lost terminal handle, a client restart or
 elapsed time never proves an attempt never started. If the action may have run,
 the claim stays unresolved until the client positively confirms it ended; the
 `cancelled`, `failed` or `timed_out` observations then apply. The same rule
-covers a pending login this journal adopted from the client: its disappearance
-is not an ending. The lock never expires automatically. Remove an interrupted
+covers a pending login this journal adopted from the client: an observed pending
+flow has started, so it must never be described as `never_started`. Its
+disappearance is not an ending; use `cancelled`, `failed` or `timed_out` only
+after the host confirms that attempt ended. A confirmed terminated process
+without a successful login can be reported as `failed`; a missing handle alone
+cannot. The lock never expires automatically. Remove an interrupted
 lock/temporary file only once its process is confirmed ended; preserve the
 journal and its action claims.
 
