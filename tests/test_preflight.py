@@ -58,9 +58,11 @@ def test_fresh_install_login_reload_and_same_client_witness(tmp_path):
         tools="missing",
         session="unknown",
     )
-    assert p.run(e, journal)["action"] == "install_plugin"
+    install = p.run(e, journal)
+    assert install["action"] == "install_plugin"
     assert p.run(e, journal)["action"] == "inspect_installation"
-    e.update(installation="plugin")
+    # The observation settling the claim names the attempt the journal returned.
+    e.update(installation="plugin", install_attempt=install["install_attempt"])
     started = p.run(e, journal)
     assert started["action"] == "start_client_login"
     assert started["login_attempt"] == 1
@@ -244,3 +246,164 @@ def test_corrupt_journal_and_symlink_fail_closed(tmp_path):
     link.symlink_to(path)
     with pytest.raises(p.InvalidEvidence):
         p.run(evidence(), link)
+
+
+def test_successful_install_settles_claim_and_later_removal_reinstalls(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(
+        installation="absent",
+        authentication="missing",
+        tools="missing",
+        session="unknown",
+    )
+    first = p.run(e, path)
+    assert first["action"] == "install_plugin"
+    # The claimed attempt is observed installed, echoing its attempt number.
+    e.update(installation="plugin", install_attempt=first["install_attempt"])
+    p.run(e, path)
+    assert json.loads(path.read_text())["install_claimed"] is False
+    # Months later the plugin is really removed: a fresh claim must be possible.
+    e.update(installation="absent", install_attempt=0)
+    second = p.run(e, path)
+    assert second["action"] == "install_plugin"
+    assert second["install_attempt"] == first["install_attempt"] + 1
+    assert p.run(e, path)["action"] == "inspect_installation"
+
+
+def test_stale_install_success_or_failure_keeps_the_newer_claim(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(
+        installation="absent",
+        authentication="missing",
+        tools="missing",
+        session="unknown",
+    )
+    first = p.run(e, path)
+    e.update(installation="plugin", install_attempt=first["install_attempt"])
+    p.run(e, path)
+    e.update(installation="absent")
+    second = p.run(e, path)
+    assert second["action"] == "install_plugin"
+    # A stale success echo for the settled attempt must not release attempt 2.
+    e.update(installation="plugin", install_attempt=first["install_attempt"])
+    stale = p.run(e, path)
+    assert stale["stage"] == "installation_pending"
+    assert stale["ready"] is False
+    saved = json.loads(path.read_text())
+    assert saved["install_claimed"] is True
+    assert saved["install_attempt"] == second["install_attempt"]
+    # A stale failure echo cannot authorize a third attempt either.
+    e.update(installation="failed", install_attempt=first["install_attempt"])
+    assert p.run(e, path, retry=True)["action"] == "inspect_installation"
+    # The current attempt's own accurate success still settles the claim.
+    e.update(installation="plugin", install_attempt=second["install_attempt"])
+    p.run(e, path)
+    assert json.loads(path.read_text())["install_claimed"] is False
+
+
+def test_confirmed_never_started_install_recovers_with_matching_retry(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(
+        installation="absent",
+        authentication="missing",
+        tools="missing",
+        session="unknown",
+    )
+    first = p.run(e, path)
+    assert first["action"] == "install_plugin"
+    # The process died between claim and execution; the host confirms the
+    # returned action was never executed. Absence alone never suffices.
+    e.update(installation="never_started", install_attempt=0)
+    assert p.run(e, path, retry=True)["action"] == "inspect_installation"
+    e.update(install_attempt=first["install_attempt"])
+    blocked = p.run(e, path)
+    assert blocked["stage"] == "installation_never_started"
+    assert blocked["ready"] is False
+    assert json.loads(path.read_text())["install_claimed"] is True
+    recovered = p.run(e, path, retry=True)
+    assert recovered["action"] == "install_plugin"
+    assert recovered["install_attempt"] == first["install_attempt"] + 1
+    # Repeating the same confirmed observation cannot start a third attempt.
+    assert p.run(e, path, retry=True)["action"] == "inspect_installation"
+    assert (
+        json.loads(path.read_text())["install_attempt"]
+        == recovered["install_attempt"]
+    )
+
+
+def test_confirmed_never_started_login_recovers_with_matching_retry(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(authentication="missing")
+    first = p.run(e, path)
+    assert first["action"] == "start_client_login"
+    # The claimed login command was never executed; the host confirms it.
+    e.update(login="never_started", login_attempt=0)
+    assert p.run(e, path, retry=True)["action"] == "inspect_login"
+    e.update(login_attempt=first["login_attempt"])
+    blocked = p.run(e, path)
+    assert blocked["stage"] == "login_never_started"
+    assert blocked["ready"] is False
+    recovered = p.run(e, path, retry=True)
+    assert recovered["action"] == "start_client_login"
+    assert recovered["login_attempt"] == first["login_attempt"] + 1
+    # A repeated recovery against the old attempt cannot duplicate the flow.
+    assert p.run(e, path, retry=True)["action"] == "inspect_login"
+
+
+def test_adopted_pending_login_recovers_only_with_confirmation(tmp_path):
+    path = tmp_path / "state.json"
+    e = evidence(authentication="missing", login="pending")
+    adopted = p.run(e, path)
+    assert adopted["action"] == "wait_for_user"
+    assert adopted["login_attempt"] == 0
+    # The pending attempt vanishes without a client-confirmed terminal state:
+    # idle alone is not evidence it ended, not even with --retry.
+    e.update(login="idle")
+    assert p.run(e, path)["action"] == "inspect_login"
+    assert p.run(e, path, retry=True)["action"] == "inspect_login"
+    # Positive confirmation that the attempt never ran releases the claim.
+    e.update(login="never_started", login_attempt=adopted["login_attempt"])
+    assert p.run(e, path)["stage"] == "login_never_started"
+    recovered = p.run(e, path, retry=True)
+    assert recovered["action"] == "start_client_login"
+    assert recovered["login_attempt"] == 1
+
+
+def test_vanished_attempt_without_confirmation_stays_blocked(tmp_path):
+    # A lost handle, idle/absent status or elapsed time never ends a claim.
+    login_path = tmp_path / "login.json"
+    e = evidence(authentication="missing")
+    p.run(e, login_path)
+    e.update(login="idle")
+    assert p.run(e, login_path)["action"] == "inspect_login"
+    assert p.run(e, login_path, retry=True)["action"] == "inspect_login"
+    saved = json.loads(login_path.read_text())
+    assert saved["login_claimed"] is True
+    assert saved["login_attempt"] == 1
+
+    install_path = tmp_path / "install.json"
+    e = evidence(
+        installation="absent",
+        authentication="missing",
+        tools="missing",
+        session="unknown",
+    )
+    p.run(e, install_path)
+    assert p.run(e, install_path, retry=True)["action"] == "inspect_installation"
+    saved = json.loads(install_path.read_text())
+    assert saved["install_claimed"] is True
+    assert saved["install_attempt"] == 1
+
+
+def test_parallel_invocations_claim_only_one_install(tmp_path):
+    path = tmp_path / "state.json"
+
+    def invoke(_):
+        try:
+            return p.run(evidence(installation="absent"), path)["action"]
+        except FileExistsError:
+            return "busy"
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(invoke, range(8)))
+    assert results.count("install_plugin") == 1

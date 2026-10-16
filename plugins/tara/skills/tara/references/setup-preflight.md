@@ -91,10 +91,16 @@ python3 <plugin-root>/scripts/preflight.py --journal <private-local-journal> < o
 `session_tag` is a new nonsecret label for each actual client session, not an
 OAuth handle or a real session credential. Reuse it within the same session.
 `install_attempt` and `login_attempt` refer to the action numbers returned by
-this journal; initially use zero. An ended failure must name the actual attempt
-that ended. This prevents replaying an old failure as permission to start a
-second flow. Do not label an attempt ended merely because the agent lost its
-terminal handle. Preserve the journal and report `login_result_unknown`.
+this journal; initially use zero. Once the journal returns an attempt number,
+echo it with every later observation about that action until the journal
+settles or replaces it. A claimed installation settles when the client shows
+the plugin or a direct connection and the observation names that same attempt;
+the claim then clears, so a later real removal can start a fresh attempt. A
+stale attempt number never settles or releases a newer claim. An ended failure
+must name the actual attempt that ended. This prevents replaying an old failure
+as permission to start a second flow. Do not label an attempt ended merely
+because the agent lost its terminal handle. Preserve the journal and report
+`login_result_unknown`.
 
 Observation values:
 
@@ -102,9 +108,9 @@ Observation values:
 |---|---|
 | `host` | `codex`, `claude_code`, `other` |
 | `interface` | `supported`, `unsupported`, `unknown` |
-| `installation` | `absent`, `plugin`, `direct`, `failed`, `unknown` |
+| `installation` | `absent`, `plugin`, `direct`, `failed`, `never_started`, `unknown` |
 | `authentication` | `authenticated`, `missing`, `unknown` |
-| `login` | `idle`, `pending`, `cancelled`, `failed`, `timed_out` |
+| `login` | `idle`, `pending`, `cancelled`, `failed`, `timed_out`, `never_started` |
 | `session` | `current`, `reload_required`, `unknown` |
 | `tools` | `available`, `missing`, `unknown` |
 | `witness_status` | `not_run`, `succeeded`, `failed`, `unavailable`, `unauthorized`, `timed_out` |
@@ -136,15 +142,28 @@ The journal claims installation, login and witness work **before** returning an
 action. Repeated or concurrent invocations will not issue the same pending
 work. It cannot stop a human or another tool from independently starting OAuth;
 check the client's own pending state as well. If a process dies between claiming
-and executing, resolve that claim against the host before continuing. The lock
-never expires automatically. Remove an interrupted lock/temporary file only
-once its process is confirmed ended; preserve the journal and its action claims.
+and executing, resolve that claim against the host before continuing.
+
+A claim whose action was confirmed never started is reported as
+`never_started` for that field, naming the claimed attempt and passing
+`--retry`; the journal then issues one fresh attempt with a new number.
+Confirmation must be positive evidence: the agent's own record shows the
+returned action was never executed, and the client shows no pending or running
+attempt. An idle or absent status, a lost terminal handle, a client restart or
+elapsed time never proves an attempt never started. If the action may have run,
+the claim stays unresolved until the client positively confirms it ended; the
+`cancelled`, `failed` or `timed_out` observations then apply. The same rule
+covers a pending login this journal adopted from the client: its disappearance
+is not an ending. The lock never expires automatically. Remove an interrupted
+lock/temporary file only once its process is confirmed ended; preserve the
+journal and its action claims.
 
 Use `--retry` only after the user explicitly asks to resume a cancelled/failed
-attempt and the client confirms it ended. It never overrides pending login or
-an unresolved action claim. A stale failure's attempt number cannot authorize
-another login. Unknown state remains unknown; do not delete the journal to make
-it look fresh. No telemetry is collected or sent.
+attempt the client confirms ended, or an attempt positively confirmed never
+started. It never overrides pending login or an unresolved action claim. A
+stale failure's attempt number cannot authorize another login. Unknown state
+remains unknown; do not delete the journal to make it look fresh. No telemetry
+is collected or sent.
 
 ## Verification record
 

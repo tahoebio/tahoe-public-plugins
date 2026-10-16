@@ -4,6 +4,8 @@ This helper neither reads client configuration/credentials nor runs host command
 The agent gathers evidence using the supported client interface and executes the
 returned action. A local journal claims each action BEFORE it is returned, so a
 second invocation cannot start duplicate installation, login or witness work.
+A claim settles only when that same attempt is observed complete; an attempt
+confirmed never started resumes only through an explicit retry naming it.
 Only sanitized enums and counters are persisted; readiness is never persisted.
 """
 
@@ -20,9 +22,9 @@ from pathlib import Path
 ENUMS = {
     "host": {"codex", "claude_code", "other"},
     "interface": {"supported", "unsupported", "unknown"},
-    "installation": {"absent", "plugin", "direct", "failed", "unknown"},
+    "installation": {"absent", "plugin", "direct", "failed", "never_started", "unknown"},
     "authentication": {"authenticated", "missing", "unknown"},
-    "login": {"idle", "pending", "cancelled", "failed", "timed_out"},
+    "login": {"idle", "pending", "cancelled", "failed", "timed_out", "never_started"},
     "session": {"current", "reload_required", "unknown"},
     "tools": {"available", "missing", "unknown"},
     "witness_status": {
@@ -171,15 +173,21 @@ def step(evidence, journal, retry=False):
             "inspect_installation",
             "Inspect the client's plugin/server listing without reading credentials.",
         )
-    if installed in ("absent", "failed"):
+    if installed in ("absent", "failed", "never_started"):
         if installed == "failed" and not retry:
             return result(
                 "installation_failed",
                 "resolve_installation",
                 "Resolve the reported installation failure, then explicitly retry.",
             )
+        if installed == "never_started" and not retry:
+            return result(
+                "installation_never_started",
+                "resolve_installation",
+                "The claimed install attempt was confirmed never started; retry explicitly to issue a fresh attempt. Absence alone is not confirmation.",
+            )
         if journal["install_claimed"] and not (
-            installed == "failed"
+            installed in ("failed", "never_started")
             and retry
             and e["install_attempt"] == journal["install_attempt"]
         ):
@@ -195,6 +203,17 @@ def step(evidence, journal, retry=False):
             "install_plugin",
             "Add only the missing marketplace/plugin using the supported host interface, preserving required approvals.",
         )
+    # The client shows a plugin or direct connection. A claimed attempt settles
+    # only when the observation names the attempt this journal returned; a stale
+    # success must not release a newer pending claim.
+    if journal["install_claimed"]:
+        if e["install_attempt"] != journal["install_attempt"]:
+            return result(
+                "installation_pending",
+                "inspect_installation",
+                "Recheck the existing install attempt; do not add another entry.",
+            )
+        journal["install_claimed"] = False
     if e["login"] == "pending":
         journal["login_claimed"] = True
         return result(
@@ -210,8 +229,14 @@ def step(evidence, journal, retry=False):
             "Check client authentication status; browser launch and OAuth support alone do not prove login.",
         )
     if auth == "missing":
-        ended = e["login"] in ("cancelled", "failed", "timed_out")
+        ended = e["login"] in ("cancelled", "failed", "timed_out", "never_started")
         if ended and not retry:
+            if e["login"] == "never_started":
+                return result(
+                    "login_never_started",
+                    "resolve_login",
+                    "The claimed login attempt was confirmed never started; retry explicitly to issue a fresh attempt. An idle status or a lost handle alone is not confirmation.",
+                )
             return result(
                 "login_" + e["login"],
                 "resolve_login",
@@ -358,7 +383,7 @@ def main(argv=None):
     parser.add_argument(
         "--retry",
         action="store_true",
-        help="explicit resume after a confirmed ended failure, never while pending",
+        help="explicit resume after a confirmed ended failure or a confirmed never-started attempt, never while pending",
     )
     args = parser.parse_args(argv)
     try:

@@ -27,7 +27,13 @@ login, reload, missing tools, unsupported/unknown host interfaces, bounded
 witness retries, stale/wrong-client witness rejection and successful readiness.
 They also cover parallel action claims, repeated invocations, stale terminal
 attempt numbers, interrupted locks, corrupt journals and rejection of unexpected
-input without echoing it. Archive tests include the script and setup reference.
+input without echoing it. Claim lifecycle coverage includes successful install
+settlement followed by a real removal and a legitimate reinstall, stale
+success/failure observations held against a newer pending claim, and
+confirmed-never-started recovery for installation, claimed login and an adopted
+pending login, each requiring `--retry` and the matching attempt while a
+vanished attempt without confirmation stays blocked. Archive tests include the
+script and setup reference.
 
 These tests use sanitized fixtures; they do not certify any host's live OAuth
 behavior. Use the clean-machine checklist in `install-verification.md` and the
