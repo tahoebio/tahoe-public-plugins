@@ -11,7 +11,7 @@ Code). Its result is recorded in `docs/compatibility.md`.
 
 - A machine that has never had the plugin or the `tahoe-public` server
   installed, with a current Codex CLI **and** Claude Code.
-- A Google account, and a browser available for the sign-in redirect.
+- Any verified email address or a Google account, and a browser available for the sign-in redirect.
 - No Databricks account or credentials.
 
 ## Case A — plugin install from the marketplace (primary)
@@ -34,7 +34,7 @@ Run once per host.
    claude plugin install tara@tahoe-public
    ```
 
-2. Sign in with Google in the browser the client opens: Codex with
+2. Sign in with a verified email address or Google in the browser the client opens: Codex with
    `codex mcp login tahoe-public`, Claude Code on first use or via `/mcp`. If
    Codex shows a **Run without daemon** prompt, continue without a daemon — the
    endpoint is remote.
@@ -65,7 +65,7 @@ Repeat steps 2–5. In Codex, sign in with `codex mcp login tahoe-public`.
 
 - The plugin installs from the marketplace and reaches sign-in; the direct add
   also works.
-- Sign-in succeeds with a Google account and no manual token handling.
+- Sign-in succeeds with a verified email address or Google account and no manual token handling.
 - The tools become callable after the restart step.
 - Both calls return data, and the slice carries release, filters, measurement
   semantics, missing-value meaning and a repeatable request manifest.

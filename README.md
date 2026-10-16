@@ -17,7 +17,7 @@ Run these in a terminal, in order:
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # opens the browser: Allow Access → Google
+codex mcp login tahoe-public      # client opens the browser; you complete sign-in
 ```
 
 Then start a **new Codex session** so the tools load.
@@ -33,12 +33,18 @@ Restart Claude Code, then sign in with `/mcp` (or on first use).
 
 ### Ask your agent instead
 
-Any agent that can add a plugin (it installs and stops; **you** sign in
-yourself). Paste this prompt:
+Paste this prompt. The agent installs Tara and starts the client's sign-in;
+you complete sign-in and consent in the browser opened by the client, with a
+verified email address or Google account.
 
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, approving the permission prompt if asked. Then stop. Do not try to sign in or open a browser. Tell me to sign in myself and start a new session.
+> Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara, start the client-owned sign-in if needed, and verify a read-only tool call.
 
-Full steps, including the advanced direct-server option, are in `docs/install.md`.
+The [served install guide](https://tara.tahoebio.io/install.md) is the canonical
+client-login procedure. Host-required approvals still apply. Check existing
+installation and authentication before adding anything or starting login.
+Use the client's own flow; never start a second OAuth flow while one is pending.
+Never inspect, print, copy or persist credentials or callback URLs. Do not drive
+the sign-in page with browser automation. Client-owned browser launch is allowed.
 
 ## Layout
 

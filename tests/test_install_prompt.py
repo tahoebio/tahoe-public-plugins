@@ -1,9 +1,4 @@
-"""The install prompt, the sign-in provider and the restart step the docs promise.
-
-The repository is public and sign-in is Google, so the user-facing docs must
-quote the install prompt verbatim, name Google, and never promise a GitHub
-sign-in, a private/unpublished status, or an email sign-up a new user cannot use.
-"""
+"""Install copy agrees on client-owned login and preserves credential protections."""
 
 import functools
 from pathlib import Path
@@ -12,21 +7,7 @@ from scripts import common
 
 INSTALL_DOC_REL = "docs/install.md"
 
-#: The single-line install prompt quoted wherever the docs quote it. An agent
-#: can install the plugin but cannot sign in, so the prompt ends install-then-stop.
-#: Identical to the server landing page's `ASK_AGENT_PROMPT` (server PR #70).
-NEW_INSTALL_PROMPT = (
-    "Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, "
-    "install the tara plugin, approving the permission prompt if asked. Then stop. "
-    "Do not try to sign in or open a browser. Tell me to sign in myself and start "
-    "a new session."
-)
-
-#: The clause that makes the prompt install-then-stop, asserted on shipped text.
-STOP_CLAUSE = "then stop. do not try to sign in or open a browser"
-
-#: Phrasings an agent cannot act on: it cannot connect the server or sign you in.
-AGENT_CANNOT_PHRASES = ("connect to tara", "connect me to tara", "sign me in")
+NEW_INSTALL_PROMPT = 'Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara, start the client-owned sign-in if needed, and verify a read-only tool call.'
 
 #: Docs that quote the install prompt, so its copies cannot drift apart.
 PROMPT_DOCS = (INSTALL_DOC_REL, "README.md")
@@ -45,9 +26,6 @@ OLD_SIGNIN_PHRASES = (
     "github oauth",
     "sign in with github",
 )
-
-#: Phrases that promise a sign-in method a new user cannot use.
-OLD_EMAIL_PHRASES = ("google or email", "email sign-up", "sign up with email")
 
 #: Phrases that frame the project as pre-publication. "publication" is the shared
 #: stem of every such claim, so one entry covers them all.
@@ -112,14 +90,20 @@ def test_install_prompt_is_quoted_verbatim_in_every_doc():
         ), f"{rel} quotes a different install prompt"
 
 
-def test_agent_prompt_installs_then_stops_before_sign_in():
-    # An agent cannot connect the server or sign the user in, so the quoted prompt
-    # must install and stop, and must never ask the agent to connect or sign in.
+def test_agent_prompt_resumes_client_owned_login():
     for rel in PROMPT_DOCS:
         text = _flatten(rel)
-        assert STOP_CLAUSE in text, f"{rel} omits the install-then-stop clause"
-        for phrase in AGENT_CANNOT_PHRASES:
-            assert phrase not in text, f"{rel} asks the agent to {phrase!r}"
+        for old in ("then stop", "installs and stops", "do not try to sign in"):
+            assert old not in text
+        for required in (
+            "client-owned sign-in if needed", "verify a read-only tool call",
+            "host-required approvals still apply", "check existing installation and authentication",
+            "never start a second oauth flow while one is pending",
+            "never inspect, print, copy or persist credentials or callback urls",
+            "do not drive the sign-in page with browser automation",
+            "client-owned browser launch is allowed",
+        ):
+            assert required in text, (rel, required)
 
 
 def test_docs_name_google_sign_in():
@@ -132,9 +116,10 @@ def test_docs_do_not_promise_a_github_sign_in():
         _assert_phrases_absent(rel, OLD_SIGNIN_PHRASES, "still promises a GitHub sign-in")
 
 
-def test_docs_do_not_promise_email_sign_up():
+def test_docs_allow_verified_email_sign_in():
     for rel in SIGNIN_DOCS:
-        _assert_phrases_absent(rel, OLD_EMAIL_PHRASES, "still promises email sign-up")
+        if rel != "README.md":
+            assert "verified email address" in _flatten(rel)
 
 
 def test_public_text_does_not_claim_the_repo_is_not_public():
@@ -154,6 +139,8 @@ def test_install_doc_tells_older_connections_to_re_add():
     assert "re-add" in text, "install.md omits the remove/re-add note"
     assert "2026-10-14" in text, "install.md omits the pre-Google connection date"
     assert CODEX_REMOVE in text, "install.md omits the Codex remove command"
+    assert "codex plugin remove tara@tahoe-public" in text
+    assert "do not add a duplicate direct server entry" in text
 
 
 def test_security_policy_names_a_private_reporting_route():
