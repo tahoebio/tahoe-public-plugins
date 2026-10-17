@@ -7,10 +7,10 @@ from scripts import common
 
 INSTALL_DOC_REL = "docs/install.md"
 
-NEW_INSTALL_PROMPT = 'Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara, start the client-owned sign-in if needed, and verify a read-only tool call.'
+CURRENT_INSTALL_PROMPT = "Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara"
 
 #: Docs that quote the install prompt, so its copies cannot drift apart.
-PROMPT_DOCS = (INSTALL_DOC_REL, "README.md")
+PROMPT_DOCS = ("README.md",)
 
 #: The Codex sign-in and remove commands, composed from the server-name constant.
 CODEX_LOGIN = f"codex mcp login {common.MCP_SERVER_NAME}"
@@ -43,9 +43,6 @@ SIGNIN_DOCS = (
     "docs/compatibility.md",
     "docs/install-verification.md",
 )
-
-#: Docs that carry the install steps; compatibility.md lists requirements only.
-INSTALL_STEP_DOCS = tuple(rel for rel in SIGNIN_DOCS if rel != "docs/compatibility.md")
 
 #: Suffixes of shipped, reader-facing text.
 SHIPPED_SUFFIXES = frozenset({".md", ".py", ".json", ".yml", ".yaml"})
@@ -85,25 +82,19 @@ def _assert_phrases_absent(rel: str, phrases: tuple[str, ...], claim: str) -> No
 
 def test_install_prompt_is_quoted_verbatim_in_every_doc():
     for rel in PROMPT_DOCS:
-        assert NEW_INSTALL_PROMPT in (common.REPO_ROOT / rel).read_text(
-            encoding="utf-8"
-        ), f"{rel} quotes a different install prompt"
+        lines = (common.REPO_ROOT / rel).read_text(encoding="utf-8").splitlines()
+        assert f"> {CURRENT_INSTALL_PROMPT}" in lines, f"{rel} quotes a different install prompt"
 
 
-def test_agent_prompt_resumes_client_owned_login():
-    for rel in PROMPT_DOCS:
+def test_install_docs_defer_to_the_served_guide():
+    for rel in ("README.md", INSTALL_DOC_REL):
         text = _flatten(rel)
+        assert "https://tara.tahoebio.io/install.md" in text
         for old in ("then stop", "installs and stops", "do not try to sign in"):
             assert old not in text
-        for required in (
-            "client-owned sign-in if needed", "verify a read-only tool call",
-            "host-required approvals still apply", "check existing installation and authentication",
-            "never start a second oauth flow while one is pending",
-            "never inspect, print, copy or persist credentials or callback urls",
-            "do not drive the sign-in page with browser automation",
-            "client-owned browser launch is allowed",
-        ):
-            assert required in text, (rel, required)
+        # Installation commands belong to the served guide, not a second procedure.
+        assert "plugin marketplace add" not in text
+        assert "mcp add --" not in text
 
 
 def test_docs_name_google_sign_in():
@@ -128,11 +119,15 @@ def test_public_text_does_not_claim_the_repo_is_not_public():
         _assert_phrases_absent(rel, NOT_PUBLIC_PHRASES, "still claims it is not public")
 
 
-def test_docs_state_the_restart_and_codex_login_steps():
-    for rel in INSTALL_STEP_DOCS:
-        text = _flatten(rel)
-        assert "restart" in text, f"{rel} omits the restart step"
-        assert CODEX_LOGIN in text, f"{rel} omits the Codex sign-in step"
+def test_verification_preserves_per_client_handoff_and_same_connection_witness():
+    text = _flatten("docs/install-verification.md")
+    assert CODEX_LOGIN in text
+    assert "new codex session" in text
+    assert "no restart needed" in text and "`/mcp`" in text
+    assert "through that same client connection" in text
+    assert "`list_releases`" in text
+    for rel in SIGNIN_DOCS:
+        assert "restart claude code" not in _flatten(rel)
 
 
 def test_install_doc_tells_older_connections_to_re_add():

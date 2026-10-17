@@ -22,21 +22,15 @@ def test_mcp_config_points_at_the_public_host():
     assert config["mcpServers"][common.MCP_SERVER_NAME]["url"] == common.MCP_ENDPOINT
 
 
-def test_install_docs_lead_with_the_plugin_marketplace_path():
+def test_install_docs_link_to_canonical_procedure_and_keep_ownership_notes():
     install = (common.REPO_ROOT / "docs" / "install.md").read_text()
-    assert "codex plugin marketplace add tahoebio/tahoe-public-plugins" in install
-    assert "codex plugin add tara@tahoe-public" in install
-    assert "claude plugin marketplace add tahoebio/tahoe-public-plugins" in install
-    assert "claude plugin install tara@tahoe-public" in install
-    # The direct server add is documented only as an advanced fallback.
+    assert "https://tara.tahoebio.io/install.md" in install
+    assert "plugin-owned" in install
+    assert "direct server entry" in install
     assert "advanced" in install.lower()
-    assert "codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp" in install
-    # The README carries the same marketplace path for both hosts.
     readme = (common.REPO_ROOT / "README.md").read_text()
-    assert "codex plugin marketplace add tahoebio/tahoe-public-plugins" in readme
-    assert "codex plugin add tara@tahoe-public" in readme
-    assert "claude plugin marketplace add tahoebio/tahoe-public-plugins" in readme
-    assert "claude plugin install tara@tahoe-public" in readme
+    assert "https://tara.tahoebio.io/install.md" in readme
+    assert "docs/install.md" in readme
 
 
 def test_compatibility_claims_only_codex_and_claude():

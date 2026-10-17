@@ -5,11 +5,10 @@ to semantic versioning.
 
 ## 0.3.4 — unreleased
 
-- Supersede the earlier install-then-stop prompt with the canonical served
-  install guide: check existing setup, start client-owned login when needed,
-  let the user complete consent, reload and verify a read-only call. Keep
-  credential protections, prevent duplicate OAuth, and document verified email
-  sign-in and plugin-owned connection recovery.
+- Defer installation and client-owned sign-in to the canonical served guide,
+  removing the duplicate procedure and obsolete install-then-stop prompt. Keep
+  verified-email and plugin-owned recovery notes, and align the verification
+  checklist with Claude Code's automatic reconnect and Codex's new-session step.
 
 - Correct the public docs for the open Google sign-in: drop the private-preview
   and publication-blocker claims from the README, promise Google (not GitHub, not

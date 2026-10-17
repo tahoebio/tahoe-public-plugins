@@ -18,40 +18,25 @@ Code). Its result is recorded in `docs/compatibility.md`.
 
 Run once per host.
 
-1. Add the marketplace and install the plugin.
-
-   Codex CLI:
-
-   ```sh
-   codex plugin marketplace add tahoebio/tahoe-public-plugins
-   codex plugin add tara@tahoe-public
-   ```
-
-   Claude Code:
-
-   ```sh
-   claude plugin marketplace add tahoebio/tahoe-public-plugins
-   claude plugin install tara@tahoe-public
-   ```
-
-2. Sign in with a verified email address or Google in the browser the client opens: Codex with
-   `codex mcp login tahoe-public`, Claude Code on first use or via `/mcp`. If
-   Codex shows a **Run without daemon** prompt, continue without a daemon — the
-   endpoint is remote.
-3. Restart the client (restart Claude Code, or start a new Codex session) so the
-   tools load.
-4. Call `list_releases` through the agent. Record the release identifiers.
+1. Follow the plugin path in the [served install guide](https://tara.tahoebio.io/install.md).
+   Record the guide revision or retrieval date with the client version.
+2. Complete client-owned sign-in with a verified email address or Google account.
+   Check the client's login result; wait if an attempt is pending. Unknown auth is
+   not missing auth. Do not reinstall or repeat OAuth based only on missing tools.
+3. Follow the guide's per-client handoff:
+   - **Codex CLI:** run `codex mcp login tahoe-public` if needed, then start a new
+     Codex session.
+   - **Claude Code:** run `/mcp`, choose `tahoe-public`, and Authenticate if needed;
+     it reconnects automatically, with no restart needed.
+4. Call `list_releases` through that same client connection. Record the successful
+   response and release identifiers before reporting readiness.
 5. Call `get_expression_slice` for a small, known request (for example two genes
    and two conditions) and record the returned provenance and request manifest.
 
 ## Case B — direct server add (advanced fallback)
 
-```sh
-codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp
-claude mcp add --transport http --scope user tahoe-public https://tara.tahoebio.io/mcp
-```
-
-Repeat steps 2–5. In Codex, sign in with `codex mcp login tahoe-public`.
+On a separate clean setup, follow the served guide's advanced direct-server path,
+then repeat steps 2–5. Do not add a direct entry alongside a plugin-owned entry.
 
 ## Evidence to capture
 
@@ -66,7 +51,8 @@ Repeat steps 2–5. In Codex, sign in with `codex mcp login tahoe-public`.
 - The plugin installs from the marketplace and reaches sign-in; the direct add
   also works.
 - Sign-in succeeds with a verified email address or Google account and no manual token handling.
-- The tools become callable after the restart step.
+- The tools become callable after the per-client handoff (new session for Codex;
+  automatic reconnect for Claude Code).
 - Both calls return data, and the slice carries release, filters, measurement
   semantics, missing-value meaning and a repeatable request manifest.
 - No Databricks credential was required.

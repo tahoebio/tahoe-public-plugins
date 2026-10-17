@@ -10,41 +10,17 @@ The plugin is the way in. It connects your agent to the `tahoe-public` MCP
 server and ships the `tara` skill, which tells the agent how to route a
 Tahoe-100M question to the right tool; the service then serves the data.
 
-### Codex CLI
+Follow the [served install guide](https://tara.tahoebio.io/install.md) for the
+current Codex CLI and Claude Code setup and sign-in steps. You complete sign-in
+with a verified email address or Google account in the browser opened by the client.
 
-Run these in a terminal, in order:
+To ask your agent to follow that guide, paste its current prompt:
 
-```sh
-codex plugin marketplace add tahoebio/tahoe-public-plugins
-codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # client opens the browser; you complete sign-in
-```
+> Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara
 
-Then start a **new Codex session** so the tools load.
-
-### Claude Code
-
-```sh
-claude plugin marketplace add tahoebio/tahoe-public-plugins
-claude plugin install tara@tahoe-public
-```
-
-Restart Claude Code, then sign in with `/mcp` (or on first use).
-
-### Ask your agent instead
-
-Paste this prompt. The agent installs Tara and starts the client's sign-in;
-you complete sign-in and consent in the browser opened by the client, with a
-verified email address or Google account.
-
-> Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara, start the client-owned sign-in if needed, and verify a read-only tool call.
-
-The [served install guide](https://tara.tahoebio.io/install.md) is the canonical
-client-login procedure. Host-required approvals still apply. Check existing
-installation and authentication before adding anything or starting login.
-Use the client's own flow; never start a second OAuth flow while one is pending.
-Never inspect, print, copy or persist credentials or callback URLs. Do not drive
-the sign-in page with browser automation. Client-owned browser launch is allowed.
+For older connections and plugin-owned versus direct entries, see
+[installation notes](docs/install.md). For a clean-machine check, see
+[install verification](docs/install-verification.md).
 
 ## Layout
 
