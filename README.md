@@ -10,35 +10,17 @@ The plugin is the way in. It connects your agent to the `tahoe-public` MCP
 server and ships the `tara` skill, which tells the agent how to route a
 Tahoe-100M question to the right tool; the service then serves the data.
 
-### Codex CLI
+Follow the [served install guide](https://tara.tahoebio.io/install.md) for the
+current Codex CLI and Claude Code setup and sign-in steps. You complete sign-in
+with a verified email address or Google account in the browser opened by the client.
 
-Run these in a terminal, in order:
+To ask your agent to follow that guide, paste its current prompt:
 
-```sh
-codex plugin marketplace add tahoebio/tahoe-public-plugins
-codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # opens the browser: Allow Access → Google
-```
+> Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara
 
-Then start a **new Codex session** so the tools load.
-
-### Claude Code
-
-```sh
-claude plugin marketplace add tahoebio/tahoe-public-plugins
-claude plugin install tara@tahoe-public
-```
-
-Restart Claude Code, then sign in with `/mcp` (or on first use).
-
-### Ask your agent instead
-
-Any agent that can add a plugin (it installs and stops; **you** sign in
-yourself). Paste this prompt:
-
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, approving the permission prompt if asked. Then stop. Do not try to sign in or open a browser. Tell me to sign in myself and start a new session.
-
-Full steps, including the advanced direct-server option, are in `docs/install.md`.
+For older connections and plugin-owned versus direct entries, see
+[installation notes](docs/install.md). For a clean-machine check, see
+[install verification](docs/install-verification.md).
 
 ## Layout
 

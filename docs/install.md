@@ -1,91 +1,32 @@
 # Install
 
-Tara is a plugin. Installing it connects your agent to the remote MCP server
-`tahoe-public`; the service then delivers both the data and the guidance for
-using it.
+Follow the [served install guide](https://tara.tahoebio.io/install.md) for the
+current installation commands, client-owned sign-in and per-client next steps.
+That guide is the canonical procedure; this page records plugin-specific notes.
+Sign in with any verified email address or a Google account.
 
-## Tested hosts
-
-**Codex CLI** and **Claude Code** are the only hosts claimed (see
-`docs/compatibility.md`).
-
-## Install the plugin
-
-This is the primary path: install the plugin from Tahoe's own marketplace. Run
-the commands in a terminal — not through an agent, which cannot sign you in.
-
-### Codex CLI
-
-Run these in a terminal, in order:
-
-```sh
-codex plugin marketplace add tahoebio/tahoe-public-plugins
-codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # opens the browser: Allow Access → Google
-```
-
-Then start a **new Codex session** so the tools load.
-
-### Claude Code
-
-```sh
-claude plugin marketplace add tahoebio/tahoe-public-plugins
-claude plugin install tara@tahoe-public
-```
-
-Then **restart Claude Code** and sign in with `/mcp` (or on first use).
-
-### Ask your agent instead
-
-Any agent that can add a plugin (it installs and stops; **you** sign in
-yourself): the agent cannot connect the server or sign you in — MCP sign-in is
-done by the client, and the install writes outside the agent's sandbox, so the
-agent must ask for permission. The prompt installs the **plugin** — not just a
-bare server entry — and then stops. Paste it verbatim:
-
-> Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, install the tara plugin, approving the permission prompt if asked. Then stop. Do not try to sign in or open a browser. Tell me to sign in myself and start a new session.
-
-The agent installs and stops; **you** sign in and start a new session.
-
-### Finish the install
-
-Sign-in is **Google**, in the browser the client opens; the credential is stored
-by the client and no token is copied by hand. The tools load at session start, so
-**restart the client** after installing — a plugin installed without an
-interactive terminal connects in the next session.
+## Older connections and installation ownership
 
 > **Remove and re-add an older connection.** A `tahoe-public` connection added
-> before 2026-10-14 predates the Google sign-in. Remove it and add it again so
-> it signs in with Google:
+> before 2026-10-14 uses the older sign-in flow. If that connection cannot
+> authenticate, remove and re-add it using its owning installation path:
 >
-> - **Codex CLI** — `codex mcp remove tahoe-public`, then re-add the server or
->   reinstall the plugin, and sign in with `codex mcp login tahoe-public`.
+> - **Codex CLI** — for a direct entry, `codex mcp remove tahoe-public`, then
+>   re-add it. For a plugin-owned entry, use `codex plugin remove tara@tahoe-public`
+>   and `codex plugin add tara@tahoe-public`. Then sign in with
+>   `codex mcp login tahoe-public`. Do not add a duplicate direct server entry.
 > - **Claude Code** — `claude mcp remove tahoe-public` for a direct install, or
 >   `/mcp` → disconnect and reconnect for a plugin install.
 
-> **Codex "Run without daemon" dialog.** Codex may present a **Run without
-> daemon** prompt the first time it uses this server. Continue without a daemon:
-> `tahoe-public` is a remote HTTPS endpoint, so there is nothing to run locally.
+For a direct server entry, use the served guide's advanced path. Keep one
+`tahoe-public` connection and use its owning installation path for recovery.
 
 ## Verify
 
-Ask the agent to list the available dataset releases. A successful call confirms
-the connection and the signed-in account. The full step-by-step verification is
-in `docs/install-verification.md`.
-
-## Advanced: add the server directly
-
-If you only want the MCP server and not the plugin:
-
-```sh
-codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp
-claude mcp add --transport http --scope user tahoe-public https://tara.tahoebio.io/mcp
-```
-
-Sign in with Google as above — Codex with `codex mcp login tahoe-public`, Claude
-Code on first use or via `/mcp` — then restart the client. This route skips the
-plugin metadata, so it is documented as a fallback rather than the primary
-install.
+Follow the per-client handoff in the served guide, then call `list_releases`
+through the same client connection. A successful call verifies readiness;
+opening a browser or seeing a tool listing alone does not.
+See [install verification](install-verification.md) for the clean-machine checklist.
 
 ## What the plugin ships
 
@@ -103,5 +44,5 @@ Connection manifests and one skill:
   are served at runtime.
 
 None of the manifests embeds credentials; authentication is handled by the
-sign-in flow above. Both hosts discover the `skills/` directory by convention, so
-no manifest field declares it.
+client-owned sign-in flow in the served guide. Both hosts discover the `skills/`
+directory by convention, so no manifest field declares it.

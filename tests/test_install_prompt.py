@@ -1,9 +1,4 @@
-"""The install prompt, the sign-in provider and the restart step the docs promise.
-
-The repository is public and sign-in is Google, so the user-facing docs must
-quote the install prompt verbatim, name Google, and never promise a GitHub
-sign-in, a private/unpublished status, or an email sign-up a new user cannot use.
-"""
+"""Install copy agrees on client-owned login and preserves credential protections."""
 
 import functools
 from pathlib import Path
@@ -12,24 +7,10 @@ from scripts import common
 
 INSTALL_DOC_REL = "docs/install.md"
 
-#: The single-line install prompt quoted wherever the docs quote it. An agent
-#: can install the plugin but cannot sign in, so the prompt ends install-then-stop.
-#: Identical to the server landing page's `ASK_AGENT_PROMPT` (server PR #70).
-NEW_INSTALL_PROMPT = (
-    "Install the Tahoe plugin: add the marketplace tahoebio/tahoe-public-plugins, "
-    "install the tara plugin, approving the permission prompt if asked. Then stop. "
-    "Do not try to sign in or open a browser. Tell me to sign in myself and start "
-    "a new session."
-)
-
-#: The clause that makes the prompt install-then-stop, asserted on shipped text.
-STOP_CLAUSE = "then stop. do not try to sign in or open a browser"
-
-#: Phrasings an agent cannot act on: it cannot connect the server or sign you in.
-AGENT_CANNOT_PHRASES = ("connect to tara", "connect me to tara", "sign me in")
+CURRENT_INSTALL_PROMPT = "Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara"
 
 #: Docs that quote the install prompt, so its copies cannot drift apart.
-PROMPT_DOCS = (INSTALL_DOC_REL, "README.md")
+PROMPT_DOCS = ("README.md",)
 
 #: The Codex sign-in and remove commands, composed from the server-name constant.
 CODEX_LOGIN = f"codex mcp login {common.MCP_SERVER_NAME}"
@@ -45,9 +26,6 @@ OLD_SIGNIN_PHRASES = (
     "github oauth",
     "sign in with github",
 )
-
-#: Phrases that promise a sign-in method a new user cannot use.
-OLD_EMAIL_PHRASES = ("google or email", "email sign-up", "sign up with email")
 
 #: Phrases that frame the project as pre-publication. "publication" is the shared
 #: stem of every such claim, so one entry covers them all.
@@ -65,9 +43,6 @@ SIGNIN_DOCS = (
     "docs/compatibility.md",
     "docs/install-verification.md",
 )
-
-#: Docs that carry the install steps; compatibility.md lists requirements only.
-INSTALL_STEP_DOCS = tuple(rel for rel in SIGNIN_DOCS if rel != "docs/compatibility.md")
 
 #: Suffixes of shipped, reader-facing text.
 SHIPPED_SUFFIXES = frozenset({".md", ".py", ".json", ".yml", ".yaml"})
@@ -107,19 +82,19 @@ def _assert_phrases_absent(rel: str, phrases: tuple[str, ...], claim: str) -> No
 
 def test_install_prompt_is_quoted_verbatim_in_every_doc():
     for rel in PROMPT_DOCS:
-        assert NEW_INSTALL_PROMPT in (common.REPO_ROOT / rel).read_text(
-            encoding="utf-8"
-        ), f"{rel} quotes a different install prompt"
+        lines = (common.REPO_ROOT / rel).read_text(encoding="utf-8").splitlines()
+        assert f"> {CURRENT_INSTALL_PROMPT}" in lines, f"{rel} quotes a different install prompt"
 
 
-def test_agent_prompt_installs_then_stops_before_sign_in():
-    # An agent cannot connect the server or sign the user in, so the quoted prompt
-    # must install and stop, and must never ask the agent to connect or sign in.
-    for rel in PROMPT_DOCS:
+def test_install_docs_defer_to_the_served_guide():
+    for rel in ("README.md", INSTALL_DOC_REL):
         text = _flatten(rel)
-        assert STOP_CLAUSE in text, f"{rel} omits the install-then-stop clause"
-        for phrase in AGENT_CANNOT_PHRASES:
-            assert phrase not in text, f"{rel} asks the agent to {phrase!r}"
+        assert "https://tara.tahoebio.io/install.md" in text
+        for old in ("then stop", "installs and stops", "do not try to sign in"):
+            assert old not in text
+        # Installation commands belong to the served guide, not a second procedure.
+        assert "plugin marketplace add" not in text
+        assert "mcp add --" not in text
 
 
 def test_docs_name_google_sign_in():
@@ -132,9 +107,11 @@ def test_docs_do_not_promise_a_github_sign_in():
         _assert_phrases_absent(rel, OLD_SIGNIN_PHRASES, "still promises a GitHub sign-in")
 
 
-def test_docs_do_not_promise_email_sign_up():
+def test_docs_allow_verified_email_sign_in():
     for rel in SIGNIN_DOCS:
-        _assert_phrases_absent(rel, OLD_EMAIL_PHRASES, "still promises email sign-up")
+        assert "verified email address" in _flatten(rel), (
+            f"{rel} does not name verified email sign-in"
+        )
 
 
 def test_public_text_does_not_claim_the_repo_is_not_public():
@@ -142,11 +119,15 @@ def test_public_text_does_not_claim_the_repo_is_not_public():
         _assert_phrases_absent(rel, NOT_PUBLIC_PHRASES, "still claims it is not public")
 
 
-def test_docs_state_the_restart_and_codex_login_steps():
-    for rel in INSTALL_STEP_DOCS:
-        text = _flatten(rel)
-        assert "restart" in text, f"{rel} omits the restart step"
-        assert CODEX_LOGIN in text, f"{rel} omits the Codex sign-in step"
+def test_verification_preserves_per_client_handoff_and_same_connection_witness():
+    text = _flatten("docs/install-verification.md")
+    assert CODEX_LOGIN in text
+    assert "new codex session" in text
+    assert "no restart needed" in text and "`/mcp`" in text
+    assert "through that same client connection" in text
+    assert "`list_releases`" in text
+    for rel in SIGNIN_DOCS:
+        assert "restart claude code" not in _flatten(rel)
 
 
 def test_install_doc_tells_older_connections_to_re_add():
@@ -154,6 +135,8 @@ def test_install_doc_tells_older_connections_to_re_add():
     assert "re-add" in text, "install.md omits the remove/re-add note"
     assert "2026-10-14" in text, "install.md omits the pre-Google connection date"
     assert CODEX_REMOVE in text, "install.md omits the Codex remove command"
+    assert "codex plugin remove tara@tahoe-public" in text
+    assert "do not add a duplicate direct server entry" in text
 
 
 def test_security_policy_names_a_private_reporting_route():
