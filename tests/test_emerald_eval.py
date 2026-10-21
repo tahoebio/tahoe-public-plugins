@@ -108,6 +108,23 @@ def test_complete_synthetic_attestation_checks_only_evidence_completeness():
     assert "Evidence completeness only" in report["note"]
 
 
+@pytest.mark.parametrize("host", ["Codex", "Claude Code"])
+def test_vision_availability_evidence_requires_scored_time_zero_comparison(host):
+    """The former null-only EB12 evidence cannot satisfy the corrected gate."""
+    case = next(item for item in PACK["cases"] if item["id"] == "EB12")
+    assert {"time_zero_sample", "time_zero_line"} <= set(case["fixtures"])
+    assert "EB12.4" in {item["id"] for item in case["hard_criteria"]}
+    record = synthetic_record()
+    run = next(
+        item for item in record["runs"]
+        if item["case_id"] == "EB12" and item["host"] == host
+    )
+    run["criteria"] = [item for item in run["criteria"] if item["id"] != "EB12.4"]
+    report = checker.assess(record, PACK)
+    assert report["ready"] is False
+    assert f"EB12/{host}: missing, duplicate or unknown criteria" in report["problems"]
+
+
 @pytest.mark.parametrize("status", ["fail", "blocked", "not_run"])
 def test_any_nonpassing_case_or_criterion_blocks_release(status):
     record = synthetic_record()

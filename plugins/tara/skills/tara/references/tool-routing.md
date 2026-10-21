@@ -154,11 +154,15 @@ Discover gene-set names, then retrieve differential scores:
 ```
 
 ```json
-{"tool":"get_pathway_scores","arguments":{"dataset":"emerald-bay","gene_sets":["<gene set>"],"samples":["<treated sample>"],"cell_lines":["<cell_line_internal>"],"limit":100}}
+{"tool":"get_pathway_scores","arguments":{"dataset":"emerald-bay","gene_sets":["<gene set>"],"samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"limit":100}}
 ```
 
 Read `differential-vision-scores`. Do not subtract endpoint controls again.
-Keep the collection, profile keys and eligibility status. Missing, reference-only
+Keep the collection, profile keys, `is_time_zero`, `is_control_reference` and
+eligibility status. Eligible `DMSO_T0` profiles have differential scores relative
+to the mean matched `DMSO_TF` endpoint controls. Interpret these as
+baseline-versus-endpoint contrasts, not drug-treatment effects. Time-zero
+profiles can still be absent or below the cell floor; missing, endpoint-reference
 and low-cell scores remain unavailable. Absolute VISION is unsupported. The
 embedding-distance and perturbation-marker tools are also unsupported here.
 

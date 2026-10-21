@@ -428,10 +428,12 @@
     },
     {
       "id": "EB12",
-      "title": "VISION availability is not a zero score",
-      "prompt": "For Emerald Bay signature {positive_signature}, inspect endpoint controls, time zero, low-cell profile {low_cell_sample}/{low_cell_line}, and unavailable profile {absent_sample}/{absent_line}. Explain missing scores without turning them into zero.",
+      "title": "VISION time-zero scores and unavailable profiles",
+      "prompt": "For Emerald Bay signature {positive_signature}, inspect endpoint controls, time-zero profile {time_zero_sample}/{time_zero_line}, low-cell profile {low_cell_sample}/{low_cell_line}, and unavailable profile {absent_sample}/{absent_line}. Explain what each returned value represents and distinguish missing scores from zero.",
       "fixtures": [
         "positive_signature",
+        "time_zero_sample",
+        "time_zero_line",
         "low_cell_sample",
         "low_cell_line",
         "absent_sample",
@@ -449,15 +451,19 @@
       "hard_criteria": [
         {
           "id": "EB12.1",
-          "assertion": "Compare exact profile keys and oracle availability classes; controls, time zero, low-cell and absent profiles have no treated differential value."
+          "assertion": "Compare exact profile keys and oracle availability classes. Endpoint-control references, below-cell-floor profiles and absent profiles have no differential value; time-zero identity alone does not make a profile unavailable."
         },
         {
           "id": "EB12.2",
-          "assertion": "Preserve null scores and correct value_status, has_expression, scored_differential and profile metadata when provided."
+          "assertion": "Preserve null scores for unavailable profiles and correct value_status, has_expression, scored_differential, is_time_zero, is_control_reference and profile metadata when provided. Do not assume every time-zero profile is scored: below-cell-floor and absent time-zero profiles stay unavailable."
         },
         {
           "id": "EB12.3",
           "assertion": "Never infer no pathway response from an unavailable score or substitute an absolute score."
+        },
+        {
+          "id": "EB12.4",
+          "assertion": "For the independently selected scored DMSO_T0 profile, compare the exact released differential score and sample/line/signature key with the oracle; require value_status=scored, is_time_zero=true and is_control_reference=false. Explain the baseline-versus-endpoint contrast relative to the mean matched DMSO_TF endpoint controls, not a drug-treatment effect or a second control subtraction."
         }
       ]
     },

@@ -41,7 +41,8 @@ counts; record derivations separately from released measurements.
 | Uncertain line | Canonical line key, cross-references and the released uncertainty label |
 | Growth | Exact released growth value plus minimal/full/all-cell counts and separate phenotype/expression population fields |
 | Differential VISION | Exact profile/signature keys and positive, negative, and near-zero or zero released values; record thresholds used to select near-zero values before the run |
-| VISION availability | Endpoint controls, time zero, an absent group and a below-cell-floor profile with expected null values and availability classes |
+| Scored time-zero VISION | A scored DMSO_T0 sample/line and signature with its exact released differential value, is_time_zero=true and is_control_reference=false; record the DMSO_TF endpoint-control reference definition |
+| VISION availability | Endpoint-control references, an absent group and a below-cell-floor profile with expected null values and availability classes; time-zero identity alone is not an exclusion |
 | Single-cell raw | Exact barcode and a bounded aligned token/count slice that actually contains an explicit stored zero; stored-entry and nonzero counts are checked independently |
 | Mixed datasets | A separate pinned Tahoe source oracle; neither dataset's frozen values or metadata stand in for the other |
 
@@ -80,6 +81,14 @@ record even when the numeric response looks plausible without them.
 
 Compare differential VISION `score` exactly as released. Keep sample/line and
 signature identity, `score_kind=differential`, availability and scoring flags.
+Select a scored `DMSO_T0` profile independently for EB12's `time_zero_sample`
+and `time_zero_line` fixtures. Its released value is a baseline-versus-endpoint
+contrast relative to the mean matched `DMSO_TF` endpoint controls, not a
+drug-treatment effect. Preserve `is_time_zero=true` and
+`is_control_reference=false`; do not classify that profile as reference-only.
+Time-zero profiles below the cell floor or without expression remain unavailable.
+Use source eligibility and released values, not time-zero identity alone, to
+determine whether a score exists. Endpoint-control references remain unavailable.
 Do not compute a new contrast or subtract controls a second time. A genuine
 zero score differs from an unavailable score. No DESeq2, absolute VISION,
 embedding or perturbation-marker values belong in this Emerald oracle.

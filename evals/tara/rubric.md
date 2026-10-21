@@ -46,6 +46,8 @@ shared rules, any of these fails an Emerald case:
   released in-vitro `growth_rate_released` value.
 - Absolute VISION substituted for differential scores, or an unavailable score
   reported as zero.
+- Scored time-zero VISION discarded as reference-only, or its
+  baseline-versus-endpoint contrast described as a drug-treatment effect.
 - A truncated prefix presented as complete; simulated or synchronous execution
   presented as proof of a real pending/fetch/cancel path.
 - Missing CC BY 4.0 source attribution, or runtime guidance redistributed under

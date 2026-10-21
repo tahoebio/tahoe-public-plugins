@@ -28,7 +28,7 @@ Tahoe-100M evaluations and their historical frozen values remain separate.
 | EB06–EB07 | Measured zero, absent profile, vocabulary-only/unknown gene and ambiguous identity |
 | EB08–EB09 | Complete combinations, separate matched controls, time zero, line uncertainty and metadata limits |
 | EB10 | Released five-day in-vitro growth response and distinct QC populations |
-| EB11–EB12 | Differential VISION values, signs, controls and unavailable states |
+| EB11–EB12 | Differential VISION values, signs, scored time-zero contrasts, endpoint controls and unavailable states |
 | EB13 | Bounded single-cell raw reads, explicit zeros and aligned sparse arrays |
 | EB14 | Explicit refusal of unsupported Emerald measurements; no dataset substitution |
 | EB15, EB17 | Offline compatibility fixtures for an older server and missing/inconsistent capabilities |

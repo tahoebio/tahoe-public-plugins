@@ -46,6 +46,8 @@ the selected dataset's advertised alias. No full matrix export is served.
 Use released growth values with their phenotype population and expression
 availability flags. They are five-day in-vitro responses, not clinical survival
 or Tahoe survival statistics. Differential VISION is already control-subtracted;
-reference-only, low-cell or absent profiles must not become zero scores.
+eligible time-zero profiles carry baseline-versus-endpoint scores, not
+drug-treatment effects. Reference-only, low-cell or absent profiles must not
+become zero scores; time-zero identity alone is not an exclusion.
 Never infer complete coverage from a truncated response. Read the guide and
 result provenance for the current populations, controls and definitions.

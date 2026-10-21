@@ -90,8 +90,11 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
   survival or Tahoe survival log odds. Keep phenotype and expression
   populations separate; no significance statistic is supplied.
 - VISION scores are already differential. Do not subtract controls again or
-  interpret missing/low-cell/reference-only profiles as zero. No absolute
-  VISION, DE, DESeq2, embedding or marker route is supported for Emerald.
+  interpret missing/low-cell/reference-only profiles as zero. Eligible `DMSO_T0`
+  profiles have scores relative to mean matched `DMSO_TF` endpoint controls:
+  a baseline-versus-endpoint contrast, not a drug-treatment effect. Time-zero
+  identity alone does not determine score availability. No absolute VISION,
+  DE, DESeq2, embedding or marker route is supported for Emerald.
 - Read the dataset guide for methods and attribution. Do not apply Tahoe
   targets, organ/driver annotations, phenotype definitions or control rules
   to Emerald implicitly.
