@@ -25,6 +25,13 @@ paths each covers.
     Licence: CC0-1.0 (https://huggingface.co/datasets/tahoebio/Tahoe-100M).
     The data is not stored in this repository.
 
+  - The Emerald Bay source dataset, when available through the Tara service.
+    Licence: CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+    Source: Tahoe Bio, EmeraldBay,
+    https://huggingface.co/datasets/tahoebio/EmeraldBay.
+    Retain attribution and identify transformations. Signature collections
+    can have separate terms. The data is not stored in this repository.
+
 Trademarks: "Tahoe" and "Tara" are trademarks of Tahoe Bio. No licence in this
 repository grants any right to use them.
 

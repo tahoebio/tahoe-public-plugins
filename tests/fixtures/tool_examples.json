@@ -1,0 +1,1194 @@
+{
+  "format_version": 1,
+  "evidence_kind": "offline-schema-and-routing-requirements",
+  "note": "Angle-bracket sample, cell-line, pathway and handle values must be replaced using the selected dataset tool results. These are not executed host sessions or scientific result fixtures. Contexts are normalized discovery requirements, not recorded MCP responses. Success requires successful, untruncated discovery and advertised capability metadata for Emerald.",
+  "contexts": {
+    "tahoe_legacy": {
+      "server_version": "0.3.9",
+      "advertised_datasets": [
+        "tahoe-100m"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {}
+    },
+    "emerald_visible": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "emerald_hidden": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {}
+    },
+    "emerald_old_server": {
+      "server_version": "0.3.10",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "emerald_unknown_version": {
+      "server_version": null,
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "emerald_future_version": {
+      "server_version": "0.10.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "discovery_failed": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": false,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "discovery_truncated": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": true,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "discovery_missing_status": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "missing_expression_tool": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "missing_cpm": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "missing_alias": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "partial_metadata": {
+      "server_version": "0.4.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "health",
+      "context": "emerald_visible",
+      "tool": "health",
+      "arguments": {},
+      "expected_route": "send"
+    },
+    {
+      "id": "release-discovery",
+      "context": "emerald_visible",
+      "tool": "list_releases",
+      "arguments": {},
+      "expected_route": "send"
+    },
+    {
+      "id": "cancel-owned-handle",
+      "context": "emerald_visible",
+      "tool": "cancel_execution",
+      "arguments": {
+        "cancel_handle": "<cancel_handle returned by the same account>"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "feedback-user-requested",
+      "context": "emerald_visible",
+      "tool": "send_feedback",
+      "arguments": {
+        "text": "<feedback explicitly approved by the user>",
+        "useful": true
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-guide",
+      "context": "emerald_visible",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-expression-topic",
+      "context": "emerald_visible",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "topic": "expression-measurements-and-missingness"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-conditions",
+      "context": "emerald_visible",
+      "tool": "search_conditions",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "query": "DMSO",
+        "limit": 20
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-gene-resolution",
+      "context": "emerald_visible",
+      "tool": "resolve_genes",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "symbols": [
+          "TP53"
+        ]
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-cell-resolution",
+      "context": "emerald_visible",
+      "tool": "list_cell_lines",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "query": "A549",
+        "limit": 10
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-condition-metadata",
+      "context": "emerald_visible",
+      "tool": "get_drug_info",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "limit": 10
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-expression-raw_counts",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "measurement": "raw_counts",
+        "include_matched_controls": true,
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-expression-cpm",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "measurement": "cpm",
+        "include_matched_controls": true,
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-expression-cpm_log1p",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "measurement": "cpm_log1p",
+        "include_matched_controls": true,
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-growth",
+      "context": "emerald_visible",
+      "tool": "get_phenotype_scores",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "phenotypes": [
+          "growth_rate_released"
+        ],
+        "significant_only": false,
+        "limit": 50
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-gene-sets",
+      "context": "emerald_visible",
+      "tool": "search_gene_sets",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "collection": "HALLMARK",
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-differential-vision",
+      "context": "emerald_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "gene_sets": [
+          "<gene_set from search_gene_sets>"
+        ],
+        "score_kind": "differential",
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-bounded-sql",
+      "context": "emerald_visible",
+      "tool": "run_sql",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "statement": "SELECT sample, cvcl, total_counts FROM pb_pseudobulk WHERE sample = '<sample from search_conditions>' LIMIT 5",
+        "max_rows": 5
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-single-cell-sql",
+      "context": "emerald_visible",
+      "tool": "run_sql",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "statement": "SELECT BARCODE_SUB_LIB_ID, sample, slice(gene_tokens, 1, 5) AS gene_tokens, slice(counts, 1, 5) AS counts FROM expr_expression_cell WHERE sample = '<sample from search_conditions>' LIMIT 3",
+        "max_rows": 3
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-expression",
+      "context": "tahoe_legacy",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "genes": [
+          "TP53"
+        ],
+        "conditions": [
+          "Verapamil"
+        ],
+        "measurement": "cpm_log1p"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-de",
+      "context": "tahoe_legacy",
+      "tool": "get_differential_expression",
+      "arguments": {
+        "genes": [
+          "TP53"
+        ],
+        "drug": "Verapamil",
+        "max_padj": 0.05,
+        "top_n": 20
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-embedding",
+      "context": "tahoe_legacy",
+      "tool": "get_embedding_distance",
+      "arguments": {
+        "drug": [
+          "Verapamil"
+        ],
+        "cell_lines": [
+          "CVCL_0023"
+        ]
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-markers",
+      "context": "tahoe_legacy",
+      "tool": "get_perturbation_markers",
+      "arguments": {
+        "drug": "Verapamil",
+        "cell_line": "CVCL_0023",
+        "top_n": 20
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-guide",
+      "context": "tahoe_legacy",
+      "tool": "get_guide",
+      "arguments": {
+        "topic": "reading-expression"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "tahoe-legacy-sql",
+      "context": "tahoe_legacy",
+      "tool": "run_sql",
+      "arguments": {
+        "statement": "SELECT gene_name FROM gene_metadata WHERE gene_name = 'TP53' LIMIT 5",
+        "max_rows": 5
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-hidden",
+      "context": "emerald_hidden",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "dataset_unavailable"
+    },
+    {
+      "id": "emerald-old-server",
+      "context": "emerald_old_server",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "server_too_old"
+    },
+    {
+      "id": "emerald-unknown-version",
+      "context": "emerald_unknown_version",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "compatibility_unknown"
+    },
+    {
+      "id": "emerald-numeric-future-version",
+      "context": "emerald_future_version",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "emerald-unsupported-get_differential_expression",
+      "context": "emerald_visible",
+      "tool": "get_differential_expression",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "unsupported_tool"
+    },
+    {
+      "id": "emerald-unsupported-get_embedding_distance",
+      "context": "emerald_visible",
+      "tool": "get_embedding_distance",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "unsupported_tool"
+    },
+    {
+      "id": "emerald-unsupported-get_perturbation_markers",
+      "context": "emerald_visible",
+      "tool": "get_perturbation_markers",
+      "arguments": {
+        "dataset": "emerald-bay"
+      },
+      "expected_route": "unsupported_tool"
+    },
+    {
+      "id": "emerald-no-normalized-de",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "measurement": "deseq2"
+      },
+      "expected_route": "invalid_arguments"
+    },
+    {
+      "id": "emerald-no-absolute-scores",
+      "context": "emerald_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "score_kind": "absolute",
+        "gene_sets": [
+          "HALLMARK_P53_PATHWAY"
+        ]
+      },
+      "expected_route": "unsupported_score_kind"
+    },
+    {
+      "id": "emerald-no-tahoe-guide-topic",
+      "context": "emerald_visible",
+      "tool": "get_guide",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "topic": "reading-expression"
+      },
+      "expected_route": "unsupported_topic"
+    },
+    {
+      "id": "emerald-no-invented-arguments",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "normalized": true
+      },
+      "expected_route": "invalid_arguments"
+    },
+    {
+      "id": "emerald-no-coerced-boolean",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "include_matched_controls": "true"
+      },
+      "expected_route": "invalid_arguments"
+    },
+    {
+      "id": "emerald-no-significance",
+      "context": "emerald_visible",
+      "tool": "get_phenotype_scores",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "samples": [
+          "<sample>"
+        ],
+        "significant_only": true
+      },
+      "expected_route": "unsupported_measurement"
+    },
+    {
+      "id": "emerald-no-cross-dataset-sql",
+      "context": "emerald_visible",
+      "tool": "run_sql",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "statement": "SELECT gene_name FROM gene_metadata WHERE gene_name = 'TP53' LIMIT 5"
+      },
+      "expected_route": "sql_not_allowed"
+    },
+    {
+      "id": "emerald-read-only-sql",
+      "context": "emerald_visible",
+      "tool": "run_sql",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "statement": "DELETE FROM pb_pseudobulk"
+      },
+      "expected_route": "sql_not_allowed"
+    },
+    {
+      "id": "tahoe-no-new-cpm-default",
+      "context": "tahoe_legacy",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "genes": [
+          "TP53"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "unsupported_measurement"
+    },
+    {
+      "id": "discovery_failed",
+      "context": "discovery_failed",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "discovery_incomplete"
+    },
+    {
+      "id": "discovery_truncated",
+      "context": "discovery_truncated",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "discovery_incomplete"
+    },
+    {
+      "id": "discovery_missing_status",
+      "context": "discovery_missing_status",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "discovery_incomplete"
+    },
+    {
+      "id": "missing_expression_tool",
+      "context": "missing_expression_tool",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "unsupported_tool"
+    },
+    {
+      "id": "missing_cpm",
+      "context": "missing_cpm",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "unsupported_measurement"
+    },
+    {
+      "id": "missing_alias",
+      "context": "missing_alias",
+      "tool": "run_sql",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "statement": "SELECT sample, cvcl, total_counts FROM pb_pseudobulk LIMIT 5",
+        "max_rows": 5
+      },
+      "expected_route": "sql_not_allowed"
+    },
+    {
+      "id": "partial_metadata",
+      "context": "partial_metadata",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "measurement": "cpm"
+      },
+      "expected_route": "discovery_incomplete"
+    },
+    {
+      "id": "legacy-no-new-dataset-argument",
+      "context": "tahoe_legacy",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "tahoe-100m",
+        "genes": [
+          "TP53"
+        ]
+      },
+      "expected_route": "unsupported_argument"
+    },
+    {
+      "id": "legacy-no-sample-argument",
+      "context": "tahoe_legacy",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ]
+      },
+      "expected_route": "unsupported_argument"
+    },
+    {
+      "id": "modern-tahoe-no-sample-argument",
+      "context": "emerald_visible",
+      "tool": "get_expression_slice",
+      "arguments": {
+        "dataset": "tahoe-100m",
+        "genes": [
+          "TP53"
+        ],
+        "samples": [
+          "<sample from search_conditions>"
+        ]
+      },
+      "expected_route": "unsupported_argument"
+    }
+  ]
+}

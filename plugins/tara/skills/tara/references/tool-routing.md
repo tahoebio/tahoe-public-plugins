@@ -1,10 +1,12 @@
 # Tool routing — the long form
 
 Read this when you need a tool's arguments, a worked call, or the full response
-contract. The short routing table is in `SKILL.md`. Every tool here is on the
-live service; nothing that is not yet served is named.
+contract. The short routing table is in `SKILL.md`. The 17 tool names are
+shared. Dataset availability and supported measurements must be discovered for
+the signed-in account before using a route. Emerald examples require server
+0.4.0 or later and an advertised Emerald capability; they are not an access claim.
 
-## Routing, with arguments
+## Tahoe-100M routing, with arguments
 
 | Question | Sequence |
 |---|---|
@@ -31,11 +33,12 @@ live service; nothing that is not yet served is named.
 | Aggregates over per-cell expression | `run_sql` over advertised `single_cell_expression`; 1,000 rows / 40 KB, not a cell-matrix export |
 | Per-cell embeddings, bulk download | not served; offer `get_embedding_distance` for the matched-vehicle shift |
 | Plate-level centroid vectors | `run_sql` over the advertised centroid table; vectors are distinct from the scalar distance-tool output |
-| Anything outside Tahoe-100M | not available through these tools |
+| Another dataset | select it only if discovery advertises it; see Emerald routing below |
 
 ## Worked calls
 
-One example per tool, with the argument keys the live schema accepts.
+Tahoe-100M calls retain the legacy arguments. Omit the new `dataset` argument
+on older servers. The examples below do not establish Emerald capabilities.
 
 ```text
 list_releases()                          # name the release and its aliases first
@@ -65,10 +68,116 @@ send_feedback(text="...", task_category="exploration", useful=true)
 run_sql(statement="SELECT count(*) AS n FROM drug_metadata", max_rows=100)
 ```
 
+## Emerald Bay worked calls
+
+First call `list_releases()`. Require an untruncated successful response,
+server version at least 0.4.0, and the Emerald entry's `tools`, measurement
+lists and table aliases. The tools alone being registered is not enough.
+`health()` can help recover a missing version, but cannot replace discovery.
+A Tahoe-only, disabled or unauthorized response means stop the Emerald route.
+Do not try an unadvertised layer through SQL as a workaround.
+
+Read the Emerald guide before selecting measurements:
+
+```json
+{"tool":"get_guide","arguments":{"dataset":"emerald-bay","topic":"establish-the-analysis-contract"}}
+```
+
+Discover sample labels, resolve genes and look up the line independently:
+
+```json
+{"tool":"search_conditions","arguments":{"dataset":"emerald-bay","limit":20}}
+```
+
+```json
+{"tool":"resolve_genes","arguments":{"dataset":"emerald-bay","symbols":["TP53","EGFR"]}}
+```
+
+```json
+{"tool":"list_cell_lines","arguments":{"dataset":"emerald-bay","query":"A549"}}
+```
+
+Replace every `<...>` placeholder below with a verified discovery result.
+Placeholders are templates, not real identifiers or claims of measured coverage.
+Retain `cell_line_internal`, identity uncertainty, complete condition text and
+sample. Resolve ambiguous genes before querying; do not choose the first match.
+Use a treated sample for the pathway example and a measured profile for numeric
+expression. Request unavailable profiles explicitly when checking missingness.
+
+```json
+{"tool":"get_drug_info","arguments":{"dataset":"emerald-bay","samples":["<sample>"],"limit":20}}
+```
+
+This is condition/sample metadata only. Targets, MOA, approval, structures,
+organ/driver filters and scalar dose filters are not Emerald capabilities.
+Keep multi-component labels and endpoint controls as separate samples.
+
+Pseudobulk raw counts, with all matched endpoint-control replicates:
+
+```json
+{"tool":"get_expression_slice","arguments":{"dataset":"emerald-bay","genes":["<resolved gene>"],"samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"measurement":"raw_counts","include_matched_controls":true,"limit":100}}
+```
+
+The same profile and gene, using the full-profile denominator:
+
+```json
+{"tool":"get_expression_slice","arguments":{"dataset":"emerald-bay","genes":["<resolved gene>"],"samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"measurement":"cpm","include_matched_controls":true,"limit":100}}
+```
+
+Natural-log log1p(CPM), also the expression tool's default measurement:
+
+```json
+{"tool":"get_expression_slice","arguments":{"dataset":"emerald-bay","genes":["<resolved gene>"],"samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"measurement":"cpm_log1p","include_matched_controls":true,"limit":100}}
+```
+
+Read `expression-measurements-and-missingness` and `conditions-and-controls`.
+A gene's CPM must not change when other genes are added to the request. Keep
+returned totals, cell counts, population and measured/unavailable status.
+Time-zero samples are not endpoint controls. DESeq2 expression and DE are
+unsupported; do not call the Tahoe DE tool for this dataset.
+
+Released five-day growth response, without a significance filter:
+
+```json
+{"tool":"get_phenotype_scores","arguments":{"dataset":"emerald-bay","samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"phenotypes":["growth_rate_released"],"significant_only":false,"limit":100}}
+```
+
+Read `released-growth-response`. `survival` is an accepted source-label alias
+for this same value, not clinical survival or Tahoe's phenotype. Preserve the
+released value and both population definitions; do not recompute it or invent
+p-values. Other phenotypes and `significant_only=true` are unsupported.
+
+Discover gene-set names, then retrieve differential scores:
+
+```json
+{"tool":"search_gene_sets","arguments":{"dataset":"emerald-bay","query":"APOPTOSIS","limit":20}}
+```
+
+```json
+{"tool":"get_pathway_scores","arguments":{"dataset":"emerald-bay","gene_sets":["<gene set>"],"samples":["<treated sample>"],"cell_lines":["<cell_line_internal>"],"limit":100}}
+```
+
+Read `differential-vision-scores`. Do not subtract endpoint controls again.
+Keep the collection, profile keys and eligibility status. Missing, reference-only
+and low-cell scores remain unavailable. Absolute VISION is unsupported. The
+embedding-distance and perturbation-marker tools are also unsupported here.
+
+For approved single-cell raw reads or custom aggregates, read the selected
+`querying-with-run-sql` and `table-reference` topics and use the examples in
+[sql-guidance.md](sql-guidance.md). No unrestricted matrix export is available.
+
+For `pending`, repeat the exact same call, including `dataset`, adding only
+`result_handle` from that response. Changed parameters cannot redeem it. If
+access disappears, report that fact; do not remove `dataset` or submit a new
+Tahoe query. Use `cancel_execution(cancel_handle=...)` to stop an owned query;
+cancellation does not take a dataset argument and remains valid after access
+is disabled. `send_feedback` is optional and only runs when the user asks.
+
 ## Response contract
 
-Every result carries `ok`, `status` and the `release`. A data result also
-carries:
+Check `ok` and `status` first. Dataset results carry the selected `release`;
+cancellation is operational and has no dataset release. Discovery lists
+releases, rather than choosing one for the user. A data result also carries:
 
 - `provenance` — units, normalization, aggregation and what a zero means.
 - `manifest` — tool, canonical arguments, release and server version, so a call
@@ -81,15 +190,16 @@ carries:
   that produced it, so a handle from another tool, another release or another
   account reads as `not_found`.
 
-`search_conditions` and `resolve_genes` report their own `release` and arguments
-instead of a `manifest`.
+Envelope details vary by tool and server version. Older Tahoe condition/gene
+responses can report `release` and arguments without a `manifest`. Preserve
+all returned provenance; do not infer a dataset from a default health release.
 
 ## Errors worth recognizing
 
 | `error_type` | Meaning |
 |---|---|
-| `bad_request` | An argument is out of range or malformed. |
-| `not_found` | The named condition, gene, topic or handle is not in the release. |
+| `bad_request` | An argument is invalid or the dataset does not support that analysis/filter. Do not silently drop the filter or switch datasets. |
+| `not_found` | The dataset is unavailable to this account, or the named object/handle is unavailable. Recheck discovery; never remove the Emerald selector to retry. |
 | `rate_limited` | Too many calls; wait and retry. |
 | `too_large` | The request exceeds a bound; narrow it. |
 | `missing_identity` | Sign in through the connector, then retry. |
@@ -98,14 +208,16 @@ instead of a `manifest`.
 | `query_too_costly` | A `run_sql` statement used a cross join, an unqualified join, or too many tables. |
 | `function_not_allowed` | A `run_sql` statement used a refused function or table source. |
 
-A failure is `ok=false` with a fixed message that never echoes your input. A
+A failure is `ok=false`. Use its `error_type` and message to explain the failure;
+never treat failed or pending results as measurements. A
 truncated success is `ok=true` with `truncated=true`: report it as partial, never
 as complete.
 
 ## Guide topics
 
 `get_guide(topic=...)` accepts a topic id and returns just that section; the
-response lists the available `topics` and the `guide_version`. Read the relevant
+response lists the available `topics` and the `guide_version`. Emerald requires
+`dataset="emerald-bay"` on every guide call. Read the relevant
 section before drawing a conclusion.
 
 Use `references/data-catalog.md` to select the server guide topic for each

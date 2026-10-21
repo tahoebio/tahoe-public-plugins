@@ -1,26 +1,27 @@
-# Reading the server's scientific guidance
+# Reading the selected dataset's scientific guidance
 
-The scientific analysis and statistics guidance is maintained server-side and
-served by `get_guide`. This plugin routes to it rather than distributing a copy.
-Start with `get_guide(topic="establish-the-analysis-contract")`; it returns the
-current `topics` and `guide_version`. Read the relevant topic before interpreting
-a result, and retain `guide_version`.
+Scientific methods live in `get_guide`, not in a second plugin-owned guide.
+Discover the dataset first. For Tahoe, start with
+`get_guide(topic="establish-the-analysis-contract")`. For Emerald, use
+`get_guide(dataset="emerald-bay", topic="establish-the-analysis-contract")`
+only after discovery advertises it. Keep the returned `guide_version`, verify
+the topic list, and pass the same dataset selector on subsequent guide calls.
 
-| Before | Read with `get_guide(topic=...)` |
-|---|---|
-| Planning an analysis | `establish-the-analysis-contract` |
-| Selecting sources, controls and joins | `verify-semantics-and-coverage` |
-| Choosing replication, intervals or multiple-testing methods | `statistical-discipline` |
-| Comparing a measurement with a released contrast | `measurements-versus-treatment-contrasts`, plus the relevant scientific layer topic |
-| Interpreting DE | `differential-expression` |
-| Interpreting pathway scores | `pathway-scores` |
-| Interpreting a phenotype | `phenotype-readouts` and the result's provenance |
-| Preparing a report | `reporting-standards` |
-| Recording an analysis | `reproducible-output` |
+| Before | Tahoe-100M topic | Emerald Bay topic |
+|---|---|---|
+| Planning the analysis | `establish-the-analysis-contract` | `establish-the-analysis-contract` |
+| Resolving genes and cell lines | `genes`, `coverage-traps` | `gene-and-cell-line-identity` |
+| Selecting controls and joins | `verify-semantics-and-coverage`, `conditions-and-controls` | `conditions-and-controls` |
+| Interpreting expression | `expression-grain-and-measurement` | `expression-measurements-and-missingness` |
+| Choosing statistical units | `statistical-discipline` | `drug-metadata-and-statistical-discipline` |
+| Interpreting released DE | `differential-expression` | Unsupported |
+| Interpreting pathways | `pathway-scores` | `differential-vision-scores` |
+| Interpreting phenotype | `phenotype-readouts` | `released-growth-response` |
+| Preparing reproducible output and citation | `reporting-standards`, `reproducible-output`, `citation-and-provenance` | `provenance-and-attribution` |
+| Writing bounded SQL | `querying-with-run-sql`, `table-reference` | `querying-with-run-sql`, `table-reference` |
 
-Guide topics and result provenance define the selected source's methodology.
-A tool's name or an example call does not establish units, independent
-replication, control design or score direction. If the guide does not resolve
-an interpretation needed for the answer, state the uncertainty instead of
-inventing a convention. Keep the server's detailed guidance in the analysis
-session; do not redistribute it as part of the plugin.
+Read relevant sections before interpreting any value. A shared tool name does
+not establish shared units, controls, populations or uncertainty. Never reuse
+Tahoe's guide version as evidence for Emerald. If methods or identity remain
+uncertain, state the uncertainty instead of inventing a convention. Keep the
+runtime guidance in the analysis session; do not redistribute it with the plugin.

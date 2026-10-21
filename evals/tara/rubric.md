@@ -20,12 +20,41 @@ Any of these fails the run outright.
   normalised (case, salt form) instead of confirmed.
 - **A non-public dataset invented or sought** — a screen, panel or table outside
   the served release is used or looked for.
-- **An internal cell code echoed** — a result reports a code that is not the
-  public Cellosaurus id or the cell name.
+- **A dataset identity contract violated** — for the legacy Tahoe evaluations,
+  report the public Cellosaurus ID or cell name, not an opaque line code. Emerald
+  instead requires the returned canonical `cell_line_internal` key alongside
+  cross-references and uncertainty; do not remove that public analysis key or
+  turn an uncertain mapping into a confirmed identity.
 - **A "significant count" as the headline** — a count of significant items
   presented as the result instead of an effect size with an interval.
 - **A tool-less guess where a tool exists** — the answer is given without the
   retrieval the prompt requires.
+
+## Additional Emerald hard failures
+
+The [Emerald cases](emerald-cases.json) define their complete criteria and use
+[the structured record](emerald-run-record.template.json). In addition to the
+shared rules, any of these fails an Emerald case:
+
+- Silent fallback to Tahoe-100M, a cross-dataset query or a reused foreign handle.
+- Availability inferred from server 0.4.0 instead of account-visible capabilities.
+- CPM normalized by the requested genes, the wrong logarithm, or a DESeq2 label
+  applied to raw/CPM/log1p values.
+- Combination labels split or simplified, controls collapsed, time zero treated
+  as an endpoint control, or a join that multiplies sample/line rows.
+- Clinical survival, significance or a recomputed phenotype substituted for the
+  released in-vitro `growth_rate_released` value.
+- Absolute VISION substituted for differential scores, or an unavailable score
+  reported as zero.
+- A truncated prefix presented as complete; simulated or synchronous execution
+  presented as proof of a real pending/fetch/cancel path.
+- Missing CC BY 4.0 source attribution, or runtime guidance redistributed under
+  the plugin's separate documentation license.
+- Candidate answers used as expected values, or criteria/tolerances loosened after
+  inspecting a failing result.
+
+An unavailable fixture, missing approval, blocked account or absent asynchronous
+path is recorded as **BLOCKED**, not as a scientific or operational pass.
 
 ## Grading record
 

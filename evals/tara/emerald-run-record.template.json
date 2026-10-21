@@ -1,0 +1,29 @@
+{
+  "$schema": "emerald-record.schema.json",
+  "format_version": 1,
+  "dataset": "emerald-bay",
+  "status": "not_run",
+  "plugin_commit": "",
+  "pack_sha256": "",
+  "oracle": {
+    "expected_values_origin": "independent-released-source",
+    "source_url": "https://huggingface.co/datasets/tahoebio/EmeraldBay",
+    "source_revision": "",
+    "reviewer": "",
+    "reviewed_at": "",
+    "reviewed_before_candidate_results": false,
+    "snapshot": {
+      "ref": "",
+      "sha256": ""
+    },
+    "derivation": {
+      "ref": "",
+      "sha256": ""
+    },
+    "calculated_tolerance": {
+      "rtol": 1e-09,
+      "atol": 1e-12
+    }
+  },
+  "runs": []
+}

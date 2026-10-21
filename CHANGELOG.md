@@ -3,6 +3,21 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.4.0 — unreleased
+
+- Add explicit dataset selection and capability-gated Emerald Bay routing.
+  Preserve Tahoe's 0.3.9 server floor and legacy calls; Emerald requires server
+  0.4.0 or later plus advertised capabilities for the signed-in account.
+- Route pseudobulk raw counts, CPM and natural-log log1p(CPM), released five-day
+  growth response, differential VISION and bounded single-cell raw SQL.
+  Preserve sample/line identity, missingness, controls and dataset-specific
+  guides. Refuse unavailable or unsupported Emerald requests without fallback.
+- Add structured worked calls, offline schema/capability checks and a separate
+  Emerald host-evaluation pack. Real host/MCP acceptance remains required;
+  preparation and offline checks do not establish live readiness.
+- Record Emerald source CC BY 4.0 attribution separately from Tahoe CC0,
+  repository licenses and runtime-guide terms. Endpoint and sign-in stay the same.
+
 ## 0.3.4 — unreleased
 
 - Correct the public docs for the open Google sign-in: drop the private-preview
