@@ -463,7 +463,7 @@
         },
         {
           "id": "EB12.4",
-          "assertion": "For the independently selected scored DMSO_T0 profile, compare the exact released differential score and sample/line/signature key with the oracle; require value_status=scored, is_time_zero=true and is_control_reference=false. Explain the baseline-versus-endpoint contrast relative to the mean matched DMSO_TF endpoint controls, not a drug-treatment effect or a second control subtraction."
+          "assertion": "For the independently selected scored DMSO_T0 profile, compare the exact released differential score and sample/line/signature key with the oracle; require value_status=scored, is_time_zero=true, contrast_kind=time_zero_vs_endpoint and is_control_reference=false. Explain the baseline-versus-endpoint contrast relative to the mean matched DMSO_TF endpoint controls, not a drug-treatment effect or a second control subtraction."
         }
       ]
     },
@@ -642,6 +642,10 @@
         {
           "id": "EB18.4",
           "assertion": "Do not pool unmatched measurements or transfer Tahoe frozen values, annotations or biological claims to Emerald."
+        },
+        {
+          "id": "EB18.5",
+          "assertion": "Report no numeric cross-dataset delta: do not subtract, ratio or otherwise combine Emerald and Tahoe-100M values, and state that no conversion between the two is provided. Compare direction or rank within each dataset only."
         }
       ]
     },

@@ -145,7 +145,11 @@ Released five-day growth response, without a significance filter:
 Read `released-growth-response`. `survival` is an accepted source-label alias
 for this same value, not clinical survival or Tahoe's phenotype. Preserve the
 released value and both population definitions; do not recompute it or invent
-p-values. Other phenotypes and `significant_only=true` are unsupported.
+p-values. `is_growth_rate_control` is true only for the four endpoint `DMSO_TF`
+replicates, never for time zero. `smp_803` (`DMSO_T0`) growth is a
+baseline-versus-endpoint contrast flagged `is_time_zero=true`; exclude it from
+treatment rankings. Other phenotypes and `significant_only=true` are
+unsupported.
 
 Discover gene-set names, then retrieve differential scores:
 
@@ -158,8 +162,11 @@ Discover gene-set names, then retrieve differential scores:
 ```
 
 Read `differential-vision-scores`. Do not subtract endpoint controls again.
-Keep the collection, profile keys, `is_time_zero`, `is_control_reference` and
-eligibility status. Eligible `DMSO_T0` profiles have differential scores relative
+Keep the collection, profile keys, `is_time_zero`, `contrast_kind`,
+`is_control_reference` and eligibility status. `contrast_kind` is
+`time_zero_vs_endpoint`, `treatment_vs_endpoint` or
+`endpoint_control_reference`; filter `is_time_zero=false` for drug rankings.
+Eligible `DMSO_T0` profiles have differential scores relative
 to the mean matched `DMSO_TF` endpoint controls. Interpret these as
 baseline-versus-endpoint contrasts, not drug-treatment effects. Time-zero
 profiles can still be absent or below the cell floor; missing, endpoint-reference

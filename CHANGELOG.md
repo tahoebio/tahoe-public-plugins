@@ -17,6 +17,10 @@ to semantic versioning.
   preparation and offline checks do not establish live readiness.
 - Record Emerald source CC BY 4.0 attribution separately from Tahoe CC0,
   repository licenses and runtime-guide terms. Endpoint and sign-in stay the same.
+- State the two version floors separately (Tahoe-100M 0.3.9, Emerald Bay 0.4.0),
+  mark time-zero growth and `contrast_kind` at row level for treatment rankings,
+  and forbid a numeric Emerald/Tahoe cross-dataset comparison (no conversion is
+  provided). The EB18 eval case now fails on a reported cross-dataset delta.
 
 ## 0.3.4 — unreleased
 

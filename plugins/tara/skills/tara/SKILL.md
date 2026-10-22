@@ -13,22 +13,29 @@ and table definitions come from `get_guide` for the selected dataset.
 ## Call order
 
 1. Call `list_releases()` and read `server_version`, `releases`, and their
-   dataset names and table aliases. The Tahoe-100M compatibility floor is
-   0.3.9. Compare versions numerically — major, then minor, then patch — not
-   as text: 0.3.10 is newer than 0.3.9. If below that floor, warn that the frozen
-   Tahoe expected values may not apply. If no usable version is returned,
+   dataset names and table aliases. Apply two separate floors:
+   - **Tahoe-100M: 0.3.9.** Compare versions numerically — major, then minor,
+     then patch — not as text: 0.3.10 is newer than 0.3.9. If below that floor,
+     warn that the frozen Tahoe expected values may not apply.
+   - **Emerald Bay: 0.4.0.** An explicit Emerald Bay request requires this floor
+     and a `releases` entry with `dataset="emerald-bay"`. The Tahoe floor does
+     not cover Emerald.
+
+   If no usable version is returned,
    try the other endpoint, `health()`; if neither yields one, report
    compatibility as unknown. Health alone does not establish capabilities.
-2. Select the dataset from the user's question. An explicit Emerald Bay
-   request requires server **0.4.0 or later** and a `releases` entry with
-   `dataset="emerald-bay"`. Check its `tools`, requested measurement or score
-   kind, and `tables` before querying. Missing, failed or incomplete discovery
-   means Emerald is unavailable or unverified for this account. Explain that
-   result; never retry the request without `dataset` or substitute Tahoe-100M.
-   A version number alone does not grant access. For an unspecified dataset,
-   use Tahoe-100M only when the context is clearly Tahoe-100M; otherwise ask.
-   For an explicit comparison, query each dataset separately and retain its
-   own units, controls and provenance. Never perform a cross-dataset SQL join.
+2. Select the dataset from the user's question. For Emerald, check its
+   `tools`, requested measurement or score kind, and `tables` before querying.
+   Missing, failed or incomplete discovery means Emerald is unavailable or
+   unverified for this account. Explain that result; never retry the request
+   without `dataset` or substitute Tahoe-100M. A version number alone does not
+   grant access. For an unspecified dataset, use Tahoe-100M only when the
+   context is clearly Tahoe-100M; otherwise ask. For an explicit comparison,
+   query each dataset separately, retain its own units, controls and
+   provenance, and report the two side by side. Never place Emerald and
+   Tahoe-100M values on a shared axis, difference them or rank across them: no
+   conversion between the two is provided. Never perform a cross-dataset SQL
+   join.
 3. Read the selected guide's `establish-the-analysis-contract` topic, then its
    relevant scientific topics. For Tahoe, use
    `get_guide(topic="establish-the-analysis-contract")`. For Emerald, use
@@ -87,10 +94,16 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
 - A sparse absence is zero only for a measured gene in a measured profile.
   Unknown, ambiguous, unmeasured or unavailable values remain unavailable.
 - Released growth response is an in-vitro measurement. It is not clinical
-  survival or Tahoe survival log odds. Keep phenotype and expression
-  populations separate; no significance statistic is supplied.
+  survival or Tahoe survival log odds. `is_growth_rate_control` is true only
+  for the four endpoint `DMSO_TF` replicates and false for time zero.
+  `smp_803` (`DMSO_T0`) growth is a baseline-versus-endpoint contrast flagged
+  `is_time_zero=true`, not a drug effect; exclude it from treatment rankings.
+  Keep phenotype and expression populations separate; no significance
+  statistic is supplied.
 - VISION scores are already differential. Do not subtract controls again or
-  interpret missing/low-cell/reference-only profiles as zero. Eligible `DMSO_T0`
+  interpret missing/low-cell/reference-only profiles as zero. `contrast_kind`
+  separates `time_zero_vs_endpoint` from `treatment_vs_endpoint`; filter
+  `is_time_zero=false` for drug rankings. Eligible `DMSO_T0`
   profiles have scores relative to mean matched `DMSO_TF` endpoint controls:
   a baseline-versus-endpoint contrast, not a drug-treatment effect. Time-zero
   identity alone does not determine score availability. No absolute VISION,
