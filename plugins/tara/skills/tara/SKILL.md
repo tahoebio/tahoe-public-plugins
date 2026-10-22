@@ -97,7 +97,7 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
   survival or Tahoe survival log odds. `is_growth_rate_control` is true only
   for the four endpoint `DMSO_TF` replicates and false for time zero.
   `smp_803` (`DMSO_T0`) growth is a baseline-versus-endpoint contrast flagged
-  `is_time_zero=true`, not a drug effect; exclude it from treatment rankings.
+  `is_time_zero=true`, not a drug effect; exclude it from drug rankings.
   Keep phenotype and expression populations separate; no significance
   statistic is supplied.
 - VISION scores are already differential. Do not subtract controls again or

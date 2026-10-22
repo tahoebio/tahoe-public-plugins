@@ -148,7 +148,7 @@ released value and both population definitions; do not recompute it or invent
 p-values. `is_growth_rate_control` is true only for the four endpoint `DMSO_TF`
 replicates, never for time zero. `smp_803` (`DMSO_T0`) growth is a
 baseline-versus-endpoint contrast flagged `is_time_zero=true`; exclude it from
-treatment rankings. Other phenotypes and `significant_only=true` are
+drug rankings. Other phenotypes and `significant_only=true` are
 unsupported.
 
 Discover gene-set names, then retrieve differential scores:
