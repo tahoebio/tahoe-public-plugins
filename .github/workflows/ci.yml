@@ -1,5 +1,9 @@
 name: CI
 
+# The staging gate (ML-520 w02) needs no trigger narrowing: `push` already runs
+# on every branch (including `staging` and `main`) and `pull_request` is
+# unfiltered, so PRs into `staging` or `main` are covered. `staging` is where
+# work lands first; `main` advances only by promotion.
 on:
   push:
     branches: ["**"]
