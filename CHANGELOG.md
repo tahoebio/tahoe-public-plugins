@@ -3,7 +3,7 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
-## 0.4.0 — unreleased
+## 0.4.0 — 2026-10-23
 
 - Add explicit dataset selection and capability-gated Emerald Bay routing.
   Preserve Tahoe's 0.3.9 server floor and legacy calls; Emerald requires server
@@ -21,6 +21,9 @@ to semantic versioning.
   mark time-zero growth and `contrast_kind` at row level for drug rankings,
   and forbid a numeric Emerald/Tahoe cross-dataset comparison (no conversion is
   provided). The EB18 eval case now fails on a reported cross-dataset delta.
+- Document the update path in `README.md`, `docs/install.md` and `llms.txt`:
+  install from the `main` channel, do not pin a version tag if you want updates,
+  and third-party marketplace auto-update is off by default.
 
 ## 0.3.4 — unreleased
 

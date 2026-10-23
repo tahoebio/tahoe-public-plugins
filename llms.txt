@@ -1,0 +1,39 @@
+# Tahoe Bio Plugins
+
+> The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
+> plugin is Tara, which connects your own agent to Tahoe's public dataset
+> service; the signed-in account's `list_releases` response determines access.
+> Tahoe-100M routes are always available. Emerald Bay routes require server
+> 0.4.0 or later and advertised Emerald capabilities.
+
+## Links
+
+- README: https://github.com/tahoebio/tahoe-public-plugins/blob/main/README.md
+- Install: https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/install.md
+- Verification: https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/install-verification.md
+- Compatibility: https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/compatibility.md
+- Data and licensing: https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/data-and-licensing.md
+- Changelog: https://github.com/tahoebio/tahoe-public-plugins/blob/main/CHANGELOG.md
+
+## Install and update
+
+Install from the `main` channel; do not pin a version tag if you want updates.
+
+- Claude Code: `claude plugin marketplace add tahoebio/tahoe-public-plugins`,
+  then `claude plugin install tara@tahoe-public`. Third-party marketplaces have
+  auto-update **off by default**; enable it in `/plugin` → **Marketplaces** →
+  **tahoe-public** → **Enable auto-update**. To update now, run
+  `claude plugin update tara@tahoe-public`, or use **Update marketplace** in
+  `/plugin` (the shell `claude plugin marketplace update` alone only refreshes
+  listings).
+- Codex CLI: `codex plugin marketplace add tahoebio/tahoe-public-plugins --ref main`,
+  `codex plugin add tara@tahoe-public`, then `codex mcp login tahoe-public` and
+  start a new session. For later versions run
+  `codex plugin marketplace upgrade tahoe-public` and start a new session.
+
+An organization administrator may centrally enable Claude auto-update with
+managed `extraKnownMarketplaces["tahoe-public"]` (`autoUpdate: true`) and
+`enabledPlugins["tara@tahoe-public"]: true`.
+
+Verify the installed manifest shows `0.4.0`, then make a signed-in
+`list_releases` call and an Emerald call with `dataset="emerald-bay"`.
