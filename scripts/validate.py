@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from jsonschema import Draft202012Validator  # noqa: E402
 
-from scripts import common  # noqa: E402
+from scripts import common, tool_examples  # noqa: E402
 
 
 def _require_code_license(mapping: dict, rel: str) -> None:
@@ -61,7 +61,10 @@ def _validate_codex_catalog(catalog: dict, rel: str, root: Path) -> str:
         raise common.RepoError(
             f"{rel}: marketplace name must be {common.MARKETPLACE_NAME!r}"
         )
-    if catalog.get("interface", {}).get("displayName") != common.MARKETPLACE_DISPLAY_NAME:
+    if (
+        catalog.get("interface", {}).get("displayName")
+        != common.MARKETPLACE_DISPLAY_NAME
+    ):
         raise common.RepoError(
             f"{rel}: interface.displayName must be {common.MARKETPLACE_DISPLAY_NAME!r}"
         )
@@ -108,7 +111,9 @@ def _validate_claude_adapter(root: Path) -> None:
     if server.get("type") != "http":
         raise common.RepoError("the Claude adapter server must be type 'http'")
     if server.get("url") != common.MCP_ENDPOINT:
-        raise common.RepoError(f"the Claude adapter url must be {common.MCP_ENDPOINT!r}")
+        raise common.RepoError(
+            f"the Claude adapter url must be {common.MCP_ENDPOINT!r}"
+        )
     if "headers" in server or "env" in server:
         raise common.RepoError("the Claude adapter must not carry credentials")
 
@@ -120,7 +125,9 @@ def validate_manifests(root: Path = common.REPO_ROOT) -> None:
     if manifest["name"] != common.PLUGIN_NAME:
         raise common.RepoError(f"plugin name must be {common.PLUGIN_NAME!r}")
     _require_code_license(manifest, common.PLUGIN_MANIFEST_REL)
-    interface = manifest.get("extensions", {}).get("com.openai", {}).get("interface", {})
+    interface = (
+        manifest.get("extensions", {}).get("com.openai", {}).get("interface", {})
+    )
     for field in ("logo", "composerIcon"):
         if interface.get(field) != "./assets/tahoe-logo.png":
             raise common.RepoError(
@@ -229,9 +236,7 @@ def validate_residue(
 
 def _skill_texts(root: Path) -> dict[str, str]:
     """The skill's files, as ``relative path -> text``."""
-    return {
-        rel: (root / rel).read_text(encoding="utf-8") for rel in common.SKILL_FILES
-    }
+    return {rel: (root / rel).read_text(encoding="utf-8") for rel in common.SKILL_FILES}
 
 
 def validate_tool_contract(root: Path = common.REPO_ROOT) -> None:
@@ -325,6 +330,24 @@ def validate_skill(root: Path = common.REPO_ROOT) -> None:
             )
 
 
+def validate_emerald_eval_pack(root: Path = common.REPO_ROOT) -> None:
+    """Validate eval coverage and keep an unexecuted template explicitly blocked."""
+    from evals.tara.check_emerald import assess, validate_pack
+
+    directory = root / "evals" / "tara"
+    pack = common.load_json(directory / "emerald-cases.json")
+    schema = common.load_json(directory / "emerald-record.schema.json")
+    template = common.load_json(directory / "emerald-run-record.template.json")
+    try:
+        Draft202012Validator.check_schema(schema)
+        Draft202012Validator(schema).validate(template)
+        validate_pack(pack)
+        if assess(template, pack)["ready"]:
+            raise common.RepoError("an unexecuted acceptance template cannot be ready")
+    except ValueError as exc:
+        raise common.RepoError(f"Emerald eval coverage is invalid: {exc}") from exc
+
+
 def validate_all(
     root: Path = common.REPO_ROOT, *, ref: str | None = None, all_refs: bool = False
 ) -> None:
@@ -335,6 +358,8 @@ def validate_all(
     validate_versions(root)
     validate_tool_contract(root)
     validate_skill(root)
+    tool_examples.validate_shipped_calls(root)
+    validate_emerald_eval_pack(root)
     validate_residue(root, ref=ref, all_refs=all_refs)
 
 

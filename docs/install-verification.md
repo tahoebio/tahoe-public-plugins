@@ -107,3 +107,37 @@ First recorded run, Codex, two models, server 0.3.9–0.3.10 (2026-10-12/13):
   named `tara` was present on the host and was read in some transcripts without
   being relied on.
 - Claude Code and Cursor have not been run.
+
+
+## Case D — Emerald Bay capability and scientific acceptance
+
+Run [the Emerald pack](../evals/tara/emerald-README.md) in fresh installed-plugin
+sessions on both Codex CLI and Claude Code. This is a prepared check, not a
+record of success. It requires separately authorized server/data setup and an
+account for which Emerald is advertised. No script here enables that access.
+
+1. Record the plugin revision/archive hash, host version, served server version,
+   dataset release, guide version and source revision. Check the installed skill
+   is this candidate and that no other Tara plugin supplies its guidance.
+2. Start each prompt in a fresh session. Let the agent discover capabilities,
+   select the dataset and read the dataset guide. Save actual tool calls and
+   returned envelopes, with credentials and operational handles redacted.
+3. Run the positive scientific cases against the independently prepared source
+   oracle. Exercise raw counts, whole-profile CPM/log1p, missingness, controls,
+   released growth and differential VISION. Compare expected keys and values,
+   not just response shape or row count.
+4. With an ordinary account that does not see Emerald during restricted
+   validation, verify the plugin reports it unavailable and does not submit an
+   unadvertised request or fall back to Tahoe. Prepared older/partial-discovery
+   fixtures are offline cases; never label them remote account evidence.
+5. Exercise unsupported layers, truncation and the real pending/fetch/cancel
+   lifecycle. A required state that was not observed is incomplete. Feedback
+   runs only when explicitly authorized by the tester.
+6. Rerun the existing Tahoe pack for regression evidence. Keep its baseline
+   failures and new regressions distinct; never relabel the historic run green.
+
+Use the pack's record template and checker. Every required criterion must have
+its stated evidence; skipped, blocked or missing cases cannot establish live
+readiness. Record host/date/version results here and in compatibility only
+once the actual sessions have run. Offline schema and packaging checks are
+reported separately. No Emerald live host result has been recorded in this PR.

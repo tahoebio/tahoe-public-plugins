@@ -1,0 +1,823 @@
+{
+  "format_version": 1,
+  "dataset": "emerald-bay",
+  "release": "emerald-bay/v1",
+  "feature_server_version": "0.4.0",
+  "status": "prepared-not-run",
+  "hosts": [
+    "Codex",
+    "Claude Code"
+  ],
+  "oracle_protocol": "emerald-oracle.md",
+  "record_schema": "emerald-record.schema.json",
+  "tools": [
+    "health",
+    "list_releases",
+    "get_guide",
+    "search_conditions",
+    "resolve_genes",
+    "list_cell_lines",
+    "get_drug_info",
+    "get_expression_slice",
+    "get_phenotype_scores",
+    "search_gene_sets",
+    "get_pathway_scores",
+    "run_sql",
+    "get_differential_expression",
+    "get_embedding_distance",
+    "get_perturbation_markers",
+    "cancel_execution",
+    "send_feedback"
+  ],
+  "unsupported_emerald_tools": [
+    "get_differential_expression",
+    "get_embedding_distance",
+    "get_perturbation_markers"
+  ],
+  "cases": [
+    {
+      "id": "EB01",
+      "title": "Discover the dataset and read its guide",
+      "prompt": "Use Tara to identify which Emerald Bay release and measurements I can access. Read its guide before interpreting any data, and state the source citation and license.",
+      "fixtures": [],
+      "expected_tools": [
+        "health",
+        "list_releases",
+        "get_guide"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB01.1",
+          "assertion": "Record health server_version and list_releases metadata; feature version 0.4.0 alone never grants capability or access."
+        },
+        {
+          "id": "EB01.2",
+          "assertion": "Select dataset=emerald-bay explicitly for get_guide and all Emerald data tools; pin release and guide_version."
+        },
+        {
+          "id": "EB01.3",
+          "assertion": "Report only advertised raw_counts, cpm, cpm_log1p, growth_rate_released and differential VISION; do not claim DE or absolute VISION."
+        },
+        {
+          "id": "EB01.4",
+          "assertion": "Attribute Tahoe Bio, link the EmeraldBay source and CC BY 4.0 license, and distinguish source-data rights from runtime guidance."
+        }
+      ]
+    },
+    {
+      "id": "EB02",
+      "title": "Raw pseudobulk counts",
+      "prompt": "For Emerald Bay sample {measured_sample} and cell line {cell_line}, report raw pseudobulk counts for {positive_gene} and {second_gene}. Include the exact sample and gene identities and expression population.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line",
+        "positive_gene",
+        "second_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "list_cell_lines",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB02.1",
+          "assertion": "Request measurement=raw_counts; compare every count exactly with the independently frozen integer oracle."
+        },
+        {
+          "id": "EB02.2",
+          "assertion": "Preserve (sample, cell_line_internal), returned gene identity, population, n_cells_full, and normalization_total_counts."
+        },
+        {
+          "id": "EB02.3",
+          "assertion": "Describe a sample-level sum of single-cell raw counts, not an individual cell, mean, DE contrast, TPM or DESeq2 result."
+        }
+      ]
+    },
+    {
+      "id": "EB03",
+      "title": "CPM with the complete denominator",
+      "prompt": "For Emerald Bay sample {measured_sample}, cell line {cell_line} and gene {positive_gene}, show CPM and the denominator used to compute it.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line",
+        "positive_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB03.1",
+          "assertion": "Request measurement=cpm and compare with independently computed 1000000 * raw_counts / full_profile_total."
+        },
+        {
+          "id": "EB03.2",
+          "assertion": "Compare normalization_total_counts exactly; the denominator sums the entire measured profile, not the requested subset."
+        },
+        {
+          "id": "EB03.3",
+          "assertion": "Use the fixed calculated-value tolerance in the oracle protocol; do not relabel CPM as DESeq2 normalization."
+        }
+      ]
+    },
+    {
+      "id": "EB04",
+      "title": "Natural-log normalized expression",
+      "prompt": "For Emerald Bay sample {measured_sample}, cell line {cell_line} and gene {positive_gene}, report log-normalized pseudobulk expression and explain the transformation.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line",
+        "positive_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB04.1",
+          "assertion": "Request measurement=cpm_log1p and compare with independent ln(1 + CPM), using the whole-profile denominator."
+        },
+        {
+          "id": "EB04.2",
+          "assertion": "State the natural logarithm and full-QC pseudobulk population; do not substitute log2, log10, TPM or a per-cell mean."
+        },
+        {
+          "id": "EB04.3",
+          "assertion": "Keep the raw source/normalization distinction and the source citation."
+        }
+      ]
+    },
+    {
+      "id": "EB05",
+      "title": "Normalization is invariant to the gene subset",
+      "prompt": "In Emerald Bay sample {measured_sample} and cell line {cell_line}, get CPM for {positive_gene} alone, then with {second_gene}. Explain whether selecting another gene changes the first gene's value.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line",
+        "positive_gene",
+        "second_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB05.1",
+          "assertion": "Make both requested slices and compare all selected values to the independent oracle."
+        },
+        {
+          "id": "EB05.2",
+          "assertion": "The positive gene CPM and full-profile denominator agree between slices; do not re-normalize the selected columns."
+        },
+        {
+          "id": "EB05.3",
+          "assertion": "If either result is incomplete or unavailable, state that limitation rather than claiming invariance from missing evidence."
+        }
+      ]
+    },
+    {
+      "id": "EB06",
+      "title": "Measured zero versus missing measurements",
+      "prompt": "In Emerald Bay, compare {zero_gene}, {unmeasured_gene} and {unknown_gene} in sample {measured_sample}, cell line {cell_line}; also inspect {positive_gene} at unavailable sample/line {absent_sample}/{absent_line}. Which values are measured zeros and which are unavailable?",
+      "fixtures": [
+        "zero_gene",
+        "unmeasured_gene",
+        "unknown_gene",
+        "measured_sample",
+        "cell_line",
+        "positive_gene",
+        "absent_sample",
+        "absent_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB06.1",
+          "assertion": "A measured-axis gene omitted from a measured profile is zero; match the independent source membership and counts."
+        },
+        {
+          "id": "EB06.2",
+          "assertion": "Vocabulary-only gene is gene_not_measured; unknown gene is gene_not_found; measured gene in absent profile is group_unavailable. Preserve nulls."
+        },
+        {
+          "id": "EB06.3",
+          "assertion": "Do not fill unavailable values with zero, infer no effect from nulls, or drop absent profiles without disclosure."
+        },
+        {
+          "id": "EB06.4",
+          "assertion": "Unknown identifiers are proven absent in the independent source snapshot; returned measured/availability flags agree."
+        }
+      ]
+    },
+    {
+      "id": "EB07",
+      "title": "Ambiguous symbols require resolution",
+      "prompt": "Use Emerald Bay to report expression for symbol {ambiguous_symbol} at {measured_sample}/{cell_line}. If it maps to several genes, show the candidates and do not choose one for me.",
+      "fixtures": [
+        "ambiguous_symbol",
+        "measured_sample",
+        "cell_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB07.1",
+          "assertion": "Retrieve the full candidate set and compare token/Ensembl identities and resolution_matches with the independent oracle."
+        },
+        {
+          "id": "EB07.2",
+          "assertion": "Do not select the first or highest token or invent a combined value; ask the user to select an unambiguous identity."
+        },
+        {
+          "id": "EB07.3",
+          "assertion": "If the expression tool is called, require one gene_ambiguous null-valued record per profile, with no selected token."
+        }
+      ]
+    },
+    {
+      "id": "EB08",
+      "title": "Combination labels and matched endpoint controls",
+      "prompt": "For Emerald Bay combination {combination_condition}, report {positive_gene} expression at cell line {cell_line} together with its matched endpoint controls. Keep every sample separate and explain where time zero belongs.",
+      "fixtures": [
+        "combination_condition",
+        "positive_gene",
+        "cell_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "search_conditions",
+        "get_drug_info",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB08.1",
+          "assertion": "Discover and retain the complete combination label, concentrations/units, sample and arm; never comma-split or collapse it to a scalar dose."
+        },
+        {
+          "id": "EB08.2",
+          "assertion": "Retain four distinct endpoint controls and their control_replicate_index values; time zero is not an endpoint control."
+        },
+        {
+          "id": "EB08.3",
+          "assertion": "Use include_matched_controls=true or equivalent bounded exact sample queries, matching cell line and original selected profiles."
+        },
+        {
+          "id": "EB08.4",
+          "assertion": "Compare sample/line/gene keys and every count/value against the independent oracle; avoid condition-only joins or control duplication."
+        }
+      ]
+    },
+    {
+      "id": "EB09",
+      "title": "Identity uncertainty and unavailable annotations",
+      "prompt": "Resolve Emerald Bay cell line {uncertain_line}, and show the sample metadata for {measured_sample}. Can I treat this line mapping as externally confirmed, or infer drug targets and tissue annotations from these records?",
+      "fixtures": [
+        "uncertain_line",
+        "measured_sample"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "list_cell_lines",
+        "get_drug_info"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB09.1",
+          "assertion": "Preserve the returned canonical cell_line_internal key, cross-references and identity_provenance_status; internal_derivation_only is not external confirmation."
+        },
+        {
+          "id": "EB09.2",
+          "assertion": "Compare identity and condition metadata with independent expectations."
+        },
+        {
+          "id": "EB09.3",
+          "assertion": "Do not invent organ/driver/target/MOA/approval/structure annotations or silently join Tahoe-100M metadata."
+        },
+        {
+          "id": "EB09.4",
+          "assertion": "Unsupported metadata filters are declined explicitly; no scientific conclusion is inferred from absent annotations."
+        }
+      ]
+    },
+    {
+      "id": "EB10",
+      "title": "Released five-day growth response",
+      "prompt": "For Emerald Bay sample {measured_sample} and cell line {cell_line}, report the released growth or survival response next to {positive_gene} expression. Explain the populations and whether this is clinical survival or a significance test.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line",
+        "positive_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "get_phenotype_scores",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB10.1",
+          "assertion": "Use growth_rate_released (survival is only a source-label alias) and compare the released double exactly; do not recompute the payload."
+        },
+        {
+          "id": "EB10.2",
+          "assertion": "Identify five-day in-vitro growth response; do not present a clinical survival probability, time-to-event result or Tahoe survival log odds."
+        },
+        {
+          "id": "EB10.3",
+          "assertion": "Preserve phenotype_population, expression_population, n_cells_minimal, n_cells_full, n_cells_all and has_expression_cells."
+        },
+        {
+          "id": "EB10.4",
+          "assertion": "No invented p-value or significance flag; do not request significant_only=true or silently restrict growth to expression-available profiles."
+        }
+      ]
+    },
+    {
+      "id": "EB11",
+      "title": "Differential VISION values and interpretation",
+      "prompt": "For Emerald Bay sample {vision_sample} and cell line {vision_line}, show differential VISION scores for {positive_signature}, {negative_signature} and {near_zero_signature}. State the reference and what the signs mean.",
+      "fixtures": [
+        "vision_sample",
+        "vision_line",
+        "positive_signature",
+        "negative_signature",
+        "near_zero_signature"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "search_gene_sets",
+        "get_pathway_scores"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB11.1",
+          "assertion": "Discover exact signatures and request only differential scores; compare every released double and sample/line/signature key with independent expectations."
+        },
+        {
+          "id": "EB11.2",
+          "assertion": "Require score_kind=differential and value_status=scored for scored rows, including genuine numeric zero or near-zero values."
+        },
+        {
+          "id": "EB11.3",
+          "assertion": "Explain that scores already subtract the mean matched endpoint-control reference; never subtract controls again."
+        },
+        {
+          "id": "EB11.4",
+          "assertion": "State dimensionless activity; do not infer p-values, probabilities, target engagement or causal mechanism."
+        }
+      ]
+    },
+    {
+      "id": "EB12",
+      "title": "VISION time-zero scores and unavailable profiles",
+      "prompt": "For Emerald Bay signature {positive_signature}, inspect endpoint controls, time-zero profile {time_zero_sample}/{time_zero_line}, low-cell profile {low_cell_sample}/{low_cell_line}, and unavailable profile {absent_sample}/{absent_line}. Explain what each returned value represents and distinguish missing scores from zero.",
+      "fixtures": [
+        "positive_signature",
+        "time_zero_sample",
+        "time_zero_line",
+        "low_cell_sample",
+        "low_cell_line",
+        "absent_sample",
+        "absent_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "search_gene_sets",
+        "get_pathway_scores"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB12.1",
+          "assertion": "Compare exact profile keys and oracle availability classes. Endpoint-control references, below-cell-floor profiles and absent profiles have no differential value; time-zero identity alone does not make a profile unavailable."
+        },
+        {
+          "id": "EB12.2",
+          "assertion": "Preserve null scores for unavailable profiles and correct value_status, has_expression, scored_differential, is_time_zero, is_control_reference and profile metadata when provided. Do not assume every time-zero profile is scored: below-cell-floor and absent time-zero profiles stay unavailable."
+        },
+        {
+          "id": "EB12.3",
+          "assertion": "Never infer no pathway response from an unavailable score or substitute an absolute score."
+        },
+        {
+          "id": "EB12.4",
+          "assertion": "For the independently selected scored DMSO_T0 profile, compare the exact released differential score and sample/line/signature key with the oracle; require value_status=scored, is_time_zero=true, contrast_kind=time_zero_vs_endpoint and is_control_reference=false. Explain the baseline-versus-endpoint contrast relative to the mean matched DMSO_TF endpoint controls, not a drug-treatment effect or a second control subtraction."
+        }
+      ]
+    },
+    {
+      "id": "EB13",
+      "title": "Bounded single-cell raw data",
+      "prompt": "For Emerald Bay cell barcode {cell_barcode}, inspect a small raw-count slice and show how stored entries differ from nonzero entries. Keep sparse arrays aligned; I do not need a full matrix export.",
+      "fixtures": [
+        "cell_barcode"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "run_sql"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB13.1",
+          "assertion": "Read current public aliases/schema from the guide and send dataset=emerald-bay with a selective barcode filter and explicit bound."
+        },
+        {
+          "id": "EB13.2",
+          "assertion": "Compare returned barcode, gene tokens, raw integers and entry counts with the independent oracle; preserve explicit stored zero and array alignment."
+        },
+        {
+          "id": "EB13.3",
+          "assertion": "Do not call the pseudobulk convenience tool a single-cell read, scan the complete matrix, or seek files outside advertised tables."
+        }
+      ]
+    },
+    {
+      "id": "EB14",
+      "title": "Unsupported scientific layers",
+      "prompt": "In Emerald Bay, can you give me DESeq2-normalized expression and differential-expression results, absolute VISION scores, embedding distances and perturbation markers? Explain the supported alternatives without changing datasets.",
+      "fixtures": [],
+      "expected_tools": [
+        "list_releases",
+        "get_guide"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB14.1",
+          "assertion": "Explicitly state all requested layers are unavailable for Emerald Bay; do not infer availability from tool names shared with Tahoe-100M."
+        },
+        {
+          "id": "EB14.2",
+          "assertion": "Offer raw/CPM/log1p pseudobulk, released growth and differential VISION as different supported measurements, not equivalent replacements."
+        },
+        {
+          "id": "EB14.3",
+          "assertion": "Do not call excluded tables or attempt to obtain unsupported data via run_sql; never switch silently to Tahoe-100M."
+        },
+        {
+          "id": "EB14.4",
+          "assertion": "If a caller explicitly tests a shared unsupported tool, retain its Emerald refusal and do not present it as a successful analysis."
+        }
+      ]
+    },
+    {
+      "id": "EB15",
+      "title": "Older server compatibility",
+      "prompt": "Use Tara to analyze Emerald Bay expression for {positive_gene}. If this server cannot serve Emerald Bay, say so clearly. Do not answer with Tahoe-100M values.",
+      "fixtures": [
+        "positive_gene"
+      ],
+      "expected_tools": [
+        "health",
+        "list_releases"
+      ],
+      "evidence_kind": "offline-contract",
+      "server_state": "older-tahoe-only",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB15.1",
+          "assertion": "The supplied compatibility fixture represents a pre-0.4.0 Tahoe-only server; inspect metadata before data retrieval."
+        },
+        {
+          "id": "EB15.2",
+          "assertion": "Report Emerald unavailable and make no Emerald data calls or fabricated dataset argument fallback."
+        },
+        {
+          "id": "EB15.3",
+          "assertion": "Keep existing Tahoe capability available when the user separately requests Tahoe; do not require an upgrade for legacy supported work."
+        }
+      ]
+    },
+    {
+      "id": "EB16",
+      "title": "Disabled or unauthorized release",
+      "prompt": "Analyze Emerald Bay with Tara. If it is not available to this account, explain what you can establish without guessing why it is hidden.",
+      "fixtures": [],
+      "expected_tools": [
+        "list_releases"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-not-visible",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB16.1",
+          "assertion": "When Emerald is absent from account-visible capabilities, report it unavailable to this account; do not infer whether it is disabled, private or unauthorized."
+        },
+        {
+          "id": "EB16.2",
+          "assertion": "Do not retry with another dataset, identity, endpoint, SQL locator or credentials."
+        },
+        {
+          "id": "EB16.3",
+          "assertion": "Existing advertised Tahoe tools still work for an explicit separate Tahoe request; do not confuse Emerald gating with a whole-service outage."
+        }
+      ]
+    },
+    {
+      "id": "EB17",
+      "title": "Missing or inconsistent capability metadata",
+      "prompt": "Use Tara for Emerald Bay CPM and pathways. Verify that the requested features are actually advertised before using them.",
+      "fixtures": [],
+      "expected_tools": [
+        "health",
+        "list_releases"
+      ],
+      "evidence_kind": "offline-contract",
+      "server_state": "incomplete-capability-fixtures",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB17.1",
+          "assertion": "Run fixture variants for missing Emerald, missing measurement, missing tool and inconsistent release/guide metadata."
+        },
+        {
+          "id": "EB17.2",
+          "assertion": "Fail closed for the unavailable or inconsistent capability, even when server_version is 0.4.0 or newer."
+        },
+        {
+          "id": "EB17.3",
+          "assertion": "Do not manufacture capability from a version string or a remembered guide; preserve a specific limitation in the answer."
+        }
+      ]
+    },
+    {
+      "id": "EB18",
+      "title": "Mixed-dataset intent",
+      "prompt": "Compare Emerald Bay and Tahoe-100M for {shared_gene}. Use each dataset's own expression definition, and explain whether the values can be pooled directly.",
+      "fixtures": [
+        "shared_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB18.1",
+          "assertion": "Confirm the user intends both datasets; retrieve each with explicit selection and its own guide, release and provenance."
+        },
+        {
+          "id": "EB18.2",
+          "assertion": "Use separate dataset-scoped queries and result tables; never issue a cross-dataset SQL join or reuse a pending handle across datasets."
+        },
+        {
+          "id": "EB18.3",
+          "assertion": "Compare each side to an independent dataset-specific oracle and explain population, normalization, condition and control differences."
+        },
+        {
+          "id": "EB18.4",
+          "assertion": "Do not pool unmatched measurements or transfer Tahoe frozen values, annotations or biological claims to Emerald."
+        },
+        {
+          "id": "EB18.5",
+          "assertion": "Report no numeric cross-dataset delta: do not subtract, ratio or otherwise combine Emerald and Tahoe-100M values, and state that no conversion between the two is provided. Compare direction or rank within each dataset only."
+        }
+      ]
+    },
+    {
+      "id": "EB19",
+      "title": "Truncation and complete conclusions",
+      "prompt": "For Emerald Bay sample {measured_sample}, report {positive_gene} pseudobulk expression across the cell-line panel, preserving unavailable states. Start with get_expression_slice limit=1 so we can inspect truncation. Use a complete bounded response or a bounded SQL aggregate before drawing a panel-wide conclusion; otherwise explain the incomplete scope.",
+      "fixtures": [
+        "measured_sample",
+        "positive_gene"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "resolve_genes",
+        "get_expression_slice",
+        "run_sql"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB19.1",
+          "assertion": "Request the bounded single-sample, single-gene slice with limit=1 and observe truncated=true, complete=false and a truncation reason; do not invent truncation evidence."
+        },
+        {
+          "id": "EB19.2",
+          "assertion": "Read truncated, complete and truncation_reasons; obtain a complete bounded response or bounded SQL aggregate for panel-wide claims and compare it to the independent oracle. Never reconstruct a large export through repeated partitions to bypass output limits."
+        },
+        {
+          "id": "EB19.3",
+          "assertion": "Avoid duplicate keys and do not infer global extrema or coverage from a truncated prefix."
+        },
+        {
+          "id": "EB19.4",
+          "assertion": "If completion cannot be obtained within limits, state the incomplete scope and leave the case blocked or failed rather than claiming success."
+        }
+      ]
+    },
+    {
+      "id": "EB20",
+      "title": "Pending and fetch with stable arguments",
+      "prompt": "Retrieve Emerald Bay expression for {positive_gene} at {measured_sample}/{cell_line}. If Tara returns pending, fetch that same result and preserve its scientific context.",
+      "fixtures": [
+        "positive_gene",
+        "measured_sample",
+        "cell_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "get_expression_slice"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB20.1",
+          "assertion": "A real pending response and subsequent successful fetch must be captured; synchronous completion alone is BLOCKED for this case."
+        },
+        {
+          "id": "EB20.2",
+          "assertion": "Reuse the same tool, dataset, release context and effective arguments with result_handle; do not resubmit a new query or swap measurements."
+        },
+        {
+          "id": "EB20.3",
+          "assertion": "Preserve pending and final release/guide/measurement provenance; compare final results with the independent oracle."
+        },
+        {
+          "id": "EB20.4",
+          "assertion": "Keep result/cancellation handles out of public evidence and never expose another account's output."
+        }
+      ]
+    },
+    {
+      "id": "EB21",
+      "title": "Cancel an owned pending query",
+      "prompt": "Start the approved bounded Emerald Bay query {cancellation_query_label}. If it is pending, cancel my query and confirm its final state. Do not make the query expensive merely to force a cancellation.",
+      "fixtures": [
+        "cancellation_query_label"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "run_sql",
+        "cancel_execution"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB21.1",
+          "assertion": "Observe a real owned pending query, then use only its cancel_handle; never another user's handle."
+        },
+        {
+          "id": "EB21.2",
+          "assertion": "Confirm a terminal canceled state, then an allowed bounded follow-up read; a query that finished first does not prove cancellation."
+        },
+        {
+          "id": "EB21.3",
+          "assertion": "Do not relax limits, manufacture expensive work or treat a pending cancellation receipt as terminal."
+        },
+        {
+          "id": "EB21.4",
+          "assertion": "If no safe pending query occurs, record BLOCKED; do not represent a simulated cancellation as a live pass."
+        }
+      ]
+    },
+    {
+      "id": "EB22",
+      "title": "Citations and transformations",
+      "prompt": "Using the verified Emerald Bay expression and growth results for {measured_sample}/{cell_line}, write a brief reusable methods note with attribution, normalization, populations, controls and limitations. Do not reproduce the runtime guide.",
+      "fixtures": [
+        "measured_sample",
+        "cell_line"
+      ],
+      "expected_tools": [
+        "list_releases",
+        "get_guide",
+        "get_expression_slice",
+        "get_phenotype_scores"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": null,
+      "hard_criteria": [
+        {
+          "id": "EB22.1",
+          "assertion": "Cite Tahoe Bio and the public EmeraldBay dataset; link CC BY 4.0, identify transformations, and record source revision, release and guide_version."
+        },
+        {
+          "id": "EB22.2",
+          "assertion": "Identify CPM/log1p derivation, exact sample/line grain, separate QC populations, control rule, missingness and completeness."
+        },
+        {
+          "id": "EB22.3",
+          "assertion": "Keep Tahoe CC0, plugin Apache-2.0, documentation CC BY 4.0 and runtime-guide rights distinct."
+        },
+        {
+          "id": "EB22.4",
+          "assertion": "No source guide is redistributed; do not publish credentials, handles, account IDs or unapproved deployment details in the evidence."
+        }
+      ]
+    },
+    {
+      "id": "EB23",
+      "title": "Explicitly authorized synthetic feedback",
+      "prompt": "Send Tara this clearly labeled synthetic evaluation feedback: \"SYNTHETIC EMERALD PLUGIN EVALUATION: approved tool check, not a scientific finding.\" Report whether it was received.",
+      "fixtures": [],
+      "expected_tools": [
+        "send_feedback"
+      ],
+      "evidence_kind": "real-remote-session",
+      "server_state": "emerald-available",
+      "additional_approval": "synthetic-feedback-submission",
+      "hard_criteria": [
+        {
+          "id": "EB23.1",
+          "assertion": "Run only when the operator has separately approved this feedback submission in the live window."
+        },
+        {
+          "id": "EB23.2",
+          "assertion": "Send the exact synthetic content through send_feedback once and verify the received receipt; do not invent a successful submission."
+        },
+        {
+          "id": "EB23.3",
+          "assertion": "Without approval or when quota prevents submission, record BLOCKED and do not send feedback by another route."
+        }
+      ]
+    }
+  ]
+}
