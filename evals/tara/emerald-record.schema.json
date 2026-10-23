@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "emerald-record.schema.json",
+  "title": "Emerald plugin acceptance record",
+  "description": "Structural format only. check_emerald.py recomputes evidence completeness; independent review must establish scientific correctness. Empty templates are not ready.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "dataset",
+    "status",
+    "plugin_commit",
+    "pack_sha256",
+    "oracle",
+    "runs"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "format_version": {
+      "const": 1
+    },
+    "dataset": {
+      "const": "emerald-bay"
+    },
+    "status": {
+      "enum": [
+        "not_run",
+        "in_progress",
+        "reviewed"
+      ]
+    },
+    "plugin_commit": {
+      "type": "string"
+    },
+    "pack_sha256": {
+      "type": "string"
+    },
+    "oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_values_origin",
+        "source_url",
+        "source_revision",
+        "reviewer",
+        "reviewed_at",
+        "reviewed_before_candidate_results",
+        "snapshot",
+        "derivation",
+        "calculated_tolerance"
+      ],
+      "properties": {
+        "expected_values_origin": {
+          "type": "string"
+        },
+        "source_url": {
+          "type": "string"
+        },
+        "source_revision": {
+          "type": "string"
+        },
+        "reviewer": {
+          "type": "string"
+        },
+        "reviewed_at": {
+          "type": "string"
+        },
+        "reviewed_before_candidate_results": {
+          "type": "boolean"
+        },
+        "snapshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "sha256"
+          ],
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          }
+        },
+        "derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "sha256"
+          ],
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          }
+        },
+        "calculated_tolerance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rtol",
+            "atol"
+          ],
+          "properties": {
+            "rtol": {
+              "const": 1e-09
+            },
+            "atol": {
+              "const": 1e-12
+            }
+          }
+        }
+      }
+    },
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "case_id",
+          "host",
+          "status",
+          "evidence_kind",
+          "fresh_session",
+          "session_label",
+          "host_version",
+          "model",
+          "started_at",
+          "reviewer",
+          "plugin_commit",
+          "server_version",
+          "server_state",
+          "transcript",
+          "tool_trace",
+          "comparison",
+          "criteria"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "host_version": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "session_label": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "reviewer": {
+            "type": "string"
+          },
+          "plugin_commit": {
+            "type": "string"
+          },
+          "server_version": {
+            "type": "string"
+          },
+          "server_state": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "release": {
+            "type": "string"
+          },
+          "guide_version": {
+            "type": "string"
+          },
+          "approval_reference": {
+            "type": "string"
+          },
+          "limitation": {
+            "type": "string"
+          },
+          "host": {
+            "enum": [
+              "Codex",
+              "Claude Code"
+            ]
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "blocked",
+              "not_run"
+            ]
+          },
+          "evidence_kind": {
+            "enum": [
+              "offline-contract",
+              "real-remote-session"
+            ]
+          },
+          "fresh_session": {
+            "type": "boolean"
+          },
+          "transcript": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          },
+          "tool_trace": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          },
+          "comparison": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          },
+          "capability_fixture": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "sha256"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "status",
+                "evidence"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": [
+                    "pass",
+                    "fail",
+                    "blocked",
+                    "not_run"
+                  ]
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

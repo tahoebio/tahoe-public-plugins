@@ -1,46 +1,53 @@
 # Finding the served data catalog
 
-The server maintains the scientific catalog and table definitions. Call
-`list_releases()` for the selected public Tahoe-100M release and approved table
-aliases, then `get_guide(topic="establish-the-analysis-contract")` for the
-initial guidance, current topics and `guide_version`. The plugin
-routes to that catalog; it does not publish a parallel scientific inventory.
+Call `list_releases()` and select the requested dataset entry. Its aliases and
+capabilities are authoritative for this account. Server 0.4.0 adds optional
+Emerald Bay support; that version alone does not make Emerald available. Old
+Tahoe-only responses remain valid for Tahoe, but cannot establish Emerald
+coverage. Never substitute one release for another.
 
-| Need | Server guide topic |
-|---|---|
-| Current data scope | `what-is-served` |
-| Release and coverage | `establish-the-release`, `coverage-traps` |
-| Treatment conditions and vehicle matching | `conditions-and-controls` |
-| Gene identifiers | `genes` |
-| Pseudobulk expression | `expression-grain-and-measurement` |
-| Per-cell expression routes, columns, units and joins | `table-reference`, `querying-with-run-sql` |
-| Released DE and its statistics | `differential-expression` |
-| Pathway scores and gene-set vocabulary | `pathway-scores` |
-| Classifier feature rankings | `response-markers` |
-| Survival, arrest, Gini and Augur definitions | `phenotype-readouts` and returned provenance |
-| Embeddings and centroid grain | `embedding-distances` |
-| Citation | `citation-and-provenance` |
+The plugin does not ship table schemas. Read the selected `get_guide` and retain
+its `guide_version`; see [analysis-guidelines.md](analysis-guidelines.md) for
+dataset-specific topic IDs.
 
-Confirm actual identifiers and measured coverage with `search_conditions`,
-`resolve_genes`, `list_cell_lines` and `search_gene_sets`. Discover cell lines
-with `list_cell_lines(organ=...)` or resolve a name with
-`list_cell_lines(query=<name or substring>)`. For reproducible data calls,
-prefer the returned `cell_line` Cellosaurus ID (`CVCL_...`). Data tools also
-accept exact cell-line names; `cell_name` supplies the readable label, and
-`depmap_id` supports cross-reference to DepMap. The public tools use
-registered release tables; approved SQL queries them in place. Read the server
-catalog for current routes rather than assuming a plugin-shipped schema.
+| Need | Tahoe-100M guide topic | Emerald Bay guide topic |
+|---|---|---|
+| Scope | `what-is-served`, `establish-the-release` | `establish-the-analysis-contract` |
+| Conditions and controls | `conditions-and-controls` | `conditions-and-controls` |
+| Gene / line identity and coverage | `genes`, `coverage-traps` | `gene-and-cell-line-identity` |
+| Pseudobulk | `expression-grain-and-measurement` | `expression-measurements-and-missingness` |
+| Single-cell raw count access | `table-reference`, `querying-with-run-sql` | `expression-measurements-and-missingness`, `table-reference`, `querying-with-run-sql` |
+| DE | `differential-expression` | Not supported |
+| Differential VISION | `pathway-scores` | `differential-vision-scores` |
+| Phenotype | `phenotype-readouts` | `released-growth-response` |
+| Embeddings / classifier markers | `embedding-distances`, `response-markers` | Not supported |
+| Attribution | `citation-and-provenance` | `provenance-and-attribution` |
 
-`get_expression_slice` serves pseudobulk expression. Use `run_sql` for aggregate
-summaries over the advertised `single_cell_expression` table. Results are
-bounded to 1,000 rows / 40 KB; a full single-cell matrix or per-cell embedding
-export is outside this service. These output limits are not scan-cost limits.
+For Tahoe, discover lines with `list_cell_lines(organ=...)` or
+`list_cell_lines(query=...)`; prefer its returned Cellosaurus `cell_line` for
+data filters. Names, `cell_name` and `depmap_id` support cross-reference.
 
-For DE, use the released `log2FoldChange` described by `differential-expression`;
-do not add a control mean to reconstruct expression from it. For phenotype
-scores, use the server's definition and result provenance for the selected
-phenotype; survival, Gini, arrest and Augur are different statistics.
+For Emerald, pass `dataset="emerald-bay"` to discovery and data tools. Keep the
+returned `cell_line_internal` key, readable names/cross-references and identity
+status. Emerald does not supply organ or driver annotations. A mapped name is
+not externally confirmed merely because a cross-reference exists. Resolve
+sample labels with `search_conditions`; sample plus line identifies a profile.
+Keep complete combination labels and separate endpoint-control replicates.
+`get_drug_info` supplies condition metadata, not targets/MOA/approval data.
 
-Other Tahoe datasets, clinical or adverse-event data, and external reference
-panels are outside this service. Report unavailable coverage explicitly, then
-offer the nearest analysis the served data can answer.
+Resolve genes before expression. Preserve ambiguous matches, measured-axis
+membership and unavailable groups; vocabulary membership is not measurement.
+Use `get_expression_slice` for pseudobulk raw counts, CPM or natural-log
+log1p(CPM). The denominator covers the whole profile, independent of the gene
+subset. DESeq2 normalization and differential expression are not Emerald
+capabilities. For per-cell raw counts, use a bounded `run_sql` aggregate over
+the selected dataset's advertised alias. No full matrix export is served.
+
+Use released growth values with their phenotype population and expression
+availability flags. They are five-day in-vitro responses, not clinical survival
+or Tahoe survival statistics. Differential VISION is already control-subtracted;
+eligible time-zero profiles carry baseline-versus-endpoint scores, not
+drug-treatment effects. Reference-only, low-cell or absent profiles must not
+become zero scores; time-zero identity alone is not an exclusion.
+Never infer complete coverage from a truncated response. Read the guide and
+result provenance for the current populations, controls and definitions.

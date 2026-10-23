@@ -1,14 +1,18 @@
 # Tahoe Bio Plugins
 
 The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
-plugin is **Tara**, which connects your own agent to the public Tahoe-100M
-dataset service.
+plugin is **Tara**, which connects your own agent to Tahoe's public dataset
+service. The signed-in account's `list_releases()` response determines access.
 
 ## Install
 
 The plugin is the way in. It connects your agent to the `tahoe-public` MCP
 server and ships the `tara` skill, which tells the agent how to route a
-Tahoe-100M question to the right tool; the service then serves the data.
+question to the selected dataset's tools; the service then serves the data.
+Tahoe-100M keeps its existing routes. Emerald Bay routes require server 0.4.0
+or later and explicit Emerald capabilities in discovery. Installing this
+plugin does not enable a dataset or grant access. If Emerald is absent, the
+agent reports it unavailable instead of substituting Tahoe-100M.
 
 ### Codex CLI
 
@@ -73,8 +77,9 @@ every ref locally, or to report every remote branch (the every-ref sweep), see
 
 ## Data and guidance
 
-The Tahoe-100M **data is CC0** — free to use. The plugin ships the `tara` skill,
-which routes questions to the public tools and loads scientific guidance
+Tahoe-100M **source data is CC0**. Emerald Bay **source data is CC BY 4.0**
+and requires attribution and identification of transformations. The plugin
+ships the `tara` skill, which routes questions to the public tools and loads scientific guidance
 from `get_guide` at runtime. The data and the guidance are separate grants; see
 `docs/data-and-licensing.md`.
 
@@ -98,8 +103,8 @@ reuse it under the same terms, with the patent grant that licence carries. The
 vendored `schemas/**` are the third party's own files, licensed Apache-2.0
 upstream; `schemas/provenance.json` records each source.
 
-The Tahoe-100M dataset the service serves is a separate grant — **CC0-1.0** —
-and is not stored in this repository. The service's runtime guidance, the
-gene-set names, the `tahoe-logo.png` brand mark and the "Tahoe" and "Tara"
+The datasets have separate grants: Tahoe-100M is **CC0-1.0** and Emerald Bay
+is **CC-BY-4.0**. Neither dataset is stored in this repository. The service's
+runtime guidance, the gene-set names, the `tahoe-logo.png` brand mark and the "Tahoe" and "Tara"
 trademarks are not covered by either licence here; see
 `docs/data-and-licensing.md`.

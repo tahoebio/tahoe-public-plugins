@@ -1,50 +1,38 @@
 # Tara eval pack
 
-Correctness-graded prompts for the `tara` skill. This pack is **public-safe**
-(no internal names) and is **not** part of the release archive.
+Correctness-graded prompts for the `tara` skill. This pack is public-safe and is
+not part of the release archive. It uses host-neutral Markdown prompts and
+structured evidence records; an offline contract test is not a live agent run.
 
-## Format decision
+## Dataset-specific packs
 
-Claude Code ships a `claude plugin eval` suite format: a directory of cases
-under the plugin's eval directory, each with a `prompt.md` and a grader, run
-against **mock** MCP servers by default. Running a real **remote** MCP server
-(our `streamable-http` endpoint) inside that harness is not documented, and a
-mock would not test the thing this pack exists to test — whether the agent
-routes to the real tools and reads the real provenance.
-
-So this pack is a **markdown pack plus a run log**, run by hand against the live
-service. It is re-evaluated under `claude plugin eval` (or an equivalent) only
-once a remote server is a documented, supported target.
-
-## Files
-
-- `E1.md` — the prompt, expected tools, and hard/soft criteria for two routes
-  (expression slice; released contrast). Runs today.
-- `E2.md`, `E3.md`, `E4.md`, `E5.md` — prompt, expected tools, hard criteria.
-- `set-A.md` — five lookup and aggregation prompts (A1–A5).
-- `frozen-expected-0.3.x.md` — expected values per prompt, stamped with
-  `server_version`, `release` and `guide_version`, each with the call recipe that
-  reproduces it. E6 (per-cell tools) is not in the pack until those tools are served.
-- `rubric.md` — the hard-fail classes and the grading rules.
-- `run-log.template.md` — one record per run (host, model, transcript, tool log).
+- **Tahoe-100M:** existing `E1.md` through `E5.md`, `set-A.md`,
+  `frozen-expected-0.3.x.md`, `rubric.md` and `run-log.template.md`. Existing
+  prompts and historical numeric records are retained unchanged.
+- **Emerald Bay:** [full eval pack](emerald-README.md), including 23 cases,
+  independent source expectations and strict Codex/Claude Code evidence records.
+  The feature contract starts at server 0.4.0, subject to account-visible
+  capabilities. These new cases are prepared; real remote sessions have not run.
 
 ## How to run
 
-1. Install the plugin from the local checkout against the live host, or from the
-   marketplace:
-   `claude plugin install ./plugins/tara` (Claude Code) and the Codex
-   equivalent.
-2. One **fresh session per prompt per host**. Record the host, its version and
-   the model.
-3. Run the prompt as written. Capture the transcript and the tool-call log
-   (tool, arguments, `release`, `manifest`, `guide_version`).
-4. Grade with `rubric.md`: PASS requires every **hard** criterion; **soft**
-   criteria are reported but do not fail the run.
-5. Record the run in `run-log.template.md`.
+1. Install the pinned candidate using [the installation instructions](../../docs/install.md).
+   The user completes sign-in. Start one fresh session per prompt per host.
+2. Record host/version, model, plugin revision, public server version, dataset,
+   release and guide hash. Use only capabilities currently advertised to that
+   account. Never transfer a dataset's numeric expectations to another dataset.
+3. Run the instantiated prompt and capture redacted transcript/tool evidence.
+4. Grade every hard criterion. Missing, blocked or unrun cases cannot pass.
+5. Record Tahoe runs in `run-log.template.md`; use the Emerald-specific structured
+   record and checker for Emerald. No real test is authorized by an offline pass.
 
-## Freezing expected values
+## Expected values
 
-Numeric expected values (per-line deltas, score ranges) are frozen by the eval
-author from **one reference run** against the live service at freeze time, and
-recorded with the `release` and `guide_version` of that run. Direction and
-structure criteria are fixed in the prompt file; only the numbers are frozen.
+The existing Tahoe freeze records historical reference-service observations;
+its exact recorded release/version scope remains in that file. It is neither
+an Emerald expectation set nor evidence that this candidate has passed.
+
+New Emerald expectations are derived from independent pinned released source
+before inspecting candidate answers, following [emerald-oracle.md](emerald-oracle.md).
+Candidate MCP output must never become its own expected answer. No Emerald
+numeric values or successful live run have been invented or frozen here.

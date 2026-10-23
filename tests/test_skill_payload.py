@@ -264,6 +264,30 @@ def test_skill_step_one_degrades_when_no_server_version_is_returned():
     assert "compatibility as unknown" in body
 
 
+def test_skill_separates_the_two_version_floors():
+    """An older plugin user must not read the Tahoe floor as covering Emerald."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    assert "**Tahoe-100M: 0.3.9.**" in body
+    assert "**Emerald Bay: 0.4.0.**" in body
+    assert "The Tahoe floor does not cover Emerald" in body
+
+
+def test_skill_forbids_a_numeric_cross_dataset_comparison():
+    """MAJOR-2: no shared axis, difference or cross-dataset ranking exists."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    assert "Never place Emerald and Tahoe-100M values on a shared axis" in body
+    assert "no conversion between the two is provided" in body
+
+
+def test_skill_marks_time_zero_growth_and_contrast_kind():
+    """MAJOR-1: growth and pathway rows carry their contrast at row level."""
+    body = " ".join(_skill_texts()[common.SKILL_MD_REL].split())
+    assert "is_growth_rate_control" in body
+    assert "is_time_zero=true" in body
+    assert "contrast_kind" in body
+    assert "filter `is_time_zero=false` for drug rankings" in body
+
+
 def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
     """A decline must not hint at routes beyond Tahoe's tools, and must offer
     the nearest analysis the served data can answer."""

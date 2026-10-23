@@ -1,44 +1,50 @@
 # Compatibility
 
-> Only tested combinations are claimed. No untested cross-host claims.
+Only tested combinations are claimed. The install workflows target Codex CLI
+and Claude Code; prepared instructions alone do not establish tested support.
 
-## Tested hosts
+## Hosts and requirements
 
-**Codex CLI** and **Claude Code** — the only hosts claimed. The install paths in
-`docs/install.md` and the steps in `docs/install-verification.md` target them.
-The exact tested versions and date are recorded here once the clean-machine
-checks pass; until then no version is claimed.
-
-No other client is claimed.
-
-## Requirements
-
-- The Codex CLI or Claude Code.
-- A Google account, and a browser, for sign-in.
+- Codex CLI or Claude Code, with a Google account and browser for sign-in.
 - No Databricks account or credentials are required.
+- See `docs/install-verification.md` for recorded Tahoe runs, their failures and
+  limitations. No fresh Emerald host run has been recorded yet.
+- Other hosts, offline data access and alternate sign-in flows are not claimed.
 
 ## Plugin and server versions
 
-The plugin is frozen against a public server version. Both manifests declare the
-floor in `extensions["com.tahoebio"]["minServerVersion"]`, and the skill's step 1
-warns when the served `server_version` is below it instead of assuming the
-published expected values hold.
+Both manifests retain `extensions["com.tahoebio"]["minServerVersion"]` at
+0.3.9 for existing Tahoe use. Compare versions numerically. A version check
+alone never establishes a dataset's availability or numeric correctness.
 
-| Plugin | Minimum server | Frozen against |
+| Plugin / route | Server requirement | Evidence / behavior |
 |---|---|---|
-| 0.3.4 | 0.3.9 | `evals/tara/frozen-expected-0.3.x.md` |
+| 0.3.4 Tahoe-100M | 0.3.9 or later | Legacy frozen record in `evals/tara/frozen-expected-0.3.x.md`. |
+| 0.4.0 Tahoe-100M | 0.3.9 or later | Preserves legacy calls without a dataset argument; old numeric freezes apply only to their recorded versions. |
+| 0.4.0 Emerald Bay | 0.4.0 or later plus advertised capabilities | Explicit dataset on every guide/data/SQL call; real host acceptance still required. |
 
-The frozen expected values were taken during the 0.3.9 → 0.3.10 upgrade window
-(2026-10-12 and 2026-10-13). The prompts whose runs straddle the upgrade agree on
-both versions, so 0.3.9 — the earliest server the values were taken on — is the
-floor. Values are re-frozen when `server_version`, `release` or `guide_version`
-changes.
+For an Emerald request, require a successful, untruncated `list_releases`
+response with the Emerald entry and requested capabilities. A legacy Tahoe-only
+response, an unknown version, absent capabilities or an access refusal must
+produce an unavailable/unverified result, never a Tahoe fallback. `health`
+may recover a missing version, but cannot replace capability discovery.
 
-## Not claimed
+An account allowed to validate Emerald can see it while another account still
+sees only Tahoe. The plugin does not enable access, choose validator accounts or
+change server configuration. Installing or merging this plugin does not make
+Emerald public.
 
-- Any host other than the Codex CLI and Claude Code.
-- Cross-host support beyond those two.
-- Offline data access.
-- Any client that does not implement the documented sign-in flow.
+## Scientific and host verification
 
-Claims are added only with evidence: a tested host, a version, and a date.
+The historical Tahoe freezes were taken during the server 0.3.9 to 0.3.10
+upgrade window. Revalidate when server, release or guide version changes; do
+not reuse those values as Emerald expectations. Emerald expected values must
+come from independent pinned source evidence, never the candidate response.
+
+Offline checks validate schemas, shipped examples, guide topics, package
+contents and residue. Fresh installed-plugin sessions on both hosts must still
+verify selection, capability refusals, numerical semantics, provenance,
+truncation and pending handles against the actual remote MCP. Record exact
+plugin/server/host versions and guide versions. Blocked or skipped required
+cases are incomplete, not passes. See [the Emerald eval pack](../evals/tara/emerald-README.md) and
+[install checks](install-verification.md).

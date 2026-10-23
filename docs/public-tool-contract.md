@@ -1,55 +1,77 @@
 # Public tool contract
 
-The public Tara service exposes a small, read-only set of tools over the public
-Tahoe-100M release. Names and schemas are versioned with the dataset release.
+Tara uses 17 shared tool names. Availability and scientific meaning depend on
+the selected dataset and authenticated account. Call `list_releases()` first;
+a registered tool name or installed plugin version does not establish access.
 
 ## Tools
 
-| Tool | Purpose |
-|------|---------|
-| `health` | Report service availability and the served release. |
-| `list_releases` | List the dataset releases available for retrieval. |
-| `search_conditions` | Search the treatment conditions (drug x dose arms). |
-| `resolve_genes` | Resolve gene identifiers, reporting ambiguity explicitly. |
-| `get_expression_slice` | Retrieve a bounded pseudobulk expression slice. |
-| `list_cell_lines` | List the cell lines (Cellosaurus id, name, organ, driver annotations). |
-| `get_drug_info` | Drug annotations: targets, mechanism class, approval and trial status. |
-| `get_differential_expression` | Per-gene differential expression, drug versus same-plate vehicle. |
-| `search_gene_sets` | Discover scored gene-set names and collections; names do not establish gene membership. |
-| `get_pathway_scores` | Retrieve differential VISION scores with the matched vehicle already subtracted. |
-| `get_phenotype_scores` | Retrieve phenotype-specific statistics, with their direction and significance semantics. |
-| `get_embedding_distance` | Distance from treatment to its plate- and line-matched vehicle centroid, not a directional effect. |
-| `get_perturbation_markers` | Genes a classifier found most important for one drug in one cell line (importance, not direction). |
-| `get_guide` | Return the analysis guidelines and data catalog, whole or by topic. |
-| `run_sql` | Run one read-only SQL query over the approved tables, guarded server-side. |
-| `cancel_execution` | Cancel a still-running call, using its `cancel_handle`. |
-| `send_feedback` | Send optional feedback about the service. |
-
-The data tools are read-only. `run_sql` is read-only too, but it accepts
-client-supplied query text: the statement is parsed and refused unless it is one
-`SELECT`/`WITH`/`UNION` over the approved tables, with a selective filter on any
-large table and no cross join. `cancel_execution` and `send_feedback` act only on
-the caller's own state and are not reads.
+| Tool | Purpose | Emerald Bay, when advertised |
+|------|---------|-----------------------------|
+| `health` | Report service availability and version. | Shared; health is not capability discovery. |
+| `list_releases` | List releases and approved aliases. | Adds the account's available dataset, tools, measurements, score kinds and limits. |
+| `search_conditions` | Resolve condition labels. | Retain sample and complete combination labels. |
+| `resolve_genes` | Resolve genes, including ambiguity. | Distinguish measured axis, vocabulary-only and unknown genes. |
+| `get_expression_slice` | Bounded pseudobulk expression. | Raw counts, whole-profile CPM and natural-log log1p(CPM), with endpoint controls. |
+| `list_cell_lines` | Resolve cell-line identities. | Canonical line key, cross-references and identity uncertainty; no organ/driver filters. |
+| `get_drug_info` | Drug/condition metadata. | Sample/condition metadata only; no targets, MOA, approval or structures. |
+| `get_differential_expression` | Tahoe drug-versus-vehicle DE. | Unsupported. |
+| `search_gene_sets` | Discover scored names and collections. | Differential VISION vocabulary; names do not establish membership. |
+| `get_pathway_scores` | Differential pathway activity. | Differential VISION only; do not subtract controls again. |
+| `get_phenotype_scores` | Dataset-specific phenotype values. | Released five-day growth response; no significance filter. |
+| `get_embedding_distance` | Tahoe distance from matched vehicle centroid. | Unsupported. |
+| `get_perturbation_markers` | Tahoe classifier feature importance. | Unsupported. |
+| `get_guide` | Dataset-specific scientific guide and table catalog. | Separate topics, guide version and attribution. |
+| `run_sql` | One guarded read-only query. | Only the selected dataset's approved aliases; includes bounded single-cell raw reads. |
+| `cancel_execution` | Cancel an owned running query by handle. | Shared; no dataset argument. |
+| `send_feedback` | Optional user-requested feedback. | Shared; no dataset argument. |
 
 ## Not yet served
 
-None today. When a tool is planned, it is listed here and the skill may name it
-only beside an explicit "available once the server advertises it" note.
+No additional tool names are proposed. Emerald is an optional capability of the
+existing tools and is available only when the server advertises it to the caller.
+
+## Dataset selection and compatibility
+
+- Preserve existing Tahoe-100M calls without the new selector. The base server
+  compatibility floor remains 0.3.9. Omission selects Tahoe; it must never be
+  used to retry a failed Emerald request.
+- Emerald requires server 0.4.0 or later **and** a successful, untruncated
+  `list_releases` entry for `emerald-bay`, advertising the requested tool,
+  measurement/score kind and aliases. `health` can recover a server version but
+  cannot replace those capabilities. An older, unavailable or unadvertised
+  Emerald route stops with an explicit limitation.
+- Pass `dataset="emerald-bay"` to Emerald data, SQL and guide calls, including
+  pending-result polling. The discovery and operational tools have no dataset
+  argument. Keep each dataset's guide and result provenance separate.
+- Resolve sample, line, gene and gene-set identifiers before querying. Preserve
+  complete combination conditions and each control replicate. Do not silently
+  drop unsupported dose, organ, driver, target or significance filters.
+- Emerald excludes DESeq2 expression, DE, absolute VISION, embeddings and
+  perturbation markers. Unavailability is not a zero measurement. The source
+  label `survival` maps to `growth_rate_released`, not clinical survival or a
+  Tahoe phenotype. Consult the selected guide for units and populations.
 
 ## Contract properties
 
-- All data tools are read-only and carry read-only annotations.
-- Client-supplied storage paths, URLs and code are rejected. `run_sql` accepts
-  SQL, but only one read-only statement over the approved tables.
-- Results carry provenance: release, filters, measurement semantics,
-  missing-value meaning and a repeatable request manifest.
-- Stable ordering: equivalent requests against unchanged source data return
-  equivalent data. A release label and request manifest do not themselves pin
-  immutable table versions; retain source-version evidence when available.
-- Limits and errors are explicit; a partial result is never presented as
-  complete.
-- A long call may return `pending` with a `result_handle`; the same tool is
-  called again with that handle to fetch the finished result.
+Data tools and `run_sql` are read-only. SQL is parsed and refused unless it is
+one permitted read over approved aliases with required selective filters and
+join constraints. Cross-dataset joins, writes, file sources and unbounded
+exports are outside the contract. `cancel_execution` and `send_feedback` act on
+the caller's operational state and are not data reads.
 
-The precise input and output schemas, bounds and error vocabulary are declared
-by the live service and reported on each result.
+Check `ok`, status, release, provenance, repeatable manifest and truncation.
+A long call can return `pending`; poll the same tool, dataset and effective
+arguments with `result_handle`. Handles are tied to account, tool, release and
+arguments. Recheck access failures without changing the dataset. Cancellation
+uses its separate handle and does not claim a dataset release.
+
+Output is capped at 1,000 rows / 40 KB; those limits are not scan-cost limits.
+A truncated success is partial. Narrow or aggregate it; do not page around the
+ceiling. Stable ordering supports replay, but a release label is not by itself
+proof of immutable source versions. Keep source revision evidence when returned.
+
+The live schemas, discovery response and selected guide define the current
+contract. Structured plugin examples are checked offline against a public-safe
+schema snapshot; this does not establish actual host behavior or live data
+correctness. Fresh host/MCP acceptance remains required.

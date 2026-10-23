@@ -12,7 +12,8 @@ attribution and the path map.
 | Plugin code | Manifests, scripts, tests, CI, configuration, the eval pack and root Markdown | `Apache-2.0` |
 | Skill text | `plugins/tara/skills/**` and its references | `CC-BY-4.0` |
 | Documentation | `docs/**` | `CC-BY-4.0` |
-| Data | The Tahoe-100M dataset the service serves | `CC0-1.0` |
+| Tahoe-100M source data | The Tahoe-100M dataset | `CC0-1.0` |
+| Emerald Bay source data | The EmeraldBay dataset | `CC-BY-4.0` |
 | Service guidance | Server instructions, tool descriptions, any guide the service returns | Not licensed for redistribution |
 | Gene-set names | Names from the source collections | The source collection's terms |
 | Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` (from agent-plugins.org) | `Apache-2.0` (upstream; `schemas/provenance.json`) |
@@ -33,19 +34,36 @@ are licensed under Creative Commons Attribution 4.0 International (see
 provided you give appropriate credit to Tahoe Bio, link to the licence and
 indicate if changes were made.
 
-## Data — CC0
+## Data — separate source licenses
 
 The Tahoe-100M data is released under CC0 1.0: free to use, including
 commercially, without conditions. The licence comes from the dataset card at
 <https://huggingface.co/datasets/tahoebio/Tahoe-100M>, which declares `cc0-1.0`.
-The data is not stored in this repository.
+Neither dataset is stored in this repository.
+
+Emerald Bay source data uses CC BY 4.0, as declared by the
+[EmeraldBay dataset card](https://huggingface.co/datasets/tahoebio/EmeraldBay).
+Give appropriate credit to Tahoe Bio, link the source and
+[CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/), and identify
+changes or transformations. For example, label CPM or log1p(CPM) derived from
+raw pseudobulk counts as a transformation; do not describe those values as
+DESeq2-normalized expression. Retain the source revision and dataset release
+with an analysis so the attribution identifies the data used.
+
+A suitable short attribution is: “Source: Tahoe Bio, EmeraldBay, CC BY 4.0.
+CPM and natural-log log1p(CPM) derived from raw pseudobulk counts using each
+complete profile total.” Link the source and license and add the actual pinned
+revision when using this wording. Tahoe-100M's CC0 license does not apply to
+Emerald Bay.
 
 ## Guidance — not licensed for redistribution
 
 The service's guidance is not in this repository. It lives only on the service
 and is delivered at runtime. It is not covered by either licence here and may
-not be redistributed. The data's CC0 status does not make the guidance or the
-service free to reuse; these are separate grants.
+not be redistributed. Neither Tahoe-100M's CC0 license nor Emerald Bay's CC BY 4.0 license
+grants redistribution rights to runtime guidance or the service. The plugin's
+CC BY 4.0 documentation is a separate work; do not treat it as permission to
+copy a guide returned by `get_guide`.
 
 ## Gene-set names
 

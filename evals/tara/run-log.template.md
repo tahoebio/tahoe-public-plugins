@@ -1,6 +1,9 @@
 # Run log
 
-Copy one block per run. Keep the transcript and the tool-call log beside it.
+Legacy Tahoe-100M record. Copy one block per run and keep redacted evidence
+beside it. For Emerald Bay, use [the structured record](emerald-run-record.template.json)
+and [its required coverage](emerald-README.md). This blank template is not evidence
+that any run has occurred.
 
 ---
 
