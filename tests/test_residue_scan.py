@@ -16,7 +16,7 @@ FORBIDDEN_SAMPLES = [
     j("tara", "-mcp"),
     j("tx1", "_embeddings"),
     j("Casp", "ian"),
-    j("dbc-", "0f17522b82e6"),
+    j("db", "c-", "0" * 12),
     j("PLAN", "_v4"),
     j("tara", ".", "internal"),
     j("prem", "ium tier"),
@@ -52,6 +52,7 @@ FORBIDDEN_LITERALS = [
     j("tara", "-mcp"),
     j("tx1", "_embeddings"),
     j("Casp", "ian"),
+    j("db", "c-"),
     j("Sun", "it"),
     j("prem", "ium"),
     j("pric", "ing"),
@@ -65,9 +66,10 @@ FORBIDDEN_LITERALS = [
 
 def test_tracked_tree_contains_no_forbidden_literals():
     """No tracked file may contain an internal/private name, even in the scanner
-    that looks for it. This scans raw file contents directly (not via
-    ``scan_repo``, which excludes the pattern module) so the pattern table
-    itself is covered."""
+    that looks for it. This scans raw file contents directly rather than through
+    ``scan_repo``, because these literals are deliberately broader than the
+    patterns: a bare host-id prefix, a planning-doc prefix without its digit. A
+    pattern match would miss them; a raw substring search does not."""
     hits = []
     for rel in common.tracked_files():
         text = (common.REPO_ROOT / rel).read_text(encoding="utf-8", errors="ignore")
