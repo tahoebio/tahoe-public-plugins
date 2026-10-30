@@ -3,6 +3,36 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.5.0 — unreleased
+
+- Prefer validated signature readouts for pathway and program questions. The
+  skill names the readout with `get_validated_signatures`, scores it with
+  `get_pathway_scores(process=...)`, and reads each Tahoe row's
+  `score_source` (`validated_v02` or `gold_release`) and `validation_status`.
+  Only `validated_v02` rows carry the validated label; every other set is
+  exploratory. A process with no validated readout is reported as such, and
+  no other set is substituted.
+- Add the panel's interpretation rules: no target engagement from a moving
+  readout, the direction class, the three inverted scores, circularity and
+  proliferation caveats (no residualising), no comparison across gene sets,
+  and a caveat on drug claims for DepMap-only readouts. Validation arms are
+  reported by label; the proprietary arm is a verdict only.
+- On Emerald Bay, "validated" means validated on Tahoe-100M and DepMap (plus
+  the proprietary verdict), never on Emerald data. Scores there are Emerald
+  gold values; custom readouts return `gene_set_not_found` and are never
+  replaced.
+- The panel needs server 0.5.0 or later and `validated_signatures` on the
+  Tahoe-100M `list_releases` entry; the server default is off. Tahoe-100M and
+  Emerald Bay floors are unchanged, and named `gene_sets` requests keep
+  working on every version.
+- Pin 18 public tools at the server 0.5.0 revision, regenerate the offline
+  tool contract, and gate the panel's tool, `process` argument and guide topic
+  on the server version and discovery in the offline routing checks.
+- Add the validated-signature eval cases S1–S8. They are prepared only; no
+  real host session has run them, and values that need independent
+  expectations are marked. Attribution for the panel's gene-set sources is
+  recorded and pending review.
+
 ## 0.4.0 — 2026-10-23
 
 - Add explicit dataset selection and capability-gated Emerald Bay routing.

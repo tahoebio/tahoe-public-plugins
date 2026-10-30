@@ -22,6 +22,8 @@ alone never establishes a dataset's availability or numeric correctness.
 | 0.3.4 Tahoe-100M | 0.3.9 or later | Legacy frozen record in `evals/tara/frozen-expected-0.3.x.md`. |
 | 0.4.0 Tahoe-100M | 0.3.9 or later | Preserves legacy calls without a dataset argument; old numeric freezes apply only to their recorded versions. |
 | 0.4.0 Emerald Bay | 0.4.0 or later plus advertised capabilities | Explicit dataset on every guide/data/SQL call; real host acceptance still required. |
+| 0.5.0 Tahoe-100M and Emerald Bay | Unchanged from 0.4.0 | Legacy calls, including named `gene_sets` requests, are unchanged. |
+| 0.5.0 validated signatures | 0.5.0 or later plus `validated_signatures` in discovery | The server default is off. Prepared and checked offline only; real host acceptance still required. |
 
 For an Emerald request, require a successful, untruncated `list_releases`
 response with the Emerald entry and requested capabilities. A legacy Tahoe-only

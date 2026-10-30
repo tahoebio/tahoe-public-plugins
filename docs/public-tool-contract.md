@@ -1,6 +1,6 @@
 # Public tool contract
 
-Tara uses 17 shared tool names. Availability and scientific meaning depend on
+Tara uses 18 shared tool names. Availability and scientific meaning depend on
 the selected dataset and authenticated account. Call `list_releases()` first;
 a registered tool name or installed plugin version does not establish access.
 
@@ -16,8 +16,8 @@ a registered tool name or installed plugin version does not establish access.
 | `list_cell_lines` | Resolve cell-line identities. | Canonical line key, cross-references and identity uncertainty; no organ/driver filters. |
 | `get_drug_info` | Drug/condition metadata. | Sample/condition metadata only; no targets, MOA, approval or structures. |
 | `get_differential_expression` | Tahoe drug-versus-vehicle DE. | Unsupported. |
-| `search_gene_sets` | Discover scored names and collections. | Differential VISION vocabulary; names do not establish membership. |
-| `get_pathway_scores` | Differential pathway activity. | Differential VISION only; do not subtract controls again. |
+| `search_gene_sets` | Discover scored names and collections; validated readouts first when the panel is visible. | Differential VISION vocabulary; names do not establish membership; only readouts in this vocabulary are ranked. |
+| `get_pathway_scores` | Differential pathway activity; `process` scores a validated readout, and each row names its `score_source` and `validation_status` when the panel is visible. | Differential VISION only; do not subtract controls again. Validation labels only; custom readouts are `gene_set_not_found`. |
 | `get_phenotype_scores` | Dataset-specific phenotype values. | Released five-day growth response; no significance filter. |
 | `get_embedding_distance` | Tahoe distance from matched vehicle centroid. | Unsupported. |
 | `get_perturbation_markers` | Tahoe classifier feature importance. | Unsupported. |
@@ -25,6 +25,7 @@ a registered tool name or installed plugin version does not establish access.
 | `run_sql` | One guarded read-only query. | Only the selected dataset's approved aliases; includes bounded single-cell raw reads. |
 | `cancel_execution` | Cancel an owned running query by handle. | Shared; no dataset argument. |
 | `send_feedback` | Optional user-requested feedback. | Shared; no dataset argument. |
+| `get_validated_signatures` | Validated readout for a cancer process, what a gene set was tested for, and evidence by validation arm. Registry only; server 0.5.0 and the panel in discovery. | No dataset argument. Validation never used Emerald Bay data. |
 
 ## Not yet served
 
@@ -51,6 +52,11 @@ existing tools and is available only when the server advertises it to the caller
   perturbation markers. Unavailability is not a zero measurement. The source
   label `survival` maps to `growth_rate_released`, not clinical survival or a
   Tahoe phenotype. Consult the selected guide for units and populations.
+- The validated-signatures panel requires server 0.5.0 or later **and**
+  `validated_signatures` on the Tahoe-100M `list_releases` entry. The server
+  default is off: without the entry, `get_validated_signatures` and `process`
+  return `not_found` and no gene set is validated. Named `gene_sets` requests
+  keep working on every version.
 
 ## Contract properties
 

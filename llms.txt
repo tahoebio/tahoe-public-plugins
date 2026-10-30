@@ -4,7 +4,8 @@
 > plugin is Tara, which connects your own agent to Tahoe's public dataset
 > service; the signed-in account's `list_releases` response determines access.
 > Tahoe-100M routes are always available. Emerald Bay routes require server
-> 0.4.0 or later and advertised Emerald capabilities.
+> 0.4.0 or later and advertised Emerald capabilities. Validated pathway
+> readouts require server 0.5.0 or later and the panel in discovery.
 
 ## Links
 
@@ -35,5 +36,5 @@ An organization administrator may centrally enable Claude auto-update with
 managed `extraKnownMarketplaces["tahoe-public"]` (`autoUpdate: true`) and
 `enabledPlugins["tara@tahoe-public"]: true`.
 
-Verify the installed manifest shows `0.4.0`, then make a signed-in
+Verify the installed manifest shows `0.5.0`, then make a signed-in
 `list_releases` call and an Emerald call with `dataset="emerald-bay"`.

@@ -20,6 +20,8 @@ and table definitions come from `get_guide` for the selected dataset.
    - **Emerald Bay: 0.4.0.** An explicit Emerald Bay request requires this floor
      and a `releases` entry with `dataset="emerald-bay"`. The Tahoe floor does
      not cover Emerald.
+   - **Validated signatures: 0.5.0.** The panel is on only when the Tahoe-100M
+     entry carries `validated_signatures`. Otherwise no gene set is validated.
 
    If no usable version is returned,
    try the other endpoint, `health()`; if neither yields one, report
@@ -50,7 +52,9 @@ and table definitions come from `get_guide` for the selected dataset.
    `dataset="emerald-bay"` on **every Emerald data call, guide and SQL call**,
    including polling. Tahoe calls keep their existing arguments without the
    new selector, so older servers remain useful. Use returned identifiers;
-   never infer measured coverage from a name or annotation.
+   never infer measured coverage from a name or annotation. For a pathway or
+   program question, prefer the validated readout when the panel is on:
+   `get_validated_signatures(process=...)` names it.
 5. Use the supported bounded tool. For a custom join or aggregate, read the
    selected guide's `querying-with-run-sql` and `table-reference` topics first.
    Read provenance and unavailable states before interpreting results.
@@ -68,7 +72,8 @@ For Emerald, use only the capabilities advertised to this account.
 | Cell-line identity | `list_cell_lines(query=...)`; Tahoe prefers returned `cell_line` (`CVCL_...`); Emerald retains `cell_line_internal` and identity status |
 | Drug information | `get_drug_info(...)`; Emerald supplies condition/sample metadata only, without target/MOA/approval annotations |
 | Pseudobulk expression and endpoint controls | `get_expression_slice(..., include_matched_controls=true)`; Emerald supports `raw_counts`, `cpm`, `cpm_log1p` |
-| Gene-set discovery and differential VISION | `search_gene_sets(...)`, then `get_pathway_scores(...)` |
+| Pathway / program readout | `get_pathway_scores(process=...)` or `search_gene_sets(...)` (validated readouts first), then `get_pathway_scores(gene_sets=[...])` |
+| Which set reads out a process; what a set was tested for | `get_validated_signatures(process=...)`, `query=` or `gene_set=`; registry only, no `dataset` |
 | Phenotype | `get_phenotype_scores(...)`; Emerald supports only `growth_rate_released` (source-label alias `survival`) |
 | Released DE | `get_differential_expression(...)`; Tahoe only |
 | Embedding distance | `get_embedding_distance(...)`; Tahoe only |
@@ -79,10 +84,31 @@ For Emerald, use only the capabilities advertised to this account.
 | Stop an owned query | `cancel_execution(cancel_handle)`; no dataset selector |
 | User-requested feedback | `send_feedback(...)`; optional, no dataset selector |
 
-Worked calls for all 17 tools and dataset-specific restrictions are in
+Worked calls for all 18 tools and dataset-specific restrictions are in
 [references/tool-routing.md](references/tool-routing.md). A per-cell query is
 bounded to 1,000 rows / 40 KB; it is not a full matrix export. A row limit is
 not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.md).
+
+## Validated signature checks
+
+- The panel names one validated readout per cancer process. Prefer it; every
+  other gene set is exploratory.
+- Read `score_source` and `validation_status` on every Tahoe row. Only
+  `validated_v02` rows carry the validated label; report `gold_release` rows
+  as exploratory. `no_validated_readout` means nothing was scored: say so and
+  substitute no other set.
+- The arms are DepMap genetics, Tahoe-100M drug classes and Tahoe proprietary
+  single-cell drug data (unpublished). The proprietary arm is a verdict only.
+  Pending licence review, DepMap is a verdict plus the tested contrast. Only
+  Tahoe-100M carries values. A DepMap-only readout rests a drug claim on
+  genetic evidence alone.
+- On Emerald Bay, "validated" means validated on Tahoe-100M and DepMap (plus
+  the proprietary verdict), never on Emerald data. Scores are Emerald gold
+  values with a per-set `validation` block. Custom readouts (`PROGENY_`,
+  `LIT_`, `TIROSH_`) have no Emerald scores: their rows return
+  `gene_set_not_found`. Report that; never replace them.
+- Follow the interpretation rules in
+  [references/analysis-guidelines.md](references/analysis-guidelines.md).
 
 ## Emerald scientific checks
 

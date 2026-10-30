@@ -67,7 +67,7 @@ _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$", re.MULTILINE)
 #: The tool set the public MCP registers (its `server/tools.py`, at the pinned
 #: server revision). The tool-contract table must match it exactly, so a tool added
 #: or removed on the server fails validation until the docs and routing are synced.
-PINNED_PUBLIC_TOOLS_REVISION = "dec4367edcd5d44436de32b50901d988402e34f0"
+PINNED_PUBLIC_TOOLS_REVISION = "358735c696a7bf06f44986b530b282f2efe72bc4"
 PINNED_PUBLIC_TOOLS = frozenset(
     {
         "health",
@@ -87,6 +87,7 @@ PINNED_PUBLIC_TOOLS = frozenset(
         "get_perturbation_markers",
         "cancel_execution",
         "send_feedback",
+        "get_validated_signatures",
     }
 )
 _LIVE_TOOLS_SECTION = "Tools"
