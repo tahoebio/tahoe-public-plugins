@@ -92,6 +92,108 @@ def test_feature_version_is_numeric_and_fails_closed(version, expected):
     )
 
 
+PANEL_CALLS = (
+    request("get_validated_signatures", process="mTORC1"),
+    request("get_pathway_scores", process="mTORC1", drug=["Trametinib"]),
+    request(
+        "get_pathway_scores",
+        dataset=examples.EMERALD,
+        process="mTORC1",
+        samples=["<sample from search_conditions>"],
+    ),
+    request("get_guide", topic="validated-signatures"),
+)
+
+
+@pytest.mark.parametrize(
+    "version,expected",
+    [
+        ("0.4.2", "server_too_old"),
+        ("0.4.10", "server_too_old"),
+        ("0.5.0", "send"),
+        ("0.10.0", "send"),
+        (None, "compatibility_unknown"),
+        ("0.5", "compatibility_unknown"),
+    ],
+)
+@pytest.mark.parametrize("call", PANEL_CALLS, ids=lambda call: call["tool"])
+def test_panel_version_is_numeric_and_fails_closed(version, expected, call):
+    ctx = context("signatures_visible")
+    ctx["server_version"] = version
+    assert examples.route(CONTRACT, ctx, call) == expected
+
+
+@pytest.mark.parametrize(
+    "change,expected",
+    [
+        ({"advertised_signatures": None}, "signatures_unavailable"),
+        ({"advertised_signatures": {}}, "signatures_unavailable"),
+        ({"advertised_signatures": "tahoe-signatures/v02"}, "signatures_unavailable"),
+        (
+            {"advertised_signatures": {"release": "tahoe-signatures/v99"}},
+            "signatures_unavailable",
+        ),
+        ({"discovery_ok": False}, "discovery_incomplete"),
+        ({"discovery_truncated": True}, "discovery_incomplete"),
+        ({"discovery_truncated": None}, "discovery_incomplete"),
+    ],
+)
+@pytest.mark.parametrize("call", PANEL_CALLS, ids=lambda call: call["tool"])
+def test_panel_requires_complete_discovery_at_the_snapshot_release(
+    change, expected, call
+):
+    ctx = context("signatures_visible")
+    ctx.update(change)
+    assert examples.route(CONTRACT, ctx, call) == expected
+
+
+def test_panel_gate_leaves_named_gene_set_calls_and_other_topics_alone():
+    # An explicit gene-set request is legacy behavior on every server version;
+    # only `process` and the lookup tool need the panel.
+    legacy = request(
+        "get_pathway_scores", gene_sets=["HALLMARK_MTORC1_SIGNALING"], drug=["Trametinib"]
+    )
+    assert examples.route(CONTRACT, context("tahoe_legacy"), legacy) == "send"
+    explicit_null = request(
+        "get_pathway_scores",
+        process=None,
+        gene_sets=["HALLMARK_MTORC1_SIGNALING"],
+        drug=["Trametinib"],
+    )
+    assert examples.route(CONTRACT, context("tahoe_legacy"), explicit_null) == "send"
+    # Panel visibility admits the panel's own topic, never an unrelated one.
+    assert (
+        examples.route(
+            CONTRACT,
+            context("signatures_visible"),
+            request("get_guide", dataset=examples.EMERALD, topic="reading-expression"),
+        )
+        == "unsupported_topic"
+    )
+
+
+def test_documentation_panel_calls_route_through_the_panel_context(tmp_path):
+    path = documentation_root(tmp_path)
+    path.write_text(
+        path.read_text()
+        + '\n```json\n{"tool":"get_validated_signatures","arguments":{"process":"mTORC1"}}\n```\n'
+        + '\n```json\n{"tool":"get_pathway_scores","arguments":{"process":"mTORC1","drug":["Trametinib"]}}\n```\n'
+    )
+    calls = examples.validate_shipped_calls(tmp_path)
+    panel_calls = [call for call in calls if examples.uses_signatures(CONTRACT, call)]
+    assert [call["tool"] for call in panel_calls] == [
+        "get_validated_signatures",
+        "get_pathway_scores",
+    ]
+    # The legacy Tahoe context predates the panel, so routing these through it
+    # would fail; the shipped-call check must pick the panel context instead.
+    for call in panel_calls:
+        assert (
+            examples.route(CONTRACT, context("tahoe_legacy"), call)
+            == "server_too_old"
+        )
+
+
 @pytest.mark.parametrize("field", examples.DISCOVERY_LISTS)
 def test_every_discovery_capability_field_is_required(field):
     ctx = context()

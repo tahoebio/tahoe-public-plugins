@@ -108,6 +108,7 @@
         "get_pathway_scores",
         "get_perturbation_markers",
         "get_phenotype_scores",
+        "get_validated_signatures",
         "list_cell_lines",
         "resolve_genes",
         "run_sql",
@@ -117,7 +118,19 @@
     }
   },
   "format_version": 1,
-  "server_version": "0.4.0",
+  "server_version": "0.5.0",
+  "signatures": {
+    "applies_to": "tahoe-100m",
+    "guide_topics": [
+      "validated-signatures"
+    ],
+    "release": "tahoe-signatures/v02",
+    "tools": [
+      "get_validated_signatures",
+      "search_gene_sets",
+      "get_pathway_scores"
+    ]
+  },
   "tools": {
     "cancel_execution": {
       "additionalProperties": false,
@@ -834,6 +847,17 @@
           ],
           "default": null
         },
+        "process": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "result_handle": {
           "anyOf": [
             {
@@ -1117,6 +1141,78 @@
             }
           ],
           "default": false
+        }
+      },
+      "type": "object"
+    },
+    "get_validated_signatures": {
+      "additionalProperties": false,
+      "properties": {
+        "gene_set": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "process": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "query": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "type": "object"

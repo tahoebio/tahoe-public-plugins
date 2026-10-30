@@ -92,7 +92,7 @@ in `docs/install-verification.md`.
 > `codex plugin marketplace upgrade tahoe-public` (or
 > `codex plugin marketplace upgrade`) and start a new Codex session. Unattended
 > Codex marketplace upgrades are not documented, so this explicit upgrade is the
-> supported user path. Verify the installed Tara manifest shows `0.4.0`, then
+> supported user path. Verify the installed Tara manifest shows `0.5.0`, then
 > make a signed-in `list_releases` call and an Emerald call with
 > `dataset="emerald-bay"`; Tahoe requests still work. Your account's release
 > list is the access authority.

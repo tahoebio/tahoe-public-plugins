@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "evidence_kind": "offline-schema-and-routing-requirements",
-  "note": "Angle-bracket sample, cell-line, pathway and handle values must be replaced using the selected dataset tool results. These are not executed host sessions or scientific result fixtures. Contexts are normalized discovery requirements, not recorded MCP responses. Success requires successful, untruncated discovery and advertised capability metadata for Emerald.",
+  "note": "Angle-bracket sample, cell-line, pathway and handle values must be replaced using the selected dataset tool results. These are not executed host sessions or scientific result fixtures. Contexts are normalized discovery requirements, not recorded MCP responses. Success requires successful, untruncated discovery and advertised capability metadata for Emerald. The validated-signatures panel also requires server 0.5.0 or later and the panel in discovery (`validated_signatures` on the Tahoe-100M release entry).",
   "contexts": {
     "tahoe_legacy": {
       "server_version": "0.3.9",
@@ -552,6 +552,109 @@
             "vision_scores_differential",
             "vision_profile_dimension",
             "vision_availability_lattice"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      }
+    },
+    "signatures_visible": {
+      "server_version": "0.5.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
+          ],
+          "phenotype_measurements": [
+            "growth_rate_released"
+          ],
+          "pathway_score_kinds": [
+            "differential"
+          ]
+        }
+      },
+      "advertised_signatures": {
+        "release": "tahoe-signatures/v02"
+      }
+    },
+    "signatures_hidden": {
+      "server_version": "0.5.0",
+      "advertised_datasets": [
+        "tahoe-100m",
+        "emerald-bay"
+      ],
+      "discovery_ok": true,
+      "discovery_truncated": false,
+      "advertised_capabilities": {
+        "emerald-bay": {
+          "release": "emerald-bay/v1",
+          "tools": [
+            "get_guide",
+            "run_sql",
+            "search_conditions",
+            "resolve_genes",
+            "list_cell_lines",
+            "get_expression_slice",
+            "get_phenotype_scores",
+            "search_gene_sets",
+            "get_pathway_scores",
+            "get_drug_info"
+          ],
+          "tables": [
+            "expr_expression_cell",
+            "expr_gene",
+            "pb_gene_axis",
+            "pb_pseudobulk",
+            "pb_lattice",
+            "phenotype",
+            "phenotype_sample",
+            "phenotype_cell_line_identity",
+            "vision_scores_differential",
+            "vision_profile_dimension",
+            "vision_availability_lattice"
+          ],
+          "expression_measurements": [
+            "raw_counts",
+            "cpm",
+            "cpm_log1p"
           ],
           "phenotype_measurements": [
             "growth_rate_released"
@@ -1189,6 +1292,162 @@
         ]
       },
       "expected_route": "unsupported_argument"
+    },
+    {
+      "id": "signatures-process-lookup",
+      "context": "signatures_visible",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "process": "mTORC1"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-query-lookup",
+      "context": "signatures_visible",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "query": "MAPK"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-gene-set-lookup",
+      "context": "signatures_visible",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "gene_set": "HALLMARK_KRAS_SIGNALING"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-tahoe-process-scores",
+      "context": "signatures_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "process": "RAS / RAF / MEK / ERK",
+        "drug": [
+          "Trametinib"
+        ],
+        "cell_lines": [
+          "CVCL_0023"
+        ]
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-tahoe-mixed-sources",
+      "context": "signatures_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "gene_sets": [
+          "PROGENY_MAPK_A",
+          "HALLMARK_KRAS_SIGNALING"
+        ],
+        "drug": [
+          "Trametinib"
+        ],
+        "cell_lines": [
+          "CVCL_0023"
+        ]
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-emerald-process-scores",
+      "context": "signatures_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "process": "mTORC1",
+        "samples": [
+          "<sample from search_conditions>"
+        ],
+        "cell_lines": [
+          "<cell line from list_cell_lines>"
+        ],
+        "limit": 100
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-guide-topic",
+      "context": "signatures_visible",
+      "tool": "get_guide",
+      "arguments": {
+        "topic": "validated-signatures"
+      },
+      "expected_route": "send"
+    },
+    {
+      "id": "signatures-hidden-lookup",
+      "context": "signatures_hidden",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "process": "mTORC1"
+      },
+      "expected_route": "signatures_unavailable"
+    },
+    {
+      "id": "signatures-hidden-process",
+      "context": "signatures_hidden",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "process": "mTORC1",
+        "drug": [
+          "Trametinib"
+        ]
+      },
+      "expected_route": "signatures_unavailable"
+    },
+    {
+      "id": "signatures-hidden-guide-topic",
+      "context": "signatures_hidden",
+      "tool": "get_guide",
+      "arguments": {
+        "topic": "validated-signatures"
+      },
+      "expected_route": "signatures_unavailable"
+    },
+    {
+      "id": "signatures-old-server-process",
+      "context": "emerald_visible",
+      "tool": "get_pathway_scores",
+      "arguments": {
+        "process": "mTORC1",
+        "drug": [
+          "Trametinib"
+        ]
+      },
+      "expected_route": "server_too_old"
+    },
+    {
+      "id": "signatures-legacy-server-lookup",
+      "context": "tahoe_legacy",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "process": "mTORC1"
+      },
+      "expected_route": "server_too_old"
+    },
+    {
+      "id": "signatures-unknown-version",
+      "context": "emerald_unknown_version",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "process": "mTORC1"
+      },
+      "expected_route": "compatibility_unknown"
+    },
+    {
+      "id": "signatures-no-dataset-selector",
+      "context": "signatures_visible",
+      "tool": "get_validated_signatures",
+      "arguments": {
+        "dataset": "emerald-bay",
+        "process": "mTORC1"
+      },
+      "expected_route": "invalid_arguments"
     }
   ]
 }

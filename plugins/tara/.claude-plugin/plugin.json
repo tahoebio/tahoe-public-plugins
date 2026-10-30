@@ -1,6 +1,6 @@
 {
   "name": "tara",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "Apache-2.0",
   "description": "Read-only access to Tahoe's data through the Tahoe public tools. Use for drug-discovery analyses of large-scale single-cell perturbational transcriptomics, including a single-cell perturbation atlas. Depending on the selected dataset, applications include phenotypic profiling, mechanism-of-action inference, and pathway-response and cell-state analysis. Compare a compound's expression, pathway and cell-state response with annotated mechanism classes; compare drug responses between genotype- or lineage-defined groups of cell lines; correlate a cell line's baseline expression or driver-gene status with its drug response (exploratory); and rank drug-induced relative depletion and cell-cycle effects per cell line across three doses. Where advertised, look up covered drugs, doses, cell lines and genes; read drug annotations (targets, mechanism of action, approval status); retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Guarded read-only SQL and analysis guidance included. Capabilities vary by dataset and account; select a dataset advertised by the service. Where enabled, additional routes support pseudobulk raw counts, CPM and log1p(CPM), released five-day growth response, and differential VISION.",
   "extensions": {

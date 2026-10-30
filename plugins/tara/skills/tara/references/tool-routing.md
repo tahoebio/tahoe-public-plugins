@@ -1,10 +1,12 @@
 # Tool routing — the long form
 
 Read this when you need a tool's arguments, a worked call, or the full response
-contract. The short routing table is in `SKILL.md`. The 17 tool names are
+contract. The short routing table is in `SKILL.md`. The 18 tool names are
 shared. Dataset availability and supported measurements must be discovered for
 the signed-in account before using a route. Emerald examples require server
 0.4.0 or later and an advertised Emerald capability; they are not an access claim.
+Validated-signature examples require server 0.5.0 or later and
+`validated_signatures` on the Tahoe-100M `list_releases` entry.
 
 ## Tahoe-100M routing, with arguments
 
@@ -19,8 +21,9 @@ the signed-in account before using a route. Emerald examples require server
 | Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)` or `list_cell_lines(query=...)`; prefer the returned `cell_line` (`CVCL_...`) for reproducible data calls; data tools also accept exact cell-line names |
 | A drug's targets, mechanism class, approval or trial status | `get_drug_info(drug=...)`, or filter by `moa=` or `target=` (a filter is required) |
 | Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast |
-| Which gene sets are scored, or which collection? | `search_gene_sets(query=..., collection=..., limit=...)`; verify the set name, not just a familiar prefix |
-| Drug-versus-vehicle pathway activity | `get_pathway_scores(gene_sets=[...], drug=[...], cell_lines=[...], dose=..., limit=...)`; scores are already differential |
+| Which gene set reads out a pathway or program? What was a set tested for? | `get_validated_signatures(process=...)`, `query=...` or `gene_set=...`; registry only, no `dataset`; no argument lists every process |
+| Which gene sets are scored, or which collection? | `search_gene_sets(query=..., collection=..., limit=...)`; validated readouts are listed first; verify the set name, not just a familiar prefix |
+| Drug-versus-vehicle pathway activity | `get_pathway_scores(process=..., drug=[...], cell_lines=[...])` for the validated readout, or `gene_sets=[...]` for a named set; scores are already differential; read each row's `score_source` and `validation_status` |
 | Condition-level survival, phase arrest, Gini or Augur | `get_phenotype_scores(drug=[...], cell_lines=[...], phenotypes=[...], dose=..., limit=...)`; read the selected phenotype's semantics |
 | Treatment distance from matched vehicle in embedding space | `get_embedding_distance(drug=[...], cell_lines=[...], dose=..., limit=...)`; preserve plate and contributing cell counts |
 | Genes most important for one drug in one line (importance, not direction) | `get_perturbation_markers(drug=..., cell_line=...)` |
@@ -56,7 +59,7 @@ list_cell_lines(organ="Lung")             # discover lines by organ
 get_drug_info(target="EGFR")             # drugs annotated against a gene
 get_differential_expression(drug=["Trametinib"], cell_lines=["CVCL_0023"], top_n=20)
 search_gene_sets(collection="HALLMARK", limit=100)
-get_pathway_scores(gene_sets=["HALLMARK_APOPTOSIS"], drug=["Trametinib"], cell_lines=["CVCL_0023"])
+get_pathway_scores(gene_sets=["HALLMARK_MTORC1_SIGNALING"], drug=["Trametinib"], cell_lines=["CVCL_0023"])
 get_phenotype_scores(drug=["Trametinib"], cell_lines=["CVCL_0023"], phenotypes=["survival"])
 get_embedding_distance(drug=["Trametinib"], cell_lines=["CVCL_0023"])
 get_perturbation_markers(drug="Trametinib", cell_line="CVCL_0023")
@@ -66,6 +69,81 @@ get_guide(topic="conditions-and-controls")   # one guide section
 cancel_execution(cancel_handle="<cancel_handle from the pending response>")
 send_feedback(text="...", task_category="exploration", useful=true)
 run_sql(statement="SELECT count(*) AS n FROM drug_metadata", max_rows=100)
+```
+
+`HALLMARK_MTORC1_SIGNALING` is the validated mTORC1 readout, so the panel
+serves its scores; an older server or a hidden panel serves the released
+VISION store, without a validation label.
+
+## Validated signature worked calls
+
+The Tahoe Signatures panel (release `tahoe-signatures/v02`) names one validated
+readout per cancer process. It is on only when `list_releases()` shows
+`validated_signatures` on the Tahoe-100M entry; otherwise these calls return
+`not_found`, and every gene set is unvalidated. The process names and aliases
+come from the registry: call `get_validated_signatures()` with no argument to
+list them.
+
+Look up a process's readout, direction class, evidence by arm, caveats and
+tested alternatives. The lookup reads the registry only and takes no `dataset`:
+
+```json
+{"tool":"get_validated_signatures","arguments":{"process":"mTORC1"}}
+```
+
+Search by part of a name. `MAPK` finds the KRAS and RAS / RAF / MEK / ERK
+processes, which share the readout `PROGENY_MAPK_A`:
+
+```json
+{"tool":"get_validated_signatures","arguments":{"query":"MAPK"}}
+```
+
+Ask what a familiar set was tested for. `HALLMARK_KRAS_SIGNALING` passed
+validation for KRAS but ranked below the readout, so its label is
+`passed_not_readout` and the answer names `PROGENY_MAPK_A` instead:
+
+```json
+{"tool":"get_validated_signatures","arguments":{"gene_set":"HALLMARK_KRAS_SIGNALING"}}
+```
+
+Score a process's readout without its name. `process` replaces `gene_sets` and
+`collection`; aliases such as `MEK` also resolve:
+
+```json
+{"tool":"get_pathway_scores","arguments":{"process":"RAS / RAF / MEK / ERK","drug":["Trametinib"],"cell_lines":["CVCL_0023"]}}
+```
+
+A mixed request reads each set from its own source in one bounded query:
+
+```json
+{"tool":"get_pathway_scores","arguments":{"gene_sets":["PROGENY_MAPK_A","HALLMARK_KRAS_SIGNALING"],"drug":["Trametinib"],"cell_lines":["CVCL_0023"]}}
+```
+
+| `gene_set` | `score_source` | `validation_status` | Report as |
+|---|---|---|---|
+| `PROGENY_MAPK_A` | `validated_v02` | `validated_readout` | the validated readout |
+| `HALLMARK_KRAS_SIGNALING` | `gold_release` | `passed_not_readout` | exploratory |
+
+The two sources share samples, keys and the cell-line join, but their values
+are not interchangeable. Never compare scores across gene sets. Read the
+per-set `validation` block and `provenance.score_sources` in the response.
+
+A process with no validated readout scores nothing:
+
+```json
+{"tool":"get_pathway_scores","arguments":{"process":"Apoptosis","drug":["Trametinib"],"cell_lines":["CVCL_0023"]}}
+```
+
+The answer has `validation_status="no_validated_readout"`, `scored=false`, the
+process status (`not_validated`), the best tested set with its arm verdicts,
+and caveats. Report that Apoptosis has no validated readout. The server does
+not substitute another set, and neither may you. If the user still wants a
+score, pass `gene_sets` explicitly and report the result as exploratory.
+
+Read the panel's guide before interpreting:
+
+```json
+{"tool":"get_guide","arguments":{"topic":"validated-signatures"}}
 ```
 
 ## Emerald Bay worked calls
@@ -173,6 +251,23 @@ profiles can still be absent or below the cell floor; missing, endpoint-referenc
 and low-cell scores remain unavailable. Absolute VISION is unsupported. The
 embedding-distance and perturbation-marker tools are also unsupported here.
 
+When `list_releases()` also shows the validated-signatures panel (server 0.5.0
+or later), `search_gene_sets` lists the validated readouts present in the
+Emerald vocabulary first, and `process` resolves to the readout:
+
+```json
+{"tool":"get_pathway_scores","arguments":{"dataset":"emerald-bay","process":"mTORC1","samples":["<sample>"],"cell_lines":["<cell_line_internal>"],"limit":100}}
+```
+
+These are Emerald gold differential scores, never panel scores. The response
+adds a per-set `validation` block and a `validation_note`. "Validated" means
+validated on Tahoe-100M and DepMap (plus the proprietary verdict), never on
+Emerald Bay data; say so beside the result. A custom readout (`PROGENY_`,
+`LIT_` or `TIROSH_` names, such as `PROGENY_MAPK_A` for KRAS) is not in the
+Emerald vocabulary: its rows have `value_status="gene_set_not_found"` and no
+score. Report the readout as unscored on Emerald Bay. Do not replace it with
+another set, and never call a substitute validated.
+
 For approved single-cell raw reads or custom aggregates, read the selected
 `querying-with-run-sql` and `table-reference` topics and use the examples in
 [sql-guidance.md](sql-guidance.md). No unrestricted matrix export is available.
@@ -195,6 +290,10 @@ releases, rather than choosing one for the user. A data result also carries:
   can be replayed and attributed.
 - `truncated` and `truncation_reasons` — `complete` is true only when nothing was
   trimmed.
+- With the validated-signatures panel visible, Tahoe pathway rows add
+  `score_source` and `validation_status`, and the response adds a per-set
+  `validation` block and `provenance.score_sources`; Emerald pathway responses
+  add the `validation` block only.
 - `pending` — the query outran the submit wait. Call the **same** tool again with
   the **same** arguments and `result_handle` set to the pending response's
   handle; do not resubmit. A handle is bound to the tool, release and arguments
@@ -210,7 +309,7 @@ all returned provenance; do not infer a dataset from a default health release.
 | `error_type` | Meaning |
 |---|---|
 | `bad_request` | An argument is invalid or the dataset does not support that analysis/filter. Do not silently drop the filter or switch datasets. |
-| `not_found` | The dataset is unavailable to this account, or the named object/handle is unavailable. Recheck discovery; never remove the Emerald selector to retry. |
+| `not_found` | The dataset is unavailable to this account, the named object/handle is unavailable, or the validated-signatures panel is off for this account. Recheck discovery; never remove the Emerald selector to retry. |
 | `rate_limited` | Too many calls; wait and retry. |
 | `too_large` | The request exceeds a bound; narrow it. |
 | `missing_identity` | Sign in through the connector, then retry. |
@@ -229,7 +328,8 @@ as complete.
 `get_guide(topic=...)` accepts a topic id and returns just that section; the
 response lists the available `topics` and the `guide_version`. Emerald requires
 `dataset="emerald-bay"` on every guide call. Read the relevant
-section before drawing a conclusion.
+section before drawing a conclusion. While the validated-signatures panel is
+visible, either guide also lists the `validated-signatures` topic.
 
 Use `references/data-catalog.md` to select the server guide topic for each
 scientific layer, and read that topic and result provenance before interpreting

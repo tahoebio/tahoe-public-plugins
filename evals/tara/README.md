@@ -13,6 +13,39 @@ structured evidence records; an offline contract test is not a live agent run.
   independent source expectations and strict Codex/Claude Code evidence records.
   The feature contract starts at server 0.4.0, subject to account-visible
   capabilities. These new cases are prepared; real remote sessions have not run.
+- **Validated signatures:** [S1–S8](signatures.md). See the section below.
+
+## Validated signatures (S1–S8)
+
+[signatures.md](signatures.md) checks that the skill prefers the validated
+readout for a pathway or program question, reads each row's `score_source` and
+`validation_status`, and keeps the panel's caveats:
+
+| Case | Checks |
+|---|---|
+| S1 | A MAPK inhibitor is scored on `PROGENY_MAPK_A`. |
+| S2 | Apoptosis has no validated readout, and nothing is substituted. |
+| S3 | `HALLMARK_KRAS_SIGNALING` was tested for KRAS but is not the readout. |
+| S4 | The ATF4 readout's inverted score direction. |
+| S5 | A DepMap-only readout used for a drug effect carries the caveat. |
+| S6 | Control: a plain expression question is unaffected. |
+| S7 | Emerald Bay: the validated name ranks first, gold scores, scope caveat. |
+| S8 | Emerald Bay: a custom readout returns not-found rows, with no substitute. |
+
+The cases need server 0.5.0 or later and the panel in the account's discovery
+(`validated_signatures` on the Tahoe-100M entry); otherwise every case except
+S6 is BLOCKED. Criteria come only from the public registry served by
+`get_validated_signatures` and from public Tahoe-100M and Emerald Bay data. No
+number is frozen. S1, S4, S5, S7 and S8 name the values that need independent
+expectations, and their dependent criteria stay BLOCKED until those exist.
+These cases are prepared only; no real remote session has run them.
+
+The existing Tahoe prompts are unchanged. The sets that E4 and set-A prompts
+A2, A3 and A5 name passed validation but are not readouts, so with the panel
+visible they still read the released VISION store (`gold_release`). Their
+frozen values keep their recorded scope, but an answer must now call them
+exploratory. The Emerald pack keeps its 0.4.0 tool contract of 17 tools; S7
+and S8 cover the panel on Emerald Bay.
 
 ## How to run
 

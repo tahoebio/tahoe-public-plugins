@@ -19,6 +19,7 @@ dataset-specific topic IDs.
 | Single-cell raw count access | `table-reference`, `querying-with-run-sql` | `expression-measurements-and-missingness`, `table-reference`, `querying-with-run-sql` |
 | DE | `differential-expression` | Not supported |
 | Differential VISION | `pathway-scores` | `differential-vision-scores` |
+| Validated readouts (panel visible) | `validated-signatures` | `validated-signatures` |
 | Phenotype | `phenotype-readouts` | `released-growth-response` |
 | Embeddings / classifier markers | `embedding-distances`, `response-markers` | Not supported |
 | Attribution | `citation-and-provenance` | `provenance-and-attribution` |
@@ -51,3 +52,33 @@ drug-treatment effects. Reference-only, low-cell or absent profiles must not
 become zero scores; time-zero identity alone is not an exclusion.
 Never infer complete coverage from a truncated response. Read the guide and
 result provenance for the current populations, controls and definitions.
+
+## Validated signature panel
+
+- **What it is.** The Tahoe Signatures panel, release `tahoe-signatures/v02`,
+  names one validated readout per cancer process and records its evidence,
+  caveats and tested alternatives. It is not a dataset.
+- **Availability.** Server 0.5.0 or later. The panel is visible only when the
+  Tahoe-100M `list_releases` entry carries `validated_signatures`, which
+  reports the release, process and signature counts, tools, scope and arm
+  labels. Absent means off for this account: no gene set is validated.
+- **Tahoe-100M.** The released signatures (readouts and composite components)
+  are scored from the panel's own table (`score_source="validated_v02"`): the
+  treated pseudobulk VISION score minus the mean of same-line vehicle samples
+  on the same plate. A NULL score means no vehicle on that plate, not zero.
+  Every other set reads the released VISION store (`gold_release`).
+- **Emerald Bay.** Labels only. Scores are Emerald gold differential values;
+  custom readouts (`PROGENY_`, `LIT_`, `TIROSH_`) have none there.
+- **Validation.** Three arms, by label: DepMap genetics, Tahoe-100M drug
+  classes, and Tahoe proprietary single-cell drug data (unpublished, a verdict
+  only). Read the rule from `validation_rule` in the lookup.
+- **Not served.** Gene-set member lists, panel scores through `run_sql`, and
+  DepMap statistics.
+
+Attribution (pending review). Cite the panel's scores as computed by Tahoe Bio
+with VISION (DeTomaso et al. 2019, Nat Commun 10:4376) on Tahoe-100M, whose
+source data are CC0. Gene-set names come from MSigDB (CC BY 4.0; Subramanian
+et al. 2005, Liberzon et al. 2015), from PROGENy-derived bins (Schubert et al.
+2018; Apache-2.0; modified by Tahoe Bio and not endorsed by the PROGENy
+authors) and from published studies; cite each set's source as the guide
+gives it.

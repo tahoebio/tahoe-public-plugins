@@ -68,7 +68,10 @@ copy a guide returned by `get_guide`.
 ## Gene-set names
 
 Gene-set names keep the terms of their source collections: MSigDB, GO,
-Reactome, KEGG, WikiPathways, BioCarta and PID.
+Reactome, KEGG, WikiPathways, BioCarta and PID. The validated-signatures panel
+adds PROGENy-derived names (Apache-2.0 source) and names of sets from
+published studies; their attribution is pending review and is recorded in the
+skill's data catalog.
 
 ## Vendored schemas
 

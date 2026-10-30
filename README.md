@@ -12,7 +12,9 @@ question to the selected dataset's tools; the service then serves the data.
 Tahoe-100M keeps its existing routes. Emerald Bay routes require server 0.4.0
 or later and explicit Emerald capabilities in discovery. Installing this
 plugin does not enable a dataset or grant access. If Emerald is absent, the
-agent reports it unavailable instead of substituting Tahoe-100M.
+agent reports it unavailable instead of substituting Tahoe-100M. For pathway
+questions the skill prefers validated readouts when the server (0.5.0 or
+later) shows the validated-signatures panel in discovery.
 
 ### Codex CLI
 
@@ -63,7 +65,7 @@ Full steps, including the advanced direct-server option, are in `docs/install.md
 > `codex plugin marketplace upgrade tahoe-public` (or
 > `codex plugin marketplace upgrade`) and start a new Codex session. Unattended
 > Codex marketplace upgrades are not documented, so this explicit upgrade is the
-> supported user path. Verify the installed Tara manifest shows `0.4.0`, then
+> supported user path. Verify the installed Tara manifest shows `0.5.0`, then
 > make a signed-in `list_releases` call and an Emerald call with
 > `dataset="emerald-bay"`; Tahoe requests still work. Your account's release
 > list is the access authority.

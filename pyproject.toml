@@ -1,6 +1,6 @@
 [project]
 name = "tahoe-public-plugins"
-version = "0.4.0"
+version = "0.5.0"
 description = "Validation, residue scanning and packaging tooling for the Tahoe Bio plugin marketplace."
 license = "Apache-2.0"
 requires-python = ">=3.10"

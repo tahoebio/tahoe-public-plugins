@@ -24,9 +24,17 @@ from scripts import common  # noqa: E402
 
 CONTRACT_REL = "tests/fixtures/public_tool_contract.json"
 EXAMPLES_REL = "tests/fixtures/tool_examples.json"
+#: The server version the public tool snapshot was exported from.
+CONTRACT_SERVER_VERSION = "0.5.0"
 EMERALD = "emerald-bay"
 TAHOE = "tahoe-100m"
 EMERALD_MINIMUM = (0, 4, 0)
+#: The validated-signatures panel: its lookup tool, the argument that resolves a
+#: process to its readout, and its guide topic. They exist from server 0.5.0 and
+#: work only while discovery shows the panel; the server's default is disabled.
+SIGNATURES_MINIMUM = (0, 5, 0)
+SIGNATURE_TOOLS = frozenset({"get_validated_signatures"})
+SIGNATURE_ARGUMENTS = {"get_pathway_scores": frozenset({"process"})}
 EMERALD_ARGUMENTS = {
     "search_conditions": {"samples"},
     "get_drug_info": {"samples"},
@@ -100,6 +108,44 @@ def sql_example_allowed(statement, tables, max_rows=200):
     return limit is None or 1 <= int(limit.group(1)) <= 1000
 
 
+def uses_signatures(contract, request):
+    """True when a call needs the validated-signatures panel to be visible."""
+    tool = request.get("tool") if isinstance(request, dict) else None
+    args = request.get("arguments") if isinstance(request, dict) else None
+    if not isinstance(args, dict):
+        args = {}
+    if tool in SIGNATURE_TOOLS:
+        return True
+    if tool == "get_guide" and args.get("topic") in contract["signatures"]["guide_topics"]:
+        return True
+    return any(args.get(field) is not None for field in SIGNATURE_ARGUMENTS.get(tool, ()))
+
+
+def signatures_problem(contract, context, version):
+    """Why the panel cannot serve this caller, or None.
+
+    Like Emerald, a version alone never authorizes it: complete discovery must
+    show the panel (`list_releases` nests it on the Tahoe-100M entry) at the
+    snapshot's release.
+    """
+    if version is None:
+        return "compatibility_unknown"
+    if version < SIGNATURES_MINIMUM:
+        return "server_too_old"
+    if (
+        context.get("discovery_ok") is not True
+        or context.get("discovery_truncated") is not False
+    ):
+        return "discovery_incomplete"
+    discovered = context.get("advertised_signatures")
+    if (
+        not isinstance(discovered, dict)
+        or discovered.get("release") != contract["signatures"]["release"]
+    ):
+        return "signatures_unavailable"
+    return None
+
+
 def route(contract, context, request):
     if schema_problems(contract, request):
         return "invalid_arguments"
@@ -110,6 +156,11 @@ def route(contract, context, request):
     if dataset not in contract["datasets"]:
         return "dataset_unavailable"
     version = version_tuple(context.get("server_version"))
+    panel = uses_signatures(contract, request)
+    if panel:
+        problem = signatures_problem(contract, context, version)
+        if problem is not None:
+            return problem
     if dataset == TAHOE:
         introduced = EMERALD_ARGUMENTS.get(tool, set()) | {"dataset"}
         if (
@@ -174,7 +225,8 @@ def route(contract, context, request):
         ):
             return "unsupported_filter"
     if tool == "get_guide" and args.get("topic") is not None:
-        if args["topic"] not in capabilities["guide_topics"]:
+        # The panel's topic is served beside either dataset's guide once visible.
+        if args["topic"] not in capabilities["guide_topics"] and not panel:
             return "unsupported_topic"
     if tool == "get_expression_slice":
         measurement = args.get("measurement") or "cpm_log1p"
@@ -277,10 +329,18 @@ def validate_fixtures(root=ROOT):
     contract = common.load_json(root / CONTRACT_REL)
     fixtures = common.load_json(root / EXAMPLES_REL)
     if (
-        contract.get("server_version") != "0.4.0"
+        contract.get("server_version") != CONTRACT_SERVER_VERSION
         or set(contract["tools"]) != common.PINNED_PUBLIC_TOOLS
     ):
         raise common.RepoError("public tool snapshot version or tool surface changed")
+    panel = contract.get("signatures")
+    if (
+        not isinstance(panel, dict)
+        or not isinstance(panel.get("release"), str)
+        or not isinstance(panel.get("guide_topics"), list)
+        or not SIGNATURE_TOOLS <= set(panel.get("tools", ()))
+    ):
+        raise common.RepoError("public tool snapshot lacks the validated-signatures panel")
     for schema in contract["tools"].values():
         Draft202012Validator.check_schema(schema)
     seen, covered = set(), set()
@@ -323,11 +383,13 @@ def validate_shipped_calls(root=ROOT, *, require_emerald=True):
                     f"{rel}: every Emerald worked call must select its dataset explicitly"
                 )
         for request in [*fenced_calls(text, rel), *legacy_calls(text, rel)]:
-            context = fixtures["contexts"][
-                "emerald_visible"
-                if request.get("arguments", {}).get("dataset") == EMERALD
-                else "tahoe_legacy"
-            ]
+            if uses_signatures(contract, request):
+                name = "signatures_visible"
+            elif request.get("arguments", {}).get("dataset") == EMERALD:
+                name = "emerald_visible"
+            else:
+                name = "tahoe_legacy"
+            context = fixtures["contexts"][name]
             outcome = route(contract, context, request)
             if outcome != "send":
                 raise common.RepoError(
@@ -369,7 +431,7 @@ EXPORT_PROGRAM = r"""
 import asyncio, json, sys, tempfile
 from pathlib import Path
 from fastmcp import FastMCP
-from server import datasets, registry_view, skills, tools
+from server import datasets, registry_view, signatures, skills, tools
 from server.config import Config
 from server.version import server_version
 
@@ -401,7 +463,9 @@ async def export():
                     "tables": list(datasets.EMERALD_TABLES), "expression_measurements": datasets.summary()["expression_measurements"],
                     "phenotype_measurements": datasets.summary()["phenotype_measurements"],
                     "pathway_score_kinds": datasets.summary()["pathway_score_kinds"],
-                    "guide_topics": list(skills.EMERALD_GUIDE_TOPICS), "source_data_license": "CC-BY-4.0"}}}, sort_keys=True))
+                    "guide_topics": list(skills.EMERALD_GUIDE_TOPICS), "source_data_license": "CC-BY-4.0"}},
+            "signatures": {"release": datasets.SIGNATURES_RELEASE, "applies_to": datasets.TAHOE,
+                "tools": list(signatures.TOOLS), "guide_topics": list(skills.SIGNATURES_GUIDE_TOPICS)}}, sort_keys=True))
 asyncio.run(export())
 """
 
