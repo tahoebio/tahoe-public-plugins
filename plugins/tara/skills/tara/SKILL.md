@@ -57,9 +57,11 @@ and table definitions come from `get_guide` for the selected dataset.
    program question, prefer the validated readout when the panel is on:
    `get_validated_signatures(process=...)` names it.
 5. Use the bounded tool that answers the question (routing tables below).
-   Use `run_sql` only for a join or panel-wide aggregate no tool answers; read
-   the selected guide's `querying-with-run-sql` and `table-reference` topics
-   first, then confirm labels and the leading result with the bounded tools.
+   For a few drugs across all lines, fetch the rows with that tool and
+   summarise them yourself. Use `run_sql` only for a join, or an aggregate
+   over many drugs, that no tool answers; read the selected guide's
+   `querying-with-run-sql` and `table-reference` topics first, then confirm
+   labels and the leading result with the bounded tools.
    Read provenance and unavailable states before interpreting results.
 
 ## Routing

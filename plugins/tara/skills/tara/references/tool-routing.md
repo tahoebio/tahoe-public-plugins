@@ -35,7 +35,8 @@ Validated-signature examples require server 0.5.0 or later and
 | Stop a running call | `cancel_execution(cancel_handle=<from the pending response>)` |
 | Tell the maintainers something | `send_feedback(text=...)` (optional) |
 | A join, aggregation or table a bounded tool does not expose | `run_sql(statement, max_rows)` (see `references/sql-guidance.md`) |
-| A panel-wide ranking across many drugs | a `run_sql` aggregate over the differential scores; take mechanism labels from `get_drug_info` and confirm the leading result with `get_pathway_scores` |
+| A few drugs compared across all lines | `get_differential_expression` or `get_pathway_scores` with the drugs and no line filter; summarise the returned rows yourself, not with SQL |
+| A ranking across many drugs (a mechanism class or the whole panel) | a `run_sql` aggregate over the differential scores; take mechanism labels from `get_drug_info` and confirm the leading result with `get_pathway_scores` |
 | Aggregates over per-cell expression | `run_sql` over advertised `single_cell_expression`; 1,000 rows / 40 KB, not a cell-matrix export |
 | Per-cell embeddings, bulk download | not served; offer `get_embedding_distance` for the matched-vehicle shift |
 | Plate-level centroid vectors | `run_sql` over the advertised centroid table; vectors are distinct from the scalar distance-tool output |
