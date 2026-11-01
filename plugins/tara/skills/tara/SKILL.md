@@ -12,8 +12,8 @@ and table definitions come from `get_guide` for the selected dataset.
 
 ## Call order
 
-1. Call `list_releases()` and read `server_version`, `releases`, and their
-   dataset names and table aliases. Apply two separate floors:
+1. Call `health()` and `list_releases()`; record `server_version`, `releases`,
+   and their dataset names and table aliases. Apply these separate floors:
    - **Tahoe-100M: 0.3.9.** Compare versions numerically — major, then minor,
      then patch — not as text: 0.3.10 is newer than 0.3.9. If below that floor,
      warn that the frozen Tahoe expected values may not apply.
@@ -23,9 +23,9 @@ and table definitions come from `get_guide` for the selected dataset.
    - **Validated signatures: 0.5.0.** The panel is on only when the Tahoe-100M
      entry carries `validated_signatures`. Otherwise no gene set is validated.
 
-   If no usable version is returned,
-   try the other endpoint, `health()`; if neither yields one, report
-   compatibility as unknown. Health alone does not establish capabilities.
+   If one returns no usable version, try the other endpoint's; if neither
+   yields one, report compatibility as unknown. Health alone does not
+   establish capabilities.
 2. Select the dataset from the user's question. For Emerald, check its
    `tools`, requested measurement or score kind, and `tables` before querying.
    Missing, failed or incomplete discovery means Emerald is unavailable or
@@ -51,12 +51,17 @@ and table definitions come from `get_guide` for the selected dataset.
    `list_cell_lines`, `get_drug_info` or `search_gene_sets`. Pass
    `dataset="emerald-bay"` on **every Emerald data call, guide and SQL call**,
    including polling. Tahoe calls keep their existing arguments without the
-   new selector, so older servers remain useful. Use returned identifiers;
-   never infer measured coverage from a name or annotation. For a pathway or
+   new selector, so older servers remain useful. Use returned identifiers and
+   labels verbatim, including salt or solvate suffixes; never infer measured
+   coverage from a name or annotation. For a pathway or
    program question, prefer the validated readout when the panel is on:
    `get_validated_signatures(process=...)` names it.
-5. Use the supported bounded tool. For a custom join or aggregate, read the
-   selected guide's `querying-with-run-sql` and `table-reference` topics first.
+5. Use the bounded tool that answers the question (routing tables below).
+   For a few drugs across all lines, fetch the rows with that tool and
+   summarise them yourself. Use `run_sql` only for a join, or an aggregate
+   over many drugs, that no tool answers; read the selected guide's
+   `querying-with-run-sql` and `table-reference` topics first, then confirm
+   labels and the leading result with the bounded tools.
    Read provenance and unavailable states before interpreting results.
 
 ## Routing
@@ -93,6 +98,9 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
 
 - The panel names one validated readout per cancer process. Prefer it; every
   other gene set is exploratory.
+- When the user names a gene set, score that set under its served name and
+  label it by its `validation_status`. Add the readout beside it, labelled;
+  never answer with the readout in its place.
 - Read `score_source` and `validation_status` on every Tahoe row. Only
   `validated_v02` rows carry the validated label; report `gold_release` rows
   as exploratory. `no_validated_readout` means nothing was scored: say so and

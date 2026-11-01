@@ -27,6 +27,34 @@ Tahoe's guide version as evidence for Emerald. If methods or identity remain
 uncertain, state the uncertainty instead of inventing a convention. Keep the
 runtime guidance in the analysis session; do not redistribute it with the plugin.
 
+## Reporting results
+
+These are defaults for presenting results, not limits on what you may do. When
+the user asks for something else, such as a count, a test or a hypothesis, do it
+and say how. The guide's `statistical-discipline` and measurement topics hold
+the details.
+
+1. **Lead with effect sizes.** Report the served values. A count of
+   significant tests can support them; give it when asked, but do not let it
+   stand in for the effect.
+2. **Name the significance family.** Whenever you write "significant", state
+   the release's test, its multiple-testing correction and the scope it was
+   corrected over. Augur, Gini, VISION scores and embedding distances carry
+   no test; do not give them one.
+3. **Label your own summaries.** A median or mean across lines, or a count
+   of lines that move, is yours, not the release's; say how you computed it.
+   Add a test or interval only when the user asks, and then name the method
+   and the unit (cell line, plate) it treats as independent.
+4. **Keep cell counts.** A per-line or per-plate table carries the counts the
+   tool returns (`n_cells_trt`, `n_cells_ctrl`, or the phenotype's counts), so
+   low-count rows stay visible.
+5. **Movement is not proof.** A change in expression, a pathway score or a
+   phenotype is consistent with target engagement or a mechanism; it does not
+   show it. Pharmacology comes from `get_drug_info`; label outside knowledge
+   as background, not Tahoe evidence. When asked to choose between mechanisms,
+   say what the data can and cannot decide, then give your best-supported
+   hypothesis, labelled as one.
+
 ## Validated signatures
 
 Apply these rules whenever a pathway or program answer uses the panel. Read the

@@ -20,7 +20,9 @@ Validated-signature examples require server 0.5.0 or later and
 | Is gene G in the release? Symbol vs Ensembl id? | `resolve_genes(symbols=[...])` |
 | Which cell lines exist, or lines of one organ? | `list_cell_lines(organ=...)` or `list_cell_lines(query=...)`; prefer the returned `cell_line` (`CVCL_...`) for reproducible data calls; data tools also accept exact cell-line names |
 | A drug's targets, mechanism class, approval or trial status | `get_drug_info(drug=...)`, or filter by `moa=` or `target=` (a filter is required) |
-| Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast |
+| Which drugs share a mechanism or target? Salt forms collapsed? | `get_drug_info(moa=...)` or `get_drug_info(target=...)`, then `search_conditions` for the treatment arms; collapse salt forms by the returned `parent` only when asked |
+| Which lines carry a driver alteration? | `list_cell_lines()` returns every line with its driver annotations; filter the returned rows yourself, not with SQL |
+| Differential expression, drug vs same-plate vehicle | `get_differential_expression(drug=[...], cell_lines=[...], genes=[...])`; without `genes`, the top `top_n` per contrast; keep `n_cells_trt` and `n_cells_ctrl` in per-line tables |
 | Which gene set reads out a pathway or program? What was a set tested for? | `get_validated_signatures(process=...)`, `query=...` or `gene_set=...`; registry only, no `dataset`; no argument lists every process |
 | Which gene sets are scored, or which collection? | `search_gene_sets(query=..., collection=..., limit=...)`; validated readouts are listed first; verify the set name, not just a familiar prefix |
 | Drug-versus-vehicle pathway activity | `get_pathway_scores(process=..., drug=[...], cell_lines=[...])` for the validated readout, or `gene_sets=[...]` for a named set; scores are already differential; read each row's `score_source` and `validation_status` |
@@ -33,6 +35,8 @@ Validated-signature examples require server 0.5.0 or later and
 | Stop a running call | `cancel_execution(cancel_handle=<from the pending response>)` |
 | Tell the maintainers something | `send_feedback(text=...)` (optional) |
 | A join, aggregation or table a bounded tool does not expose | `run_sql(statement, max_rows)` (see `references/sql-guidance.md`) |
+| A few drugs compared across all lines | `get_differential_expression` or `get_pathway_scores` with the drugs and no line filter; summarise the returned rows yourself, not with SQL |
+| A ranking across many drugs (a mechanism class or the whole panel) | a `run_sql` aggregate over the differential scores; take mechanism labels from `get_drug_info` and confirm the leading result with `get_pathway_scores` |
 | Aggregates over per-cell expression | `run_sql` over advertised `single_cell_expression`; 1,000 rows / 40 KB, not a cell-matrix export |
 | Per-cell embeddings, bulk download | not served; offer `get_embedding_distance` for the matched-vehicle shift |
 | Plate-level centroid vectors | `run_sql` over the advertised centroid table; vectors are distinct from the scalar distance-tool output |
