@@ -1,0 +1,18 @@
+{
+  "allow": [
+    {
+      "key": "cell_name",
+      "value": "NCI-N87",
+      "pattern": "internal_ref",
+      "reason": "public cell line name",
+      "source": "Cellosaurus CVCL_1603; DepMap ACH-000427"
+    },
+    {
+      "key": "canonical_smiles",
+      "shape": "smiles",
+      "pattern": "internal_ref",
+      "reason": "SMILES chemical structures; a ring-closure digit after a nitrogen (C=N2) matches the notebook-code pattern",
+      "source": "Tahoe-100M drug metadata (CC0), canonical_smiles column"
+    }
+  ]
+}

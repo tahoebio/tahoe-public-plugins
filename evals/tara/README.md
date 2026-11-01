@@ -69,3 +69,25 @@ New Emerald expectations are derived from independent pinned released source
 before inspecting candidate answers, following [emerald-oracle.md](emerald-oracle.md).
 Candidate MCP output must never become its own expected answer. No Emerald
 numeric values or successful live run have been invented or frozen here.
+
+## Runner cases
+
+The prompts in this directory stay the human-readable source. They are not
+copied into the installed plugin. Record a live run, then replay it. Both
+commands render the cases into a temporary plugin copy and pass `--tag
+release`, so a case that still needs an independent expected value is not in
+the run and is not counted as a pass.
+
+```sh
+EVAL_UPSTREAM_URL='https://…' EVAL_TOKEN_FILE=/path/to/token.json \
+  scripts/eval_record.sh RUN_DIR
+scripts/eval_replay.sh RUN_DIR/eval-recording RUN_DIR
+```
+
+`eval_record.sh` needs the upstream URL and a mode-0600 token file. It runs
+the cases live, writes the recording under `RUN_DIR/eval-recording/`, and
+writes `eval-record.json` for the release report. `eval_replay.sh` replays that
+directory offline for plugin-only changes; agents vary their arguments, so it
+lists the calls it could not answer in `eval-replay-misses.jsonl`. Pending and cancellation prompts are not runner cases. The live
+probe is a separate command, `scripts/eval_probe.sh`, and is not part of that
+tag.
