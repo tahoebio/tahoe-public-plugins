@@ -32,6 +32,26 @@ to semantic versioning.
   real host session has run them, and values that need independent
   expectations are marked. Attribution for the panel's gene-set sources is
   recorded and pending review.
+- Tighten the skill from the first live eval run against the staging service:
+  - call `health()` together with `list_releases()`;
+  - keep returned labels verbatim, salt and solvate suffixes included;
+  - use the bounded tool that answers the question, keeping `run_sql` for
+    joins and panel-wide aggregates, then confirm labels and the leading
+    result with the bounded tools;
+  - when the user names a gene set, score that set and add the validated
+    readout beside it, never in its place.
+- Add default reporting rules: lead with effect sizes, name the significance
+  family, label summaries you compute yourself, keep the returned cell
+  counts, and give a labelled hypothesis rather than treating movement as
+  proof. They yield to an explicit request for a count, a test or a
+  hypothesis.
+- Add routing rows for drugs by mechanism or target, lines by driver
+  annotation, and panel-wide rankings, and keep cell counts in per-line
+  differential-expression tables.
+- Add live plugin evals: `scripts/eval_record.sh` runs the release cases
+  through a local proxy against a staging service and writes the eval record
+  a release report reads; `scripts/eval_replay.sh` replays a recording
+  offline for plugin-only changes.
 
 ## 0.4.0 — 2026-10-23
 
