@@ -1,8 +1,15 @@
 """Build the release archive from approved tracked files only.
 
     uv run python scripts/package.py --out dist
+    uv run python scripts/package.py --directory --out dist
 
-The archive contains exactly the allowlisted plugin files, including the
+The default build is the Git-marketplace archive: the repository licence files
+plus the allowlisted ``plugins/tara/`` files, under their repository paths.
+``--directory`` builds ``tara-<version>-directory.zip`` for the plugin
+directories instead: the plugin folder's own files with the plugin root at the
+ZIP root, and nothing beside them.
+
+Either archive contains exactly its allowlisted plugin files, including the
 reviewed logo. A path that is missing, symlinked, escaping or generated is refused
 rather than skipped. The built archive is scanned for internal residue and
 secrets and is discarded if any are found. A SHA-256 checksum is written next to
@@ -21,16 +28,28 @@ from scripts import common  # noqa: E402
 
 
 def build_release(
-    root: Path = common.REPO_ROOT, out_dir: Path | None = None
+    root: Path = common.REPO_ROOT,
+    out_dir: Path | None = None,
+    *,
+    directory: bool = False,
 ) -> tuple[Path, Path]:
     version = common.load_json(common.plugin_dir(root) / "plugin.json")["version"]
-    members = common.collect_archive_members(root, common.tracked_files(root))
+    if directory:
+        allowlist = common.DIRECTORY_ALLOWLIST
+        prefix = common.DIRECTORY_PREFIX
+        name = f"{common.PLUGIN_NAME}-{version}-directory.zip"
+    else:
+        allowlist, prefix = common.ARCHIVE_ALLOWLIST, ""
+        name = f"{common.PLUGIN_NAME}-{version}.zip"
+    members = common.collect_archive_members(
+        root, common.tracked_files(root), allowlist
+    )
     destination = Path(out_dir) if out_dir is not None else root / "dist"
     archive = common.build_archive(
-        root, members, destination / f"{common.PLUGIN_NAME}-{version}.zip"
+        root, members, destination / name, strip_prefix=prefix
     )
 
-    findings = common.scan_archive(archive)
+    findings = common.scan_archive(archive, prefix)
     if findings:
         archive.unlink(missing_ok=True)
         raise common.ResidueError(
@@ -44,12 +63,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=str(common.REPO_ROOT))
     parser.add_argument("--out", default=None, help="output directory (default: dist/)")
+    parser.add_argument(
+        "--directory",
+        action="store_true",
+        help="build the plugin-directory ZIP (plugin root at the ZIP root)",
+    )
     args = parser.parse_args(argv)
 
     root = Path(args.root)
     out_dir = Path(args.out) if args.out else None
     try:
-        archive, checksum = build_release(root, out_dir)
+        archive, checksum = build_release(root, out_dir, directory=args.directory)
     except common.RepoError as exc:
         print(f"packaging failed: {exc}", file=sys.stderr)
         return 1

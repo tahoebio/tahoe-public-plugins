@@ -4,7 +4,9 @@ The decision: plugin code is Apache-2.0; the skill text and the documentation
 are CC BY 4.0; the Tahoe-100M dataset the service serves is CC0-1.0.
 """
 
-from scripts import common
+import pytest
+
+from scripts import common, validate
 
 ROOT = common.REPO_ROOT
 
@@ -27,6 +29,7 @@ LICENSING_DOCS = (
     "docs/data-and-licensing.md",
     "docs/releasing.md",
     "plugins/tara/assets/README.md",
+    "plugins/tara/README.md",
 )
 
 
@@ -99,3 +102,21 @@ def test_pyproject_license_matches_code_licence():
 def test_license_paths_are_required_layout():
     assert "LICENSE" in common.REQUIRED_LAYOUT
     assert "LICENSE-CC-BY-4.0" in common.REQUIRED_LAYOUT
+
+
+@pytest.mark.parametrize(("copy", "source"), sorted(common.PLUGIN_LICENSE_COPIES.items()))
+def test_plugin_folder_carries_byte_identical_licence_files(copy, source):
+    # A host installs only the plugin folder, so the terms and the notice must
+    # be inside it, and must be the repository's own text.
+    assert (ROOT / copy).read_bytes() == (ROOT / source).read_bytes()
+
+
+def test_validator_rejects_a_drifted_licence_copy(tmp_path):
+    for copy, source in common.PLUGIN_LICENSE_COPIES.items():
+        for rel in (copy, source):
+            (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+            (tmp_path / rel).write_bytes((ROOT / source).read_bytes())
+    validate.validate_license_copies(tmp_path)
+    (tmp_path / "plugins" / "tara" / "NOTICE").write_text("stale\n")
+    with pytest.raises(common.RepoError):
+        validate.validate_license_copies(tmp_path)
