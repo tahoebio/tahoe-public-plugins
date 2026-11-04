@@ -6,6 +6,7 @@
   "author": {
     "name": "Tahoe Bio"
   },
+  "icon": "./assets/tahoe-logo.png",
   "extensions": {
     "com.tahoebio": {
       "minServerVersion": "0.3.9"

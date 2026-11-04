@@ -460,3 +460,27 @@ def test_readme_does_not_promise_the_signatures_panel():
 def test_readme_names_the_launch_datasets():
     readme = _readme()
     assert "Tahoe-100M" in readme and "Emerald Bay" in readme
+
+
+def test_claude_listing_icon_is_the_reviewed_logo_at_a_valid_size():
+    # The Claude directory reads `icon` from the Claude manifest and fixes the
+    # listing icon on the first portal save: a square PNG, 512-2048 px.
+    adapter = common.load_json(common.REPO_ROOT / common.CLAUDE_ADAPTER_REL)
+    icon = adapter["icon"]
+    assert icon.startswith("./")
+    path = common.plugin_dir() / icon[2:]
+    assert path.relative_to(common.REPO_ROOT).as_posix() == common.LOGO_REL
+    assert common.LOGO_REL in common.ARCHIVE_ALLOWLIST
+    data = path.read_bytes()
+    assert len(data) < 2 * 1000 * 1000
+    size = _png_size(data)
+    assert size is not None, "icon is not a PNG"
+    width, height = size
+    assert width == height and 512 <= width <= 2048, size
+
+
+def test_readme_has_the_claude_code_install_line():
+    marketplace = common.load_json(common.REPO_ROOT / common.CLAUDE_CATALOG_REL)
+    readme = _readme()
+    assert "`claude plugin marketplace add tahoebio/tahoe-public-plugins`" in readme
+    assert f"`claude plugin install tara@{marketplace['name']}`" in readme

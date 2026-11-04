@@ -15,6 +15,10 @@ then sign in with Google in the browser your client opens. You need a Tahoe
 account to sign in. Your account decides which datasets and releases you can
 use.
 
+In Claude Code, run
+`claude plugin marketplace add tahoebio/tahoe-public-plugins`, then
+`claude plugin install tara@tahoe-public`.
+
 ## Example prompts
 
 - Which MEK and RAF inhibitors are in Tahoe's data?
