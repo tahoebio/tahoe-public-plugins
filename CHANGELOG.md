@@ -3,6 +3,11 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## Unreleased
+
+- List the validated signatures panel in the manifest descriptions and the
+  plugin README: one validated readout per cancer process, Tahoe-100M only.
+
 ## 0.5.1 — unreleased
 
 - Prepare the plugin for the OpenAI and Claude plugin directories. Add a

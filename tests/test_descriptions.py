@@ -141,10 +141,22 @@ def test_skill_description_uses_the_audited_discovery_sentence():
     )
 
 
-def test_manifest_text_does_not_promise_the_signatures_panel():
-    # The validated-signatures panel is not part of the directory listing.
+SIGNATURES_CLAUSE = (
+    "Read the validated signature readout for a cancer process: one per "
+    "process, where one exists, in one dataset only."
+)
+
+
+def test_manifest_text_states_the_signatures_panel_only_in_the_approved_clause():
+    # The listing names the validated-signatures panel once, in the approved
+    # clause, in each manifest description; no other listing text mentions it.
+    descriptions = {_portable()["description"], _claude()["description"]}
+    for description in descriptions:
+        assert description.count(SIGNATURES_CLAUSE) == 1, description
+        assert description.lower().count("signature") == 1, description
     for text in _human_text():
-        assert "signature" not in text.lower(), text
+        if text not in descriptions:
+            assert "signature" not in text.lower(), text
 
 
 def test_claude_adapter_names_the_author():
