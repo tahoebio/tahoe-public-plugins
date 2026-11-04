@@ -288,12 +288,14 @@ def test_skill_marks_time_zero_growth_and_contrast_kind():
     assert "filter `is_time_zero=false` for drug rankings" in body
 
 
-def test_out_of_scope_questions_get_an_in_scope_offer_and_no_outside_route():
-    """A decline must not hint at routes beyond Tahoe's tools, and must offer
-    the nearest analysis the served data can answer."""
+def test_out_of_scope_questions_get_an_in_scope_offer():
+    """A decline offers the nearest analysis the served data can answer. The
+    skill carries no blanket ban on mentioning other sources (a directory
+    listing rule), so the old sentence must stay removed."""
     body = " ".join(_skill_texts()[common.SKILL_MD_REL].split()).lower()
+    assert "decline that part" in body
     assert "offer the nearest analysis" in body
-    assert "do not name, hint at or describe any route" in body
+    assert "do not name, hint at or describe any route" not in body
 
 
 def test_unserved_rows_do_not_point_at_a_route_outside_the_tools():
