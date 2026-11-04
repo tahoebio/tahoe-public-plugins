@@ -157,6 +157,17 @@ def validate_layout(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError("missing layout paths: " + ", ".join(missing))
 
 
+def validate_license_copies(root: Path = common.REPO_ROOT) -> None:
+    """The plugin folder's licence files must equal the repository's own.
+
+    A host installs only the plugin folder, so these copies are the terms an
+    installed plugin carries; a drifted copy would ship stale terms.
+    """
+    for copy, source in common.PLUGIN_LICENSE_COPIES.items():
+        if (root / copy).read_bytes() != (root / source).read_bytes():
+            raise common.RepoError(f"{copy} must be a byte-identical copy of {source}")
+
+
 def validate_mcp_config(root: Path = common.REPO_ROOT) -> None:
     config = common.load_json(root / common.MCP_CONFIG_REL)
     Draft202012Validator(common.load_schema("mcp")).validate(config)
@@ -205,6 +216,15 @@ def validate_versions(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError(f"plugin version {version!r} is not semver")
     if common.pyproject_version(root) != version:
         raise common.RepoError("pyproject.toml version must match plugin.json")
+    adapter = root / common.CLAUDE_ADAPTER_REL
+    if not adapter.is_file():
+        raise common.RepoError(f"{common.CLAUDE_ADAPTER_REL} is missing")
+    if common.load_json(adapter).get("version") != version:
+        raise common.RepoError(
+            f"{common.CLAUDE_ADAPTER_REL} version must match plugin.json"
+        )
+    if common.uv_lock_version(root) != version:
+        raise common.RepoError("uv.lock project version must match plugin.json")
 
     changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
     if version not in changelog:
@@ -353,6 +373,7 @@ def validate_all(
 ) -> None:
     validate_manifests(root)
     validate_layout(root)
+    validate_license_copies(root)
     validate_mcp_config(root)
     validate_min_server_version(root)
     validate_versions(root)

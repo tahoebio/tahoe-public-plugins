@@ -3,6 +3,23 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.5.1 — unreleased
+
+- Prepare the plugin for the OpenAI and Claude plugin directories. Add a
+  directory ZIP build (`scripts/package.py --directory`) with the plugin root
+  at the ZIP root, and tests that hold the directory limits: manifest text
+  lengths, HTTPS listing URLs, starter prompts, image size and shape, ZIP size,
+  no symlinks, hooks or app references.
+- Shorten the manifest description and the short description; neither
+  promises the validated-signatures panel. Shorten one starter prompt.
+- Add the support, privacy and terms links, and move the category to the
+  supported `Education & Research` value.
+- Add `plugins/tara/README.md`, and ship copies of the licences and the
+  notice inside the plugin folder so an installed plugin carries them.
+- Name Tahoe Bio as the author in the Claude manifest.
+- Drop the skill's blanket ban on naming other data sources; out-of-scope
+  requests are still declined with the nearest served analysis offered.
+
 ## 0.5.0 — unreleased
 
 - Prefer validated signature readouts for pathway and program questions. The

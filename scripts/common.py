@@ -36,10 +36,14 @@ MIN_SERVER_VERSION_FIELD = "minServerVersion"
 
 #: Plugin-root files. The portable manifest and MCP config are what Codex
 #: reads; the native adapter is Claude's own manifest, with MCP inline.
+PLUGIN_DIR_REL = f"plugins/{PLUGIN_NAME}"
 PLUGIN_MANIFEST_REL = f"plugins/{PLUGIN_NAME}/plugin.json"
 MCP_CONFIG_REL = f"plugins/{PLUGIN_NAME}/mcp.json"
 CLAUDE_ADAPTER_REL = f"plugins/{PLUGIN_NAME}/.claude-plugin/plugin.json"
 LOGO_REL = f"plugins/{PLUGIN_NAME}/assets/tahoe-logo.png"
+#: The plugin's own README. Both directories show it as the listing text, and
+#: an installed plugin carries it.
+PLUGIN_README_REL = f"plugins/{PLUGIN_NAME}/README.md"
 # A file extension is not approval. Only these exact reviewed bytes at this
 # exact path may be treated as a known binary brand asset.
 APPROVED_BINARY_ASSETS = {
@@ -151,6 +155,12 @@ LICENSE_REL = "LICENSE"
 CC_LICENSE_REL = "LICENSE-CC-BY-4.0"
 NOTICE_REL = "NOTICE"
 LICENSE_PATHS = (LICENSE_REL, CC_LICENSE_REL, NOTICE_REL)
+#: Byte-identical copies of the licence files inside the plugin folder. A host
+#: installs only the plugin folder, so the copies are what an installed plugin
+#: carries. Plugin-folder copy -> repository-root source.
+PLUGIN_LICENSE_COPIES = {
+    f"plugins/{PLUGIN_NAME}/{rel}": rel for rel in LICENSE_PATHS
+}
 
 #: The exact files that make up the release archive. An explicit list, not a
 #: directory prefix: the plugin ships connection manifests, its skill, its
@@ -161,6 +171,20 @@ ARCHIVE_ALLOWLIST = (
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
+    PLUGIN_README_REL,
+    *SKILL_FILES,
+    LOGO_REL,
+)
+
+#: The directory ZIP: the plugin folder's own files, written with the plugin
+#: root at the ZIP root (``DIRECTORY_PREFIX`` is stripped from each name). The
+#: Claude adapter is not listed: the ZIP is the portable plugin only.
+DIRECTORY_PREFIX = f"plugins/{PLUGIN_NAME}/"
+DIRECTORY_ALLOWLIST = (
+    *PLUGIN_LICENSE_COPIES,
+    PLUGIN_MANIFEST_REL,
+    MCP_CONFIG_REL,
+    PLUGIN_README_REL,
     *SKILL_FILES,
     LOGO_REL,
 )
@@ -193,6 +217,8 @@ REQUIRED_LAYOUT = (
     MCP_CONFIG_REL,
     CLAUDE_ADAPTER_REL,
     LOGO_REL,
+    PLUGIN_README_REL,
+    *PLUGIN_LICENSE_COPIES,
     SKILL_MD_REL,
     "docs/install.md",
     "docs/install-verification.md",
@@ -528,12 +554,19 @@ def _scan_member(source: str, path: str, data: bytes) -> list[dict]:
     return _scan_lines(source, path, enumerate(text.splitlines(), 1))
 
 
-def scan_archive(path: Path) -> list[dict]:
-    """Scan archive text and verify reviewed binary assets by digest."""
+def scan_archive(path: Path, prefix: str = "") -> list[dict]:
+    """Scan archive text and verify reviewed binary assets by digest.
+
+    ``prefix`` is the repository path the archive's names were stripped of (the
+    directory ZIP's plugin root), so a reviewed asset is still matched by its
+    repository path.
+    """
     findings: list[dict] = []
     with zipfile.ZipFile(path) as archive:
         for name in archive.namelist():
-            findings.extend(_scan_member("archive", name, archive.read(name)))
+            findings.extend(
+                _scan_member("archive", prefix + name, archive.read(name))
+            )
     return findings
 
 
@@ -942,7 +975,11 @@ def _resolved_member(root: Path, rel: str) -> Path:
     return resolved
 
 
-def collect_archive_members(root: Path, rel_paths: list[str]) -> list[str]:
+def collect_archive_members(
+    root: Path,
+    rel_paths: list[str],
+    allowlist: Iterable[str] = ARCHIVE_ALLOWLIST,
+) -> list[str]:
     """Return the allowlisted manifest files, refusing unsafe or missing ones.
 
     The archive is an exact list, so an unlisted file — hidden or not — is
@@ -950,7 +987,7 @@ def collect_archive_members(root: Path, rel_paths: list[str]) -> list[str]:
     """
     tracked = set(rel_paths)
     members: list[str] = []
-    for rel in sorted(ARCHIVE_ALLOWLIST):
+    for rel in sorted(allowlist):
         if rel not in tracked:
             raise PackagingError(f"allowlisted file is not tracked: {rel}")
         if _is_generated(rel):
@@ -960,13 +997,24 @@ def collect_archive_members(root: Path, rel_paths: list[str]) -> list[str]:
     return members
 
 
-def build_archive(root: Path, members: list[str], out_path: Path) -> Path:
-    """Write a deterministic zip of ``members`` and return its path."""
+def build_archive(
+    root: Path, members: list[str], out_path: Path, strip_prefix: str = ""
+) -> Path:
+    """Write a deterministic zip of ``members`` and return its path.
+
+    With ``strip_prefix`` set, every member must start with it and is stored
+    without it, so that directory becomes the archive root.
+    """
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    names = []
+    for rel in members:
+        if not rel.startswith(strip_prefix):
+            raise PackagingError(f"member {rel} is outside {strip_prefix!r}")
+        names.append((rel, rel[len(strip_prefix) :]))
     with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED) as archive:
-        for rel in members:
-            info = zipfile.ZipInfo(rel, date_time=(1980, 1, 1, 0, 0, 0))
+        for rel, name in names:
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o644 << 16
             archive.writestr(info, (root / rel).read_bytes())
@@ -985,6 +1033,34 @@ def write_checksum(path: Path) -> Path:
     out = Path(str(path) + ".sha256")
     out.write_text(f"{sha256_file(path)}  {Path(path).name}\n", encoding="utf-8")
     return out
+
+
+def _pyproject_field(root: Path, field: str) -> str:
+    text = (root / "pyproject.toml").read_text(encoding="utf-8").split("[project]", 1)[1]
+    project = text.split("[", 1)[0]
+    match = re.search(rf'^{field}\s*=\s*"([^"]+)"', project, re.MULTILINE)
+    if not match:
+        raise RepoError(f"pyproject.toml [project] has no {field}")
+    return match.group(1)
+
+
+def uv_lock_version(root: Path = REPO_ROOT) -> str:
+    """This project's own version as recorded in ``uv.lock``.
+
+    The project is the ``[[package]]`` entry named like ``pyproject.toml``'s
+    ``[project] name``. Raises when the lock is missing or has no such entry.
+    """
+    name = _pyproject_field(root, "name")
+    lock = root / "uv.lock"
+    if not lock.is_file():
+        raise RepoError("uv.lock is missing")
+    for block in lock.read_text(encoding="utf-8").split("[[package]]")[1:]:
+        body = block.split("\n[", 1)[0]
+        if re.search(rf'^name = "{re.escape(name)}"$', body, re.MULTILINE):
+            match = re.search(r'^version = "([^"]+)"$', body, re.MULTILINE)
+            if match:
+                return match.group(1)
+    raise RepoError(f"uv.lock has no versioned entry for {name!r}")
 
 
 def pyproject_version(root: Path = REPO_ROOT) -> str:

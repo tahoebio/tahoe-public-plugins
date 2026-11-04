@@ -175,7 +175,6 @@ Tahoe-100M source data is CC0. Use the selected guide's citation and terms.
 Clinical or adverse-event data, external reference panels, per-cell embeddings
 and datasets absent from discovery are outside this service. Decline that part
 and offer the nearest analysis the served data can answer, explicitly naming
-its dataset and asking before changing the requested scope. Do not name, hint
-at or describe any route, connection or data source outside Tahoe's tools.
+its dataset and asking before changing the requested scope.
 A source citation is attribution, not an alternate query route. Do not choose
 an arbitrary newest release or claim access from the installed plugin version.
