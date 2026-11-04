@@ -41,8 +41,8 @@ CAPABILITIES = [
 
 DEFAULT_PROMPTS = [
     "Which MEK and RAF inhibitors are in Tahoe's data?",
-    "In Tahoe's data, is Pitavastatin's stronger suppression of YAP signaling "
-    "than Pravastatin driven by greater on-target activity?",
+    "In Tahoe's data, is Pitavastatin's stronger YAP suppression than "
+    "Pravastatin's driven by greater on-target activity?",
     "Does binimetinib up- or down-regulate KRAS signaling in Tahoe's data?",
 ]
 
@@ -84,13 +84,16 @@ def test_no_forbidden_term_in_manifest_text(word):
 def test_interface_fields():
     interface = _interface()
     assert interface["displayName"] == "Tara"
-    assert interface["shortDescription"] == (
-        "Analyze Tahoe's frontier-scale perturbation data."
-    )
+    assert interface["shortDescription"] == "Tahoe perturbation data"
     assert interface["developerName"] == "Tahoe Bio"
-    assert interface["category"] == "Research"
+    assert interface["category"] == "Education & Research"
     assert interface["capabilities"] == ["Read"]
     assert interface["websiteURL"] == "https://tara.tahoebio.io/"
+    assert interface["supportURL"] == (
+        "https://github.com/tahoebio/tahoe-public-plugins/issues"
+    )
+    assert interface["privacyPolicyURL"] == "https://tara.tahoebio.io/privacy"
+    assert interface["termsOfServiceURL"] == "https://tara.tahoebio.io/terms"
     assert interface["brandColor"] == "#082846"
 
 
@@ -136,3 +139,13 @@ def test_skill_description_uses_the_audited_discovery_sentence():
         "transcriptomics: phenotypic profiling, mechanism-of-action inference, "
         "and pathway-response and cell-state analysis."
     )
+
+
+def test_manifest_text_does_not_promise_the_signatures_panel():
+    # The validated-signatures panel is not part of the directory listing.
+    for text in _human_text():
+        assert "signature" not in text.lower(), text
+
+
+def test_claude_adapter_names_the_author():
+    assert _claude()["author"] == {"name": "Tahoe Bio"}
