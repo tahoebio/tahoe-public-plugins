@@ -130,9 +130,14 @@ def directory_violations(zip_path: Path) -> list[str]:
         manifest = json.loads(archive.read("plugin.json"))
         files = {name: archive.read(name) for name in names}
 
+    # OpenAI's canonical home for hooks and apps is extensions.com.openai; a
+    # root-level key is rejected too, so neither location can carry one.
+    openai = manifest.get("extensions", {}).get("com.openai", {})
     for key in ("hooks", "apps"):
         if key in manifest:
             problems.append(f"manifest declares {key}")
+        if key in openai:
+            problems.append(f"extensions.com.openai declares {key}")
     description = manifest.get("description", "")
     if not 1 <= len(description) <= DESCRIPTION_MAX:
         problems.append("description length")
@@ -304,6 +309,10 @@ def _interface(manifest: dict) -> dict:
     return manifest["extensions"]["com.openai"]["interface"]
 
 
+def _openai(manifest: dict) -> dict:
+    return manifest["extensions"]["com.openai"]
+
+
 def _set(key: str, value):
     def edit(manifest: dict) -> None:
         _interface(manifest)[key] = value
@@ -337,8 +346,13 @@ MANIFEST_BREAKS = {
     "http-homepage": lambda m: m.__setitem__("homepage", "http://tahoebio.ai"),
     "logo-path": _set("logo", "assets/tahoe-logo.png"),
     "logo-missing": _set("logo", "./assets/missing.png"),
-    "hooks": lambda m: m.__setitem__("hooks", "./hooks/hooks.json"),
-    "apps": lambda m: m.__setitem__("apps", "./.app.json"),
+    # OpenAI declares hooks and apps under extensions.com.openai (the build
+    # docs); a root-level key is held to the same ban.
+    "hooks": lambda m: _openai(m).__setitem__("hooks", "./hooks/hooks.json"),
+    "hooks-inline": lambda m: _openai(m).__setitem__("hooks", {"SessionStart": []}),
+    "apps": lambda m: _openai(m).__setitem__("apps", "./.app.json"),
+    "root-hooks": lambda m: m.__setitem__("hooks", "./hooks/hooks.json"),
+    "root-apps": lambda m: m.__setitem__("apps", "./.app.json"),
 }
 
 
