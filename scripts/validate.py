@@ -216,6 +216,15 @@ def validate_versions(root: Path = common.REPO_ROOT) -> None:
         raise common.RepoError(f"plugin version {version!r} is not semver")
     if common.pyproject_version(root) != version:
         raise common.RepoError("pyproject.toml version must match plugin.json")
+    adapter = root / common.CLAUDE_ADAPTER_REL
+    if not adapter.is_file():
+        raise common.RepoError(f"{common.CLAUDE_ADAPTER_REL} is missing")
+    if common.load_json(adapter).get("version") != version:
+        raise common.RepoError(
+            f"{common.CLAUDE_ADAPTER_REL} version must match plugin.json"
+        )
+    if common.uv_lock_version(root) != version:
+        raise common.RepoError("uv.lock project version must match plugin.json")
 
     changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
     if version not in changelog:

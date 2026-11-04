@@ -1035,6 +1035,34 @@ def write_checksum(path: Path) -> Path:
     return out
 
 
+def _pyproject_field(root: Path, field: str) -> str:
+    text = (root / "pyproject.toml").read_text(encoding="utf-8").split("[project]", 1)[1]
+    project = text.split("[", 1)[0]
+    match = re.search(rf'^{field}\s*=\s*"([^"]+)"', project, re.MULTILINE)
+    if not match:
+        raise RepoError(f"pyproject.toml [project] has no {field}")
+    return match.group(1)
+
+
+def uv_lock_version(root: Path = REPO_ROOT) -> str:
+    """This project's own version as recorded in ``uv.lock``.
+
+    The project is the ``[[package]]`` entry named like ``pyproject.toml``'s
+    ``[project] name``. Raises when the lock is missing or has no such entry.
+    """
+    name = _pyproject_field(root, "name")
+    lock = root / "uv.lock"
+    if not lock.is_file():
+        raise RepoError("uv.lock is missing")
+    for block in lock.read_text(encoding="utf-8").split("[[package]]")[1:]:
+        body = block.split("\n[", 1)[0]
+        if re.search(rf'^name = "{re.escape(name)}"$', body, re.MULTILINE):
+            match = re.search(r'^version = "([^"]+)"$', body, re.MULTILINE)
+            if match:
+                return match.group(1)
+    raise RepoError(f"uv.lock has no versioned entry for {name!r}")
+
+
 def pyproject_version(root: Path = REPO_ROOT) -> str:
     """Return the version declared in pyproject.toml ``[project]``."""
     text = (root / "pyproject.toml").read_text(encoding="utf-8").split("[project]", 1)[1]

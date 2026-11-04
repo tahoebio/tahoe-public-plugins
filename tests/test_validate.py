@@ -188,6 +188,48 @@ def test_rejects_version_mismatch(tmp_path):
         validate.validate_versions(tmp_path)
 
 
+def _versioned_root(tmp_path, *, adapter="9.9.9", lock="9.9.9"):
+    """A root whose four version sources agree on 9.9.9, unless overridden."""
+    _write(
+        tmp_path,
+        common.PLUGIN_MANIFEST_REL,
+        {"name": common.PLUGIN_NAME, "version": "9.9.9"},
+    )
+    _write(tmp_path, common.CLAUDE_ADAPTER_REL, {"name": "tara", "version": adapter})
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "tahoe-public-plugins"\nversion = "9.9.9"\n'
+    )
+    # Mirrors the live lock: a dependency entry first, then the project entry.
+    (tmp_path / "uv.lock").write_text(
+        "version = 1\n\n"
+        '[[package]]\nname = "pytest"\nversion = "9.9.9"\n'
+        'source = { registry = "https://pypi.org/simple" }\n\n'
+        f'[[package]]\nname = "tahoe-public-plugins"\nversion = "{lock}"\n'
+        'source = { virtual = "." }\n'
+    )
+    (tmp_path / "CHANGELOG.md").write_text("## 9.9.9\n")
+    return tmp_path
+
+
+def test_accepts_agreeing_version_sources(tmp_path):
+    validate.validate_versions(_versioned_root(tmp_path))
+
+
+def test_rejects_a_claude_adapter_version_mismatch(tmp_path):
+    with pytest.raises(common.RepoError, match="claude-plugin"):
+        validate.validate_versions(_versioned_root(tmp_path, adapter="9.9.8"))
+
+
+def test_rejects_a_uv_lock_project_version_mismatch(tmp_path):
+    # A dependency at the plugin version must not stand in for the project.
+    with pytest.raises(common.RepoError, match="uv.lock"):
+        validate.validate_versions(_versioned_root(tmp_path, lock="9.9.8"))
+
+
+def test_reads_the_real_uv_lock_project_version():
+    assert common.uv_lock_version() == common.pyproject_version()
+
+
 def test_rejects_a_root_with_no_history(tmp_path):
     # A scan that cannot read history must fail, not report clean.
     with pytest.raises(common.RepoError):
