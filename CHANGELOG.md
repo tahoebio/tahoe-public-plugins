@@ -3,20 +3,18 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
-## Unreleased
-
-- List the validated signatures panel in the manifest descriptions and the
-  plugin README: one validated readout per cancer process, Tahoe-100M only.
-
-## 0.5.1 — unreleased
+## 0.5.1 — 2026-11-04
 
 - Prepare the plugin for the OpenAI and Claude plugin directories. Add a
   directory ZIP build (`scripts/package.py --directory`) with the plugin root
   at the ZIP root, and tests that hold the directory limits: manifest text
   lengths, HTTPS listing URLs, starter prompts, image size and shape, ZIP size,
   no symlinks, hooks or app references.
-- Shorten the manifest description and the short description; neither
-  promises the validated-signatures panel. Shorten one starter prompt.
+- Shorten the manifest description and the short description. Shorten one
+  starter prompt.
+- List the validated signatures panel in the manifest descriptions and the
+  plugin README: one validated readout per cancer process, Tahoe-100M only.
+  Requires server 0.5.2 with the panel public.
 - Add the support, privacy and terms links, and move the category to the
   supported `Education & Research` value.
 - Add `plugins/tara/README.md`, and ship copies of the licences and the
