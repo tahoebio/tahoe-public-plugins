@@ -467,8 +467,18 @@ def test_readme_lists_the_manifest_starter_prompts():
         assert prompt in readme, prompt
 
 
-def test_readme_does_not_promise_the_signatures_panel():
-    assert "signature" not in _readme().lower()
+README_SIGNATURES_SENTENCE = (
+    "For Tahoe-100M only, it also reads the validated signature readout for "
+    "each cancer process: the one gene set whose VISION score tracks that "
+    "process, with its evidence, direction and caveats; a process without one "
+    "is reported as such, and no other set is substituted."
+)
+
+
+def test_readme_states_the_signatures_panel_only_in_the_approved_sentence():
+    readme = " ".join(_readme().split())
+    assert readme.count(README_SIGNATURES_SENTENCE) == 1
+    assert readme.lower().count("signature") == 1
 
 
 def test_readme_names_the_launch_datasets():

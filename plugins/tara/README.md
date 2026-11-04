@@ -6,6 +6,10 @@ reach it. The plugin adds a skill that guides analysis and connects to Tahoe's
 remote MCP server. With it you can look up drugs, cell lines and genes, read drug
 annotations, and retrieve expression, differential expression, perturbation
 markers, pathway scores and embedding distance from vehicle.
+For Tahoe-100M only, it also reads the validated signature readout for each
+cancer process: the one gene set whose VISION score tracks that process, with
+its evidence, direction and caveats; a process without one is reported as
+such, and no other set is substituted.
 
 ## Install and sign in
 
