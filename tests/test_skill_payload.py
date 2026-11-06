@@ -298,6 +298,34 @@ def test_out_of_scope_questions_get_an_in_scope_offer():
     assert "do not name, hint at or describe any route" not in body
 
 
+def _skill_section(heading: str) -> str:
+    """The text under one `## ` heading of SKILL.md, up to the next heading."""
+    text = _skill_texts()[common.SKILL_MD_REL]
+    parts = re.split(r"^## ", text, flags=re.MULTILINE)
+    matches = [p for p in parts[1:] if p.split("\n", 1)[0].strip() == heading]
+    assert len(matches) == 1, f"expected one '## {heading}' section"
+    return " ".join(matches[0].split("\n", 1)[1].split())
+
+
+PATIENT_TREATMENT_RULE = (
+    "Tara's preclinical cell-line data cannot decide a person's treatment. "
+    "Asked what a patient should take, say so and do not recommend, rank or "
+    "choose drugs or regimens for that person: cell-line responses are not "
+    "evidence of patient benefit, and the patient's clinician decides. You may "
+    "offer what Tara measured, labelled as preclinical."
+)
+
+
+def test_patient_treatment_rule_text_is_pinned_before_the_call_order():
+    """A text regression check, not proof of agent behaviour: the reviewed
+    patient-treatment section must read exactly as approved (whitespace
+    normalised), so any edit to it, including an inserted permission, fails.
+    It must also come before the call order."""
+    assert _skill_section("Patient treatment questions") == PATIENT_TREATMENT_RULE
+    text = _skill_texts()[common.SKILL_MD_REL]
+    assert text.index("## Patient treatment questions") < text.index("## Call order")
+
+
 def test_unserved_rows_do_not_point_at_a_route_outside_the_tools():
     for rel, body in _skill_texts().items():
         lowered = " ".join(body.split()).lower()

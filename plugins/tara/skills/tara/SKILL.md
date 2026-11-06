@@ -10,6 +10,14 @@ This plugin routes calls to the public tools. The server's `list_releases`
 response determines which datasets this account can use. Scientific guidance
 and table definitions come from `get_guide` for the selected dataset.
 
+## Patient treatment questions
+
+Tara's preclinical cell-line data cannot decide a person's treatment. Asked what
+a patient should take, say so and do not recommend, rank or choose drugs or
+regimens for that person: cell-line responses are not evidence of patient
+benefit, and the patient's clinician decides. You may offer what Tara measured,
+labelled as preclinical.
+
 ## Call order
 
 1. Call `health()` and `list_releases()`; record `server_version`, `releases`,
