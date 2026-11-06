@@ -307,18 +307,21 @@ def _skill_section(heading: str) -> str:
     return " ".join(matches[0].split("\n", 1)[1].split())
 
 
-def test_patient_treatment_questions_get_no_recommendation():
-    """Asked what a patient should take, the agent recommends nothing for that
-    person and names the cell-line limit and the clinician. The section comes
-    before the call order, and every "recommend" in it is negated, so an
-    inserted permission cannot pass."""
-    section = _skill_section("Patient treatment questions")
-    assert "do not recommend, rank or choose drugs or regimens for that person" in section
-    assert "cell-line responses are not evidence of patient benefit" in section
-    assert "the patient's clinician decides" in section
-    assert "You may offer what Tara measured, labelled as preclinical." in section
-    lowered = section.lower()
-    assert lowered.count("recommend") == lowered.count("do not recommend")
+PATIENT_TREATMENT_RULE = (
+    "Tara's preclinical cell-line data cannot decide a person's treatment. "
+    "Asked what a patient should take, say so and do not recommend, rank or "
+    "choose drugs or regimens for that person: cell-line responses are not "
+    "evidence of patient benefit, and the patient's clinician decides. You may "
+    "offer what Tara measured, labelled as preclinical."
+)
+
+
+def test_patient_treatment_rule_text_is_pinned_before_the_call_order():
+    """A text regression check, not proof of agent behaviour: the reviewed
+    patient-treatment section must read exactly as approved (whitespace
+    normalised), so any edit to it, including an inserted permission, fails.
+    It must also come before the call order."""
+    assert _skill_section("Patient treatment questions") == PATIENT_TREATMENT_RULE
     text = _skill_texts()[common.SKILL_MD_REL]
     assert text.index("## Patient treatment questions") < text.index("## Call order")
 
