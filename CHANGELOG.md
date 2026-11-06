@@ -3,6 +3,13 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.5.2 — 2026-11-06
+
+- Add a patient-treatment rule to the skill. Asked what a patient should take,
+  the agent says Tara's cell-line data cannot answer that, recommends no drug
+  or regimen for the person, and leaves the decision to the patient's
+  clinician. It may still show what Tara measured, labelled as preclinical.
+
 ## 0.5.1 — 2026-11-04
 
 - Prepare the plugin for the OpenAI and Claude plugin directories. Add a

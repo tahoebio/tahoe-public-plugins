@@ -65,7 +65,7 @@ Full steps, including the advanced direct-server option, are in `docs/install.md
 > `codex plugin marketplace upgrade tahoe-public` (or
 > `codex plugin marketplace upgrade`) and start a new Codex session. Unattended
 > Codex marketplace upgrades are not documented, so this explicit upgrade is the
-> supported user path. Verify the installed Tara manifest shows `0.5.1`, then
+> supported user path. Verify the installed Tara manifest shows `0.5.2`, then
 > make a signed-in `list_releases` call and an Emerald call with
 > `dataset="emerald-bay"`; Tahoe requests still work. Your account's release
 > list is the access authority.
