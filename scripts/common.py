@@ -46,7 +46,14 @@ PLUGIN_README_REL = f"plugins/{PLUGIN_NAME}/README.md"
 # A file extension is not approval. Only these exact reviewed bytes at this
 # exact path may be treated as a known binary brand asset.
 APPROVED_BINARY_ASSETS = {
-    LOGO_REL: "4de2eae11a4a73cfd38117772ea51e94f1a3ef61f5ad336e2949782d95239219",
+    LOGO_REL: "8e3fa2b0fba44e3a0cc49b4d1e1aabd9da25a82986f7b2a31247631a84e07ab7",
+}
+
+# Previously reviewed bytes are accepted only in history, never a new package.
+APPROVED_HISTORICAL_BINARY_ASSETS = {
+    LOGO_REL: frozenset({
+        "4de2eae11a4a73cfd38117772ea51e94f1a3ef61f5ad336e2949782d95239219",
+    }),
 }
 
 #: Repository catalogs. The two hosts use different shapes, so these are not
@@ -835,6 +842,7 @@ def _approved_asset_change(root: Path, path: str, commit: str) -> bool:
     expected = APPROVED_BINARY_ASSETS.get(path)
     if expected is None:
         return False
+    approved = APPROVED_HISTORICAL_BINARY_ASSETS.get(path, frozenset()) | {expected}
     revisions = _git_output(root, "rev-list", "--parents", "-n", "1", commit)
     if revisions.returncode:
         return False
@@ -854,7 +862,7 @@ def _approved_asset_change(root: Path, path: str, commit: str) -> bool:
             stderr=subprocess.PIPE,
             check=False,
         )
-        if blob.returncode or hashlib.sha256(blob.stdout).hexdigest() != expected:
+        if blob.returncode or hashlib.sha256(blob.stdout).hexdigest() not in approved:
             return False
         found = True
     return found

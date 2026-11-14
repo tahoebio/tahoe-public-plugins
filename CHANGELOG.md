@@ -9,7 +9,10 @@ to semantic versioning.
   object, with the same floor enforced across both hosts.
 - Give installed legal documents explicit text extensions so directory validation
   can recognize them as documentation. Preserve their full terms and attribution.
-- Preserve the Tara identity, scientific guidance and existing Tahoe logo.
+- Compress the existing Tahoe PNG losslessly, preserving the decoded image and
+  color metadata. Pin the optimized digest; accept the original reviewed digest
+  only when scanning historical commits.
+- Preserve the Tara identity and scientific guidance.
 
 ## 0.5.3 — 2026-11-13
 
