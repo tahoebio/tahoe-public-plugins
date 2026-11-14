@@ -65,7 +65,7 @@ CATEGORIES = frozenset(
         "Data & Analytics",
         "Communication",
         "Education & Research",
-        "Scientific Research",
+        "Scientific Research",  # Used by the published Boltz marketplace plugin.
         "Security",
         "Finance",
         "Healthcare",
@@ -472,6 +472,7 @@ def test_readme_states_dataset_specific_signature_scope():
     readme = " ".join(_readme().split())
     assert "Its validated signatures panel" in readme
     assert "reports when no validated readout is available" in readme
+    assert "no other set is substituted" in readme
     assert "Emerald Bay provides expression, five-day in-vitro growth response" in readme
 
 

@@ -4,19 +4,21 @@
 > performed by a person, not by any script in this repository. Nothing here
 > automates sign-in or stores a credential.
 
-This is the clean-machine check for the two tested hosts (Codex CLI and Claude
-Code). Its result is recorded in `docs/compatibility.md`.
+This is the prepared clean-machine check for Codex CLI and Claude Code.
+Recorded results and limitations below are separate from these test instructions;
+see `docs/compatibility.md`. No email sign-in run is recorded in this repository.
 
 ## Prerequisites
 
 - A machine that has never had the plugin or the `tahoe-public` server
   installed, with a current Codex CLI **and** Claude Code.
-- A verified email/password or Google account, and a browser for the sign-in redirect.
+- An email address or Google account, and a browser for the sign-in redirect.
 - No Databricks account or credentials.
 
 ## Case A — plugin install from the marketplace (primary)
 
-Run once per host.
+Run once per host and sign-in method (email and Google); record each combination
+separately. Completing one method does not establish the other.
 
 1. Add the marketplace and install the plugin.
 
@@ -34,7 +36,7 @@ Run once per host.
    claude plugin install tara@tahoe-public
    ```
 
-2. Sign in with verified email/password or Google in the browser the client opens: Codex with
+2. Sign in with your email address or Google in the browser the client opens: Codex with
    `codex mcp login tahoe-public`, Claude Code on first use or via `/mcp`. If
    Codex shows a **Run without daemon** prompt, continue without a daemon — the
    endpoint is remote.
@@ -55,7 +57,8 @@ Repeat steps 2–5. In Codex, sign in with `codex mcp login tahoe-public`.
 
 ## Evidence to capture
 
-- Each exact command used, and each client's version.
+- Each exact command used, each client's version, and the sign-in method
+  (email or Google), including any verification steps. Do not record credentials.
 - A screenshot or transcript of the consent screen, the marketplace listing, and
   the client's server/tool listing.
 - The raw response envelopes for `list_releases` and `get_expression_slice`.
@@ -65,7 +68,7 @@ Repeat steps 2–5. In Codex, sign in with `codex mcp login tahoe-public`.
 
 - The plugin installs from the marketplace and reaches sign-in; the direct add
   also works.
-- Sign-in succeeds with verified email/password or Google and no manual token handling.
+- Sign-in succeeds for the recorded method with no manual token handling.
 - The tools become callable after the restart step.
 - Both calls return data, and the slice carries release, filters, measurement
   semantics, missing-value meaning and a repeatable request manifest.

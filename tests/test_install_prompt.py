@@ -1,8 +1,8 @@
 """The install prompt, the sign-in provider and the restart step the docs promise.
 
-The repository is public and supports email/password and Google sign-in, so docs must
-quote the install prompt verbatim, name Google, and never promise a GitHub
-sign-in, a private/unpublished status.
+The public install docs name email address or Google sign-in without asserting
+a password flow. Quote the install prompt verbatim and do not promise GitHub
+sign-in or describe the repository as private or unpublished.
 """
 
 import functools
@@ -60,13 +60,14 @@ NOT_PUBLIC_PHRASES = (
 #: User-facing docs that describe installing and signing in.
 SIGNIN_DOCS = (
     "README.md",
+    "plugins/tara/README.md",
     INSTALL_DOC_REL,
     "docs/compatibility.md",
     "docs/install-verification.md",
 )
 
-#: Docs that carry the install steps; compatibility.md lists requirements only.
-INSTALL_STEP_DOCS = tuple(rel for rel in SIGNIN_DOCS if rel != "docs/compatibility.md")
+#: Docs that carry the full install, restart and login steps.
+INSTALL_STEP_DOCS = ("README.md", INSTALL_DOC_REL, "docs/install-verification.md")
 
 #: Suffixes of shipped, reader-facing text.
 SHIPPED_SUFFIXES = frozenset({".md", ".py", ".json", ".yml", ".yaml"})
@@ -131,9 +132,12 @@ def test_docs_do_not_promise_a_github_sign_in():
         _assert_phrases_absent(rel, OLD_SIGNIN_PHRASES, "still promises a GitHub sign-in")
 
 
-def test_docs_describe_email_sign_in():
+def test_docs_describe_email_sign_in_without_claiming_a_password_flow():
     for rel in SIGNIN_DOCS:
-        assert "email" in _flatten(rel), f"{rel} omits email sign-in"
+        text = _flatten(rel).replace("**", "")
+        assert "email address or google" in text, f"{rel} omits the sign-in options"
+        assert "email/password" not in text, f"{rel} assumes a password flow"
+        assert "email address and password" not in text, f"{rel} assumes a password flow"
 
 
 def test_public_text_does_not_claim_the_repo_is_not_public():

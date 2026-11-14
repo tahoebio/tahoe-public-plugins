@@ -5,10 +5,14 @@ and Claude Code; prepared instructions alone do not establish tested support.
 
 ## Hosts and requirements
 
-- Codex CLI or Claude Code, with a verified email/password or Google account and a browser for sign-in.
+- Codex CLI or Claude Code, a Google account for the recorded sign-in route,
+  and a browser for sign-in.
 - No Databricks account or credentials are required.
 - See `docs/install-verification.md` for recorded Tahoe runs, their failures and
   limitations. No fresh Emerald host run has been recorded yet.
+- The service also advertises sign-in with your email address or Google in its
+  [install guide](https://tara.tahoebio.io/install.md). Email sign-in has no
+  recorded end-to-end run in this repository; it is not claimed as tested here.
 - Other hosts and offline data access are not claimed by this compatibility matrix.
 
 ## Plugin and server versions

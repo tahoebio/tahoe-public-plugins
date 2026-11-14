@@ -14,8 +14,9 @@ to semantic versioning.
 - Keep the existing Tahoe logo. Remove a backticked image filename that the
   Claude directory flags for review, and replace a broken documentation link
   with a link to the licence notice shipped inside the plugin.
-- Clarify that user requests take priority over analysis and presentation
-  defaults; preserve access, data-integrity and patient-treatment boundaries.
+- Limit user preference handling to presentation and analysis scope while
+  preserving discovery, version, guide, provenance and completeness checks.
+  Retain the server's existing optional intent/model analytics behavior.
 - Align the OpenAI category and subtitle with the scientific research use case.
   Preserve detailed capability coverage in Claude's description and include
   the shared search keywords.
@@ -23,6 +24,9 @@ to semantic versioning.
   interpretation reference before any signature interpretation. Raise the local
   skill-size budget to 13 KB to retain those checks with data-handling guidance;
   leave the existing proliferation-adjustment rule unchanged.
+- Separate advertised email sign-in from recorded host verification; use
+  "email address or Google" without assuming a password flow.
+- Restore the README's explicit no-substitution rule for missing readouts.
 - Set OpenAI publication availability to all supported countries.
 - Quote the skill description so its colon is valid YAML; make the local
   frontmatter parser decode quoted text and reject ambiguous unquoted colons.

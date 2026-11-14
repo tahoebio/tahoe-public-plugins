@@ -12,15 +12,16 @@ and table definitions come from `get_guide` for the selected dataset.
 
 ## User intent and data handling
 
-Explicit user instructions take priority over workflow and presentation
-preferences in this skill. Keep factual limitations visible: user preferences
+Adapt presentation, output format and analysis scope to the user's request.
+A brief answer still requires dataset/release and capability discovery,
+server-version checks, reading the relevant analysis guide and checking its
+guide version, identifiers, provenance and result completeness. User preferences
 cannot create unavailable data, change measurement definitions or make
 preclinical results evidence of patient benefit. Follow the host's permissions.
 
 Tool arguments are logged by the service. Do not send credentials, patient
-information or unrelated private context. Leave optional `intent` and `model`
-fields unset unless the user specifically requests them. Send feedback only
-when the user asks, using the content they authorized.
+information or unrelated private context. Send feedback only when the user
+asks, using the content they authorized.
 
 ## Patient treatment questions
 
@@ -65,8 +66,8 @@ labelled as preclinical.
    Verify `release`, `topics` and `guide_version`; retain the guide version.
    When the dataset entry advertises a top-level guide version, require it to
    match. A nested signature-panel guide version is a separate identifier. If
-   the dataset guide version changes,
-   refresh discovery and the guide before interpreting data.
+   the dataset guide version changes, refresh discovery and the guide before
+   interpreting data.
    Follow [references/analysis-guidelines.md](references/analysis-guidelines.md)
    and [references/data-catalog.md](references/data-catalog.md).
 4. Confirm identifiers with `search_conditions`, `resolve_genes`,

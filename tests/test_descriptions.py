@@ -142,18 +142,18 @@ def test_skill_description_uses_the_audited_discovery_sentence():
     )
 
 
-SIGNATURES_CLAUSE = (
+SIGNATURES_SCOPE_CLAUSE = (
     "Where available, use a validated signature readout for a cancer process, "
     "with its evidence and caveats."
 )
 
 
-def test_manifest_text_states_the_signatures_panel_only_in_the_approved_clause():
-    # The listing names the validated-signatures panel once, in the approved
-    # clause, in each host's manifest description.
+def test_manifest_text_states_the_signatures_panel_only_in_the_scope_clause():
+    # Keep the panel scope explicit and avoid unsupported extra signature claims
+    # elsewhere in the listing. This checks copy, not editorial approval.
     descriptions = {_portable()["description"], _claude()["description"]}
     for description in descriptions:
-        assert description.count(SIGNATURES_CLAUSE) == 1, description
+        assert description.count(SIGNATURES_SCOPE_CLAUSE) == 1, description
         assert description.lower().count("signature") == 1, description
     for text in _human_text():
         if text not in descriptions:
