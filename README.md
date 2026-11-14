@@ -23,7 +23,7 @@ Run these in a terminal, in order:
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # opens the browser: Allow Access → Google
+codex mcp login tahoe-public      # opens the browser: Allow Access → email/password or Google
 ```
 
 Then start a **new Codex session** so the tools load.

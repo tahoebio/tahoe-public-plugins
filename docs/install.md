@@ -21,7 +21,7 @@ Run these in a terminal, in order:
 ```sh
 codex plugin marketplace add tahoebio/tahoe-public-plugins
 codex plugin add tara@tahoe-public
-codex mcp login tahoe-public      # opens the browser: Allow Access → Google
+codex mcp login tahoe-public      # opens the browser: Allow Access → email/password or Google
 ```
 
 Then start a **new Codex session** so the tools load.
@@ -49,14 +49,15 @@ The agent installs and stops; **you** sign in and start a new session.
 
 ### Finish the install
 
-Sign-in is **Google**, in the browser the client opens; the credential is stored
+Sign in with a **verified email address and password or Google** in the browser
+the client opens; the credential is stored
 by the client and no token is copied by hand. The tools load at session start, so
 **restart the client** after installing — a plugin installed without an
 interactive terminal connects in the next session.
 
 > **Remove and re-add an older connection.** A `tahoe-public` connection added
 > before 2026-10-14 predates the Google sign-in. Remove it and add it again so
-> it signs in with Google:
+> it uses the current sign-in flow:
 >
 > - **Codex CLI** — `codex mcp remove tahoe-public`, then re-add the server or
 >   reinstall the plugin, and sign in with `codex mcp login tahoe-public`.
@@ -117,7 +118,7 @@ codex mcp add tahoe-public --url https://tara.tahoebio.io/mcp
 claude mcp add --transport http --scope user tahoe-public https://tara.tahoebio.io/mcp
 ```
 
-Sign in with Google as above — Codex with `codex mcp login tahoe-public`, Claude
+Sign in with verified email/password or Google as above — Codex with `codex mcp login tahoe-public`, Claude
 Code on first use or via `/mcp` — then restart the client. This route skips the
 plugin metadata, so it is documented as a fallback rather than the primary
 install.

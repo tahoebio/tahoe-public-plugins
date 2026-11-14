@@ -1,4 +1,4 @@
-"""Human-facing manifest text: honest, identical across hosts, no dataset names."""
+"""Human-facing manifest text: honest, sized for each host, no dataset names."""
 
 import re
 
@@ -69,10 +69,12 @@ def _human_text() -> list[str]:
     return texts
 
 
-def test_descriptions_are_identical_across_manifests():
+def test_descriptions_fit_each_directory_surface():
     portable, claude = _portable(), _claude()
-    assert portable["description"] == claude["description"]
     assert _interface()["longDescription"] == portable["description"]
+    assert len(claude["description"]) <= 200
+    assert "For research use only" in claude["description"]
+    assert claude["keywords"] == portable["keywords"]
 
 
 @pytest.mark.parametrize("word", FORBIDDEN)
@@ -149,8 +151,9 @@ SIGNATURES_CLAUSE = (
 
 def test_manifest_text_states_the_signatures_panel_only_in_the_approved_clause():
     # The listing names the validated-signatures panel once, in the approved
-    # clause, in each manifest description; no other listing text mentions it.
-    descriptions = {_portable()["description"], _claude()["description"]}
+    # clause, in the long description. Claude's short description omits it;
+    # the plugin README explains the panel for that directory.
+    descriptions = {_portable()["description"]}
     for description in descriptions:
         assert description.count(SIGNATURES_CLAUSE) == 1, description
         assert description.lower().count("signature") == 1, description

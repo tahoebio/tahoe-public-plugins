@@ -1,6 +1,6 @@
 ---
 name: tara
-description: Read-only access to Tahoe's data through the Tahoe public tools. Use for drug-discovery analyses of large-scale single-cell perturbational transcriptomics: phenotypic profiling, mechanism-of-action inference, and pathway-response and cell-state analysis.
+description: "Read-only access to Tahoe's data through the Tahoe public tools. Use for drug-discovery analyses of large-scale single-cell perturbational transcriptomics: phenotypic profiling, mechanism-of-action inference, and pathway-response and cell-state analysis."
 ---
 
 # Tara

@@ -2,7 +2,7 @@
   "name": "tara",
   "version": "0.5.3",
   "license": "Apache-2.0",
-  "description": "Explore how drugs change gene expression, pathways and cell states in Tahoe's single-cell perturbation data. Look up drugs, doses, cell lines, genes and drug annotations; retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Where available, use a validated signature readout for a cancer process, with its evidence and caveats. Compare responses with annotated mechanism classes or between genotype- or lineage-defined groups of cell lines; explore associations with baseline expression or driver-gene status; and rank relative depletion and cell-cycle effects per cell line across three doses. Capabilities depend on the selected dataset and account. Includes read-only data queries and scientific guidance. For research, not patient treatment. Sign in with a verified email address or Google.",
+  "description": "Explore drug responses in Tahoe's single-cell data, from gene expression to pathways and cell states. Includes scientific guidance. For research use only.",
   "author": {
     "name": "Tahoe Bio"
   },
@@ -24,5 +24,13 @@
   "documentationUrl": "https://tara.tahoebio.io/install.md",
   "supportUrl": "https://github.com/tahoebio/tahoe-public-plugins/issues",
   "privacyPolicyUrl": "https://tara.tahoebio.io/privacy",
-  "termsOfServiceUrl": "https://tara.tahoebio.io/terms"
+  "termsOfServiceUrl": "https://tara.tahoebio.io/terms",
+  "keywords": [
+    "single-cell",
+    "perturbation",
+    "drug-discovery",
+    "gene-expression",
+    "pathways",
+    "mcp"
+  ]
 }

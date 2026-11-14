@@ -5,11 +5,11 @@ and Claude Code; prepared instructions alone do not establish tested support.
 
 ## Hosts and requirements
 
-- Codex CLI or Claude Code, with a Google account and browser for sign-in.
+- Codex CLI or Claude Code, with a verified email/password or Google account and a browser for sign-in.
 - No Databricks account or credentials are required.
 - See `docs/install-verification.md` for recorded Tahoe runs, their failures and
   limitations. No fresh Emerald host run has been recorded yet.
-- Other hosts, offline data access and alternate sign-in flows are not claimed.
+- Other hosts and offline data access are not claimed by this compatibility matrix.
 
 ## Plugin and server versions
 

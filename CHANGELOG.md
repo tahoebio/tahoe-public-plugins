@@ -9,7 +9,7 @@ to semantic versioning.
   queries cannot change the data, while cancellation stops an owned query and
   optional feedback sends text to Tahoe. Describe tool-argument logging.
 - Clarify dataset-specific measurements and email-or-Google sign-in in the
-  listing, and make Claude's documentation, support, privacy and terms links
+  listing and installation docs, and make Claude's documentation, support, privacy and terms links
   explicit using its documented directory fields.
 - Keep the existing Tahoe logo. Remove a backticked image filename that the
   Claude directory flags for review, and replace a broken documentation link
@@ -17,7 +17,10 @@ to semantic versioning.
 - Clarify that user requests take priority over analysis and presentation
   defaults; preserve access, data-integrity and patient-treatment boundaries.
 - Align the OpenAI category and subtitle with the scientific research use case.
+  Use a concise Claude short description and include the shared search keywords.
 - Set OpenAI publication availability to all supported countries.
+- Quote the skill description so its colon is valid YAML; make the local
+  frontmatter parser decode quoted text and reject ambiguous unquoted colons.
 
 ## 0.5.2 — 2026-11-06
 
