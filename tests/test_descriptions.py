@@ -1,4 +1,4 @@
-"""Human-facing manifest text: honest, identical across hosts, no dataset names."""
+"""Human-facing manifest text: honest, sized for each host, no dataset names."""
 
 import re
 
@@ -69,10 +69,11 @@ def _human_text() -> list[str]:
     return texts
 
 
-def test_descriptions_are_identical_across_manifests():
+def test_descriptions_fit_each_directory_surface():
     portable, claude = _portable(), _claude()
-    assert portable["description"] == claude["description"]
     assert _interface()["longDescription"] == portable["description"]
+    assert "For research, not patient treatment" in claude["description"]
+    assert claude["keywords"] == portable["keywords"]
 
 
 @pytest.mark.parametrize("word", FORBIDDEN)
@@ -84,9 +85,9 @@ def test_no_forbidden_term_in_manifest_text(word):
 def test_interface_fields():
     interface = _interface()
     assert interface["displayName"] == "Tara"
-    assert interface["shortDescription"] == "Tahoe perturbation data"
+    assert interface["shortDescription"] == "Explore drug-response data"
     assert interface["developerName"] == "Tahoe Bio"
-    assert interface["category"] == "Education & Research"
+    assert interface["category"] == "Scientific Research"
     assert interface["capabilities"] == ["Read"]
     assert interface["websiteURL"] == "https://tara.tahoebio.io/"
     assert interface["supportURL"] == (
@@ -125,10 +126,10 @@ def test_keywords_drop_dataset_name():
     ]
 
 
-
 @pytest.mark.parametrize("phrase", CAPABILITIES)
 def test_description_states_each_audited_capability(phrase):
-    assert phrase in _portable()["description"]
+    for manifest in (_portable(), _claude()):
+        assert phrase in manifest["description"]
 
 
 def test_skill_description_uses_the_audited_discovery_sentence():
@@ -141,18 +142,18 @@ def test_skill_description_uses_the_audited_discovery_sentence():
     )
 
 
-SIGNATURES_CLAUSE = (
-    "Read the validated signature readout for a cancer process: one per "
-    "process, where one exists, in one dataset only."
+SIGNATURES_SCOPE_CLAUSE = (
+    "Where available, use a validated signature readout for a cancer process, "
+    "with its evidence and caveats."
 )
 
 
-def test_manifest_text_states_the_signatures_panel_only_in_the_approved_clause():
-    # The listing names the validated-signatures panel once, in the approved
-    # clause, in each manifest description; no other listing text mentions it.
+def test_manifest_text_states_the_signatures_panel_only_in_the_scope_clause():
+    # Keep the panel scope explicit and avoid unsupported extra signature claims
+    # elsewhere in the listing. This checks copy, not editorial approval.
     descriptions = {_portable()["description"], _claude()["description"]}
     for description in descriptions:
-        assert description.count(SIGNATURES_CLAUSE) == 1, description
+        assert description.count(SIGNATURES_SCOPE_CLAUSE) == 1, description
         assert description.lower().count("signature") == 1, description
     for text in _human_text():
         if text not in descriptions:

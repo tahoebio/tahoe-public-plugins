@@ -21,6 +21,12 @@
       "url": "https://developers.openai.com/plugins/build/plugins",
       "retrieved": "2026-10-06",
       "note": "Source for the marketplace catalog field names (name, interface.displayName, plugins[].name, source, policy.installation, policy.authentication, category) and for the legacy-compatible .claude-plugin/marketplace.json location. No published JSON schema was available for the marketplace catalog at retrieval time; those fields are verified against this documentation only."
+    },
+    {
+      "name": "Claude directory listing fields",
+      "url": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields",
+      "retrieved": "2026-11-13",
+      "note": "Source for displayName, documentationUrl, supportUrl, privacyPolicyUrl and termsOfServiceUrl in the Claude adapter; verified with claude plugin validate."
     }
   ]
 }

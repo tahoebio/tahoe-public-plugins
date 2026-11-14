@@ -3,6 +3,34 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.5.3 — unreleased
+
+- Correct the README's earlier claim that every tool is read-only: dataset
+  queries cannot change the data, while cancellation stops an owned query and
+  optional feedback sends text to Tahoe. Describe tool-argument logging.
+- Clarify dataset-specific measurements and email-or-Google sign-in in the
+  listing and installation docs, and make Claude's documentation, support, privacy and terms links
+  explicit using its documented directory fields.
+- Keep the existing Tahoe logo. Remove a backticked image filename that the
+  Claude directory flags for review, and replace a broken documentation link
+  with a link to the licence notice shipped inside the plugin.
+- Limit user preference handling to presentation and analysis scope while
+  preserving discovery, version, guide, provenance and completeness checks.
+  Retain the server's existing optional intent/model analytics behavior.
+- Align the OpenAI category and subtitle with the scientific research use case.
+  Preserve detailed capability coverage in Claude's description and include
+  the shared search keywords.
+- Keep all validated-signature checks in the main skill and require the
+  interpretation reference before any signature interpretation. Raise the local
+  skill-size budget to 13 KB to retain those checks with data-handling guidance;
+  leave the existing proliferation-adjustment rule unchanged.
+- Separate advertised email sign-in from recorded host verification; use
+  "email address or Google" without assuming a password flow.
+- Restore the README's explicit no-substitution rule for missing readouts.
+- Set OpenAI publication availability to all supported countries.
+- Quote the skill description so its colon is valid YAML; make the local
+  frontmatter parser decode quoted text and reject ambiguous unquoted colons.
+
 ## 0.5.2 — 2026-11-06
 
 - Add a patient-treatment rule to the skill. Asked what a patient should take,

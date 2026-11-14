@@ -133,9 +133,11 @@ REFERENCE_RELS = (
 )
 SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
 
-#: Tier 1 description limit (the host's hard cap) and the tier byte budgets.
+#: Portable description ceiling and repository-owned context budgets.
 SKILL_DESCRIPTION_MAX_CHARS = 1024
-SKILL_BODY_MAX_BYTES = 12_000
+#: Keep scientific checks in the entrypoint alongside data-handling guidance.
+#: This is a local size guard, not a marketplace or host limit.
+SKILL_BODY_MAX_BYTES = 13_000
 REFERENCES_MAX_BYTES = 39_000
 
 #: The live public tool surface is declared once, in the tool-contract doc; the
@@ -347,7 +349,9 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     """Return a SKILL.md's flat frontmatter as a ``key -> value`` map.
 
     The public skill's frontmatter is deliberately flat (``name`` and a
-    single-line ``description``), so a full YAML parser is not needed here.
+    single-line ``description``). Support plain text and JSON-style double
+    quotes, a subset of YAML; reject an unquoted mapping separator rather than
+    silently accepting a description that a host's YAML reader cannot load.
     """
     match = _FRONTMATTER_RE.match(text)
     if match is None:
@@ -356,7 +360,17 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     for line in match.group("body").splitlines():
         key, sep, value = line.partition(":")
         if sep:
-            fields[key.strip()] = value.strip()
+            value = value.strip()
+            if value.startswith('"'):
+                try:
+                    value = json.loads(value)
+                except json.JSONDecodeError as exc:
+                    raise RepoError("frontmatter has invalid quoted text") from exc
+                if not isinstance(value, str):
+                    raise RepoError("frontmatter values must be text")
+            elif re.search(r":(?:\s|$)", value):
+                raise RepoError("frontmatter text containing a colon must be double-quoted")
+            fields[key.strip()] = value
     return fields
 
 

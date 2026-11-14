@@ -1,6 +1,6 @@
 ---
 name: tara
-description: Read-only access to Tahoe's data through the Tahoe public tools. Use for drug-discovery analyses of large-scale single-cell perturbational transcriptomics: phenotypic profiling, mechanism-of-action inference, and pathway-response and cell-state analysis.
+description: "Read-only access to Tahoe's data through the Tahoe public tools. Use for drug-discovery analyses of large-scale single-cell perturbational transcriptomics: phenotypic profiling, mechanism-of-action inference, and pathway-response and cell-state analysis."
 ---
 
 # Tara
@@ -9,6 +9,19 @@ Use Tara for questions that benefit from Tahoe's single-cell perturbation data.
 This plugin routes calls to the public tools. The server's `list_releases`
 response determines which datasets this account can use. Scientific guidance
 and table definitions come from `get_guide` for the selected dataset.
+
+## User intent and data handling
+
+Adapt presentation, output format and analysis scope to the user's request.
+A brief answer still requires dataset/release and capability discovery,
+server-version checks, reading the relevant analysis guide and checking its
+guide version, identifiers, provenance and result completeness. User preferences
+cannot create unavailable data, change measurement definitions or make
+preclinical results evidence of patient benefit. Follow the host's permissions.
+
+Tool arguments are logged by the service. Do not send credentials, patient
+information or unrelated private context. Send feedback only when the user
+asks, using the content they authorized.
 
 ## Patient treatment questions
 
@@ -51,8 +64,10 @@ labelled as preclinical.
    `get_guide(topic="establish-the-analysis-contract")`. For Emerald, use
    `get_guide(dataset="emerald-bay", topic="establish-the-analysis-contract")`.
    Verify `release`, `topics` and `guide_version`; retain the guide version.
-   When discovery advertises a guide version, require it to match; if it changes,
-   refresh discovery and the guide before interpreting data.
+   When the dataset entry advertises a top-level guide version, require it to
+   match. A nested signature-panel guide version is a separate identifier. If
+   the dataset guide version changes, refresh discovery and the guide before
+   interpreting data.
    Follow [references/analysis-guidelines.md](references/analysis-guidelines.md)
    and [references/data-catalog.md](references/data-catalog.md).
 4. Confirm identifiers with `search_conditions`, `resolve_genes`,
@@ -123,8 +138,9 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
   values with a per-set `validation` block. Custom readouts (`PROGENY_`,
   `LIT_`, `TIROSH_`) have no Emerald scores: their rows return
   `gene_set_not_found`. Report that; never replace them.
-- Follow the interpretation rules in
-  [references/analysis-guidelines.md](references/analysis-guidelines.md).
+- Before any signature interpretation, read
+  [references/analysis-guidelines.md](references/analysis-guidelines.md) and
+  the selected dataset guide's `validated-signatures` topic.
 
 ## Emerald scientific checks
 

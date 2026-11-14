@@ -8,10 +8,21 @@ location both).
 
 import re
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from helpers import j
 from scripts import common
+
+
+def test_frontmatter_decodes_quoted_colons_and_escaped_quotes():
+    text = '---\nname: tara\ndescription: "Use for: \\"drug response\\" research."\n---\n'
+    assert common.parse_frontmatter(text)["description"] == 'Use for: "drug response" research.'
+
+
+def test_frontmatter_rejects_an_ambiguous_unquoted_colon():
+    with pytest.raises(common.RepoError, match="double-quoted"):
+        common.parse_frontmatter('---\nname: tara\ndescription: Use for: drug response.\n---\n')
 
 
 def _config(rel: str) -> dict:
