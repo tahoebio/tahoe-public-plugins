@@ -25,8 +25,8 @@ from scripts import common, package
 #: The plugin root, and only it, at the ZIP root.
 EXPECTED_TOP_LEVEL = {
     "LICENSE",
-    "LICENSE-CC-BY-4.0",
-    "NOTICE",
+    "LICENSE-CC-BY-4.0.txt",
+    "NOTICE.md",
     "README.md",
     "assets",
     "mcp.json",

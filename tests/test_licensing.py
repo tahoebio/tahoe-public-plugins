@@ -117,6 +117,6 @@ def test_validator_rejects_a_drifted_licence_copy(tmp_path):
             (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
             (tmp_path / rel).write_bytes((ROOT / source).read_bytes())
     validate.validate_license_copies(tmp_path)
-    (tmp_path / "plugins" / "tara" / "NOTICE").write_text("stale\n")
+    (tmp_path / "plugins" / "tara" / "NOTICE.md").write_text("stale\n")
     with pytest.raises(common.RepoError):
         validate.validate_license_copies(tmp_path)

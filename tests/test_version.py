@@ -10,7 +10,9 @@ def _plugin_version() -> str:
 
 
 def _min_server_version(rel: str) -> str | None:
-    return common.min_server_version(common.load_json(common.REPO_ROOT / rel))
+    return common.min_server_version(
+        common.load_json(common.REPO_ROOT / rel), claude=rel == common.CLAUDE_ADAPTER_REL
+    )
 
 
 def test_both_manifests_declare_the_same_minimum_server_version():

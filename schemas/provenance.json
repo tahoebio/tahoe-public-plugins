@@ -27,6 +27,12 @@
       "url": "https://code.claude.com/docs/en/plugins/manifest-reference#directory-listing-fields",
       "retrieved": "2026-11-13",
       "note": "Source for displayName, documentationUrl, supportUrl, privacyPolicyUrl and termsOfServiceUrl in the Claude adapter; verified with claude plugin validate."
+    },
+    {
+      "name": "Claude custom metadata",
+      "url": "https://code.claude.com/docs/en/plugins/manifest-reference#metadata",
+      "retrieved": "2026-11-13",
+      "note": "Source for the free-form metadata object that stores the Claude adapter minimum server version."
     }
   ]
 }

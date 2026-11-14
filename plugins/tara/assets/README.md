@@ -8,4 +8,4 @@ It is a 1000 × 1000 PNG, copied without modification.
 The release verifies this exact asset by its SHA-256 digest. Other binary
 assets require review and an explicit packaging entry. The Tahoe logo and the
 names "Tahoe" and "Tara" are not licensed by this package. See the
-[licence notice](../NOTICE) for the scope of each licence.
+[licence notice](../NOTICE.md) for the scope of each licence.
