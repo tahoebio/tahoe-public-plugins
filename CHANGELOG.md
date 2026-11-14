@@ -17,6 +17,7 @@ to semantic versioning.
 - Clarify that user requests take priority over analysis and presentation
   defaults; preserve access, data-integrity and patient-treatment boundaries.
 - Align the OpenAI category and subtitle with the scientific research use case.
+- Set OpenAI publication availability to all supported countries.
 
 ## 0.5.2 — 2026-11-06
 

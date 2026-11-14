@@ -42,6 +42,10 @@
           "In Tahoe's data, is Pitavastatin's stronger YAP suppression than Pravastatin's driven by greater on-target activity?",
           "Does binimetinib up- or down-regulate KRAS signaling in Tahoe's data?"
         ]
+      },
+      "publication": {
+        "countries": [],
+        "release_notes": "Clarifies dataset coverage, sign-in and data handling; improves directory links and scientific guidance. Keeps the existing Tahoe logo."
       }
     }
   }
