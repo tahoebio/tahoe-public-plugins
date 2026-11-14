@@ -133,9 +133,11 @@ REFERENCE_RELS = (
 )
 SKILL_FILES = (SKILL_MD_REL, *REFERENCE_RELS)
 
-#: Tier 1 description limit (the host's hard cap) and the tier byte budgets.
+#: Portable description ceiling and repository-owned context budgets.
 SKILL_DESCRIPTION_MAX_CHARS = 1024
-SKILL_BODY_MAX_BYTES = 12_000
+#: Keep scientific checks in the entrypoint alongside data-handling guidance.
+#: This is a local size guard, not a marketplace or host limit.
+SKILL_BODY_MAX_BYTES = 13_000
 REFERENCES_MAX_BYTES = 39_000
 
 #: The live public tool surface is declared once, in the tool-contract doc; the

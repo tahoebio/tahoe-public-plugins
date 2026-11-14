@@ -17,7 +17,12 @@ to semantic versioning.
 - Clarify that user requests take priority over analysis and presentation
   defaults; preserve access, data-integrity and patient-treatment boundaries.
 - Align the OpenAI category and subtitle with the scientific research use case.
-  Use a concise Claude short description and include the shared search keywords.
+  Preserve detailed capability coverage in Claude's description and include
+  the shared search keywords.
+- Keep all validated-signature checks in the main skill and require the
+  interpretation reference before any signature interpretation. Raise the local
+  skill-size budget to 13 KB to retain those checks with data-handling guidance;
+  leave the existing proliferation-adjustment rule unchanged.
 - Set OpenAI publication availability to all supported countries.
 - Quote the skill description so its colon is valid YAML; make the local
   frontmatter parser decode quoted text and reject ambiguous unquoted colons.

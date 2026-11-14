@@ -118,12 +118,28 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
 
 ## Validated signature checks
 
-Read [references/analysis-guidelines.md](references/analysis-guidelines.md)
-before a signature comparison. Prefer the panel's readout; keep a user-named
-set alongside it, labelled by its validation status. A missing readout is not
-permission to substitute another set. Only `validated_v02` scores carry the
-validated label; Emerald scores remain gold values with validation labels,
-never evidence of validation on Emerald data.
+- The panel names one validated readout per cancer process. Prefer it; every
+  other gene set is exploratory.
+- When the user names a gene set, score that set under its served name and
+  label it by its `validation_status`. Add the readout beside it, labelled;
+  never answer with the readout in its place.
+- Read `score_source` and `validation_status` on every Tahoe row. Only
+  `validated_v02` rows carry the validated label; report `gold_release` rows
+  as exploratory. `no_validated_readout` means nothing was scored: say so and
+  substitute no other set.
+- The arms are DepMap genetics, Tahoe-100M drug classes and Tahoe proprietary
+  single-cell drug data (unpublished). The proprietary arm is a verdict only.
+  Pending licence review, DepMap is a verdict plus the tested contrast. Only
+  Tahoe-100M carries values. A DepMap-only readout rests a drug claim on
+  genetic evidence alone.
+- On Emerald Bay, "validated" means validated on Tahoe-100M and DepMap (plus
+  the proprietary verdict), never on Emerald data. Scores are Emerald gold
+  values with a per-set `validation` block. Custom readouts (`PROGENY_`,
+  `LIT_`, `TIROSH_`) have no Emerald scores: their rows return
+  `gene_set_not_found`. Report that; never replace them.
+- Before any signature interpretation, read
+  [references/analysis-guidelines.md](references/analysis-guidelines.md) and
+  the selected dataset guide's `validated-signatures` topic.
 
 ## Emerald scientific checks
 

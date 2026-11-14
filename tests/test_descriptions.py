@@ -72,8 +72,7 @@ def _human_text() -> list[str]:
 def test_descriptions_fit_each_directory_surface():
     portable, claude = _portable(), _claude()
     assert _interface()["longDescription"] == portable["description"]
-    assert len(claude["description"]) <= 200
-    assert "For research use only" in claude["description"]
+    assert "For research, not patient treatment" in claude["description"]
     assert claude["keywords"] == portable["keywords"]
 
 
@@ -127,10 +126,10 @@ def test_keywords_drop_dataset_name():
     ]
 
 
-
 @pytest.mark.parametrize("phrase", CAPABILITIES)
 def test_description_states_each_audited_capability(phrase):
-    assert phrase in _portable()["description"]
+    for manifest in (_portable(), _claude()):
+        assert phrase in manifest["description"]
 
 
 def test_skill_description_uses_the_audited_discovery_sentence():
@@ -151,9 +150,8 @@ SIGNATURES_CLAUSE = (
 
 def test_manifest_text_states_the_signatures_panel_only_in_the_approved_clause():
     # The listing names the validated-signatures panel once, in the approved
-    # clause, in the long description. Claude's short description omits it;
-    # the plugin README explains the panel for that directory.
-    descriptions = {_portable()["description"]}
+    # clause, in each host's manifest description.
+    descriptions = {_portable()["description"], _claude()["description"]}
     for description in descriptions:
         assert description.count(SIGNATURES_CLAUSE) == 1, description
         assert description.lower().count("signature") == 1, description
