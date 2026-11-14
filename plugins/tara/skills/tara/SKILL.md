@@ -10,6 +10,18 @@ This plugin routes calls to the public tools. The server's `list_releases`
 response determines which datasets this account can use. Scientific guidance
 and table definitions come from `get_guide` for the selected dataset.
 
+## User intent and data handling
+
+Explicit user instructions take priority over workflow and presentation
+preferences in this skill. Keep factual limitations visible: user preferences
+cannot create unavailable data, change measurement definitions or make
+preclinical results evidence of patient benefit. Follow the host's permissions.
+
+Tool arguments are logged by the service. Do not send credentials, patient
+information or unrelated private context. Leave optional `intent` and `model`
+fields unset unless the user specifically requests them. Send feedback only
+when the user asks, using the content they authorized.
+
 ## Patient treatment questions
 
 Tara's preclinical cell-line data cannot decide a person's treatment. Asked what
@@ -51,7 +63,9 @@ labelled as preclinical.
    `get_guide(topic="establish-the-analysis-contract")`. For Emerald, use
    `get_guide(dataset="emerald-bay", topic="establish-the-analysis-contract")`.
    Verify `release`, `topics` and `guide_version`; retain the guide version.
-   When discovery advertises a guide version, require it to match; if it changes,
+   When the dataset entry advertises a top-level guide version, require it to
+   match. A nested signature-panel guide version is a separate identifier. If
+   the dataset guide version changes,
    refresh discovery and the guide before interpreting data.
    Follow [references/analysis-guidelines.md](references/analysis-guidelines.md)
    and [references/data-catalog.md](references/data-catalog.md).
@@ -104,27 +118,12 @@ not a scan-cost cap. Read [references/sql-guidance.md](references/sql-guidance.m
 
 ## Validated signature checks
 
-- The panel names one validated readout per cancer process. Prefer it; every
-  other gene set is exploratory.
-- When the user names a gene set, score that set under its served name and
-  label it by its `validation_status`. Add the readout beside it, labelled;
-  never answer with the readout in its place.
-- Read `score_source` and `validation_status` on every Tahoe row. Only
-  `validated_v02` rows carry the validated label; report `gold_release` rows
-  as exploratory. `no_validated_readout` means nothing was scored: say so and
-  substitute no other set.
-- The arms are DepMap genetics, Tahoe-100M drug classes and Tahoe proprietary
-  single-cell drug data (unpublished). The proprietary arm is a verdict only.
-  Pending licence review, DepMap is a verdict plus the tested contrast. Only
-  Tahoe-100M carries values. A DepMap-only readout rests a drug claim on
-  genetic evidence alone.
-- On Emerald Bay, "validated" means validated on Tahoe-100M and DepMap (plus
-  the proprietary verdict), never on Emerald data. Scores are Emerald gold
-  values with a per-set `validation` block. Custom readouts (`PROGENY_`,
-  `LIT_`, `TIROSH_`) have no Emerald scores: their rows return
-  `gene_set_not_found`. Report that; never replace them.
-- Follow the interpretation rules in
-  [references/analysis-guidelines.md](references/analysis-guidelines.md).
+Read [references/analysis-guidelines.md](references/analysis-guidelines.md)
+before a signature comparison. Prefer the panel's readout; keep a user-named
+set alongside it, labelled by its validation status. A missing readout is not
+permission to substitute another set. Only `validated_v02` scores carry the
+validated label; Emerald scores remain gold values with validation labels,
+never evidence of validation on Emerald data.
 
 ## Emerald scientific checks
 

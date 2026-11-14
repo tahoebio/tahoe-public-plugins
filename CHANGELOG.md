@@ -3,6 +3,21 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
+## 0.5.3 — unreleased
+
+- Correct the README's earlier claim that every tool is read-only: dataset
+  queries cannot change the data, while cancellation stops an owned query and
+  optional feedback sends text to Tahoe. Describe tool-argument logging.
+- Clarify dataset-specific measurements and email-or-Google sign-in in the
+  listing, and make Claude's documentation, support, privacy and terms links
+  explicit using its documented directory fields.
+- Keep the existing Tahoe logo. Remove a backticked image filename that the
+  Claude directory flags for review, and replace a broken documentation link
+  with a link to the licence notice shipped inside the plugin.
+- Clarify that user requests take priority over analysis and presentation
+  defaults; preserve access, data-integrity and patient-treatment boundaries.
+- Align the OpenAI category and subtitle with the scientific research use case.
+
 ## 0.5.2 — 2026-11-06
 
 - Add a patient-treatment rule to the skill. Asked what a patient should take,

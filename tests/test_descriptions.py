@@ -84,9 +84,9 @@ def test_no_forbidden_term_in_manifest_text(word):
 def test_interface_fields():
     interface = _interface()
     assert interface["displayName"] == "Tara"
-    assert interface["shortDescription"] == "Tahoe perturbation data"
+    assert interface["shortDescription"] == "Explore drug-response data"
     assert interface["developerName"] == "Tahoe Bio"
-    assert interface["category"] == "Education & Research"
+    assert interface["category"] == "Scientific Research"
     assert interface["capabilities"] == ["Read"]
     assert interface["websiteURL"] == "https://tara.tahoebio.io/"
     assert interface["supportURL"] == (
@@ -142,8 +142,8 @@ def test_skill_description_uses_the_audited_discovery_sentence():
 
 
 SIGNATURES_CLAUSE = (
-    "Read the validated signature readout for a cancer process: one per "
-    "process, where one exists, in one dataset only."
+    "Where available, use a validated signature readout for a cancer process, "
+    "with its evidence and caveats."
 )
 
 

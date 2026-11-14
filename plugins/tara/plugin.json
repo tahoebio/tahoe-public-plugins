@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "tara",
-  "version": "0.5.2",
-  "description": "Read-only access to Tahoe's single-cell perturbation data through the Tahoe public tools, for drug-discovery research. Look up covered drugs, doses, cell lines and genes; read drug annotations (targets, mechanism of action, approval status); and retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Read the validated signature readout for a cancer process: one per process, where one exists, in one dataset only. Compare a compound's response with annotated mechanism classes; compare drug responses between genotype- or lineage-defined groups of cell lines; correlate a cell line's baseline expression or driver-gene status with its drug response (exploratory); and rank drug-induced relative depletion and cell-cycle effects per cell line across three doses. Includes guarded read-only SQL and analysis guidance. Requires a Tahoe account; available datasets and capabilities depend on the account.",
+  "version": "0.5.3",
+  "description": "Explore how drugs change gene expression, pathways and cell states in Tahoe's single-cell perturbation data. Look up drugs, doses, cell lines, genes and drug annotations; retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Where available, use a validated signature readout for a cancer process, with its evidence and caveats. Compare responses with annotated mechanism classes or between genotype- or lineage-defined groups of cell lines; explore associations with baseline expression or driver-gene status; and rank relative depletion and cell-cycle effects per cell line across three doses. Capabilities depend on the selected dataset and account. Includes read-only data queries and scientific guidance. For research, not patient treatment. Sign in with a verified email address or Google.",
   "author": {
     "name": "Tahoe Bio"
   },
@@ -23,10 +23,10 @@
     "com.openai": {
       "interface": {
         "displayName": "Tara",
-        "shortDescription": "Tahoe perturbation data",
-        "longDescription": "Read-only access to Tahoe's single-cell perturbation data through the Tahoe public tools, for drug-discovery research. Look up covered drugs, doses, cell lines and genes; read drug annotations (targets, mechanism of action, approval status); and retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Read the validated signature readout for a cancer process: one per process, where one exists, in one dataset only. Compare a compound's response with annotated mechanism classes; compare drug responses between genotype- or lineage-defined groups of cell lines; correlate a cell line's baseline expression or driver-gene status with its drug response (exploratory); and rank drug-induced relative depletion and cell-cycle effects per cell line across three doses. Includes guarded read-only SQL and analysis guidance. Requires a Tahoe account; available datasets and capabilities depend on the account.",
+        "shortDescription": "Explore drug-response data",
+        "longDescription": "Explore how drugs change gene expression, pathways and cell states in Tahoe's single-cell perturbation data. Look up drugs, doses, cell lines, genes and drug annotations; retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Where available, use a validated signature readout for a cancer process, with its evidence and caveats. Compare responses with annotated mechanism classes or between genotype- or lineage-defined groups of cell lines; explore associations with baseline expression or driver-gene status; and rank relative depletion and cell-cycle effects per cell line across three doses. Capabilities depend on the selected dataset and account. Includes read-only data queries and scientific guidance. For research, not patient treatment. Sign in with a verified email address or Google.",
         "developerName": "Tahoe Bio",
-        "category": "Education & Research",
+        "category": "Scientific Research",
         "capabilities": [
           "Read"
         ],

@@ -65,6 +65,7 @@ CATEGORIES = frozenset(
         "Data & Analytics",
         "Communication",
         "Education & Research",
+        "Scientific Research",
         "Security",
         "Finance",
         "Healthcare",
@@ -467,18 +468,12 @@ def test_readme_lists_the_manifest_starter_prompts():
         assert prompt in readme, prompt
 
 
-README_SIGNATURES_SENTENCE = (
-    "For Tahoe-100M only, it also reads the validated signature readout for "
-    "each cancer process: the one gene set whose VISION score tracks that "
-    "process, with its evidence, direction and caveats; a process without one "
-    "is reported as such, and no other set is substituted."
-)
-
-
-def test_readme_states_the_signatures_panel_only_in_the_approved_sentence():
+def test_readme_states_dataset_specific_signature_scope():
     readme = " ".join(_readme().split())
-    assert readme.count(README_SIGNATURES_SENTENCE) == 1
-    assert readme.lower().count("signature") == 1
+    assert "Its validated signatures panel" in readme
+    assert "reports when no validated readout is available" in readme
+    assert "Emerald Bay provides expression, five-day in-vitro growth response" in readme
+
 
 
 def test_readme_names_the_launch_datasets():

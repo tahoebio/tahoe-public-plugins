@@ -85,9 +85,10 @@ Apply these rules whenever a pathway or program answer uses the panel. Read the
    evidence as weaker and say why.
 7. **Check proliferation.** Scores correlate with proliferation to different
    degrees (`proliferation_r`). The served scores carry no proliferation
-   correction. Do not residualise or adjust them yourself, and do not present
-   an adjusted value as the release's. Before attributing a change to the
-   process, check whether it tracks proliferation, and report that caveat.
+   correction. Do not adjust them by default. If the user asks for an adjustment,
+   label it as a separate exploratory analysis, explain the method and assumptions,
+   and never present it as the release's validated score. Before attributing a
+   change to the process, check whether it tracks proliferation and report that caveat.
 8. **Never compare scores across gene sets.** Compare one set across
    conditions. Do not rank processes by score size, and do not treat a
    `validated_v02` value and a `gold_release` value as interchangeable.
@@ -103,3 +104,25 @@ Apply these rules whenever a pathway or program answer uses the panel. Read the
     Tahoe-100M and DepMap (plus the proprietary verdict), never on Emerald
     data; the scores are Emerald gold values. Custom readouts return
     `gene_set_not_found` there and are reported as unscored, never replaced.
+
+## Signature routing checks
+
+- The panel names one validated readout per cancer process. Prefer it; every
+  other gene set is exploratory.
+- When the user names a gene set, score that set under its served name and
+  label it by its `validation_status`. Add the readout beside it, labelled;
+  never answer with the readout in its place.
+- Read `score_source` and `validation_status` on every Tahoe row. Only
+  `validated_v02` rows carry the validated label; report `gold_release` rows
+  as exploratory. `no_validated_readout` means nothing was scored: say so and
+  substitute no other set.
+- The arms are DepMap genetics, Tahoe-100M drug classes and Tahoe proprietary
+  single-cell drug data (unpublished). The proprietary arm is a verdict only.
+  Pending licence review, DepMap is a verdict plus the tested contrast. Only
+  Tahoe-100M carries values. A DepMap-only readout rests a drug claim on
+  genetic evidence alone.
+- On Emerald Bay, "validated" means validated on Tahoe-100M and DepMap (plus
+  the proprietary verdict), never on Emerald data. Scores are Emerald gold
+  values with a per-set `validation` block. Custom readouts (`PROGENY_`,
+  `LIT_`, `TIROSH_`) have no Emerald scores: their rows return
+  `gene_set_not_found`. Report that; never replace them.

@@ -1,10 +1,11 @@
 # Assets
 
-`tahoe-logo.png` is the existing Tahoe brand mark, used for the Codex listing
-logo and composer icon. It is a 1000 × 1000 PNG, copied without modification.
+![Tahoe brand mark](tahoe-logo.png)
 
-The release includes this exact asset, verified by its SHA-256 digest. Other
-binary assets require their own review and explicit packaging entry. Brand
-assets are separate from the dataset's CC0 grant, and "Tahoe" and "Tara" are
-trademarks — no licence here grants rights to them; see
-`docs/data-and-licensing.md`.
+The existing Tahoe brand mark is used for the listing logo and composer icon.
+It is a 1000 × 1000 PNG, copied without modification.
+
+The release verifies this exact asset by its SHA-256 digest. Other binary
+assets require review and an explicit packaging entry. The Tahoe logo and the
+names "Tahoe" and "Tara" are not licensed by this package. See the
+[licence notice](../NOTICE) for the scope of each licence.
