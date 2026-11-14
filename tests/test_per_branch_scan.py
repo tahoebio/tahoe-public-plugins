@@ -353,3 +353,27 @@ def test_sweep_workflow_fetches_tag_objects():
 def test_ci_fetches_tag_objects():
     text = (common.REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "fetch-tags: true" in text
+
+
+@pytest.mark.parametrize("prior_approved", [True, False])
+def test_logo_history_checks_both_sides_and_keeps_old_bytes_out_of_packages(
+    tmp_path, monkeypatch, prior_approved
+):
+    import hashlib
+
+    repo = git_repo(tmp_path)
+    path = common.LOGO_REL
+    old, new = b"\x00\xffold-reviewed", b"\x00\xffnew-reviewed"
+    target = repo / path
+    target.parent.mkdir(parents=True)
+    target.write_bytes(old)
+    commit_all(repo, "original brand asset")
+    monkeypatch.setattr(common, "APPROVED_BINARY_ASSETS", {path: hashlib.sha256(new).hexdigest()})
+    previous = {hashlib.sha256(old).hexdigest()} if prior_approved else set()
+    monkeypatch.setattr(common, "APPROVED_HISTORICAL_BINARY_ASSETS", {path: frozenset(previous)})
+    # A previously approved version is not approved for a newly built package.
+    assert common._scan_member("archive", path, old)
+    target.write_bytes(new)
+    commit_all(repo, "optimized brand asset")
+    assert bool(common.scan_history(repo)) is not prior_approved
+    assert not common._scan_member("archive", path, new)

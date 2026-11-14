@@ -3,7 +3,8 @@ Copyright 2026 Tahoe Bio
 
 This repository combines parts with different rights. The full texts are in
 LICENSE (Apache-2.0) and LICENSE-CC-BY-4.0 (CC BY 4.0); the map below says which
-paths each covers.
+paths each covers. Installed plugins carry these same texts as LICENSE and
+LICENSE-CC-BY-4.0.txt, with this notice as NOTICE.md.
 
   - Plugin code, tooling, configuration, tests, the eval pack and root Markdown
     — every path except the groups below.

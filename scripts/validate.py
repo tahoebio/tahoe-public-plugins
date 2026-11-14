@@ -195,10 +195,13 @@ def validate_min_server_version(root: Path = common.REPO_ROOT) -> None:
     """
     declared: list[tuple[str, str | None]] = []
     for rel in (common.PLUGIN_MANIFEST_REL, common.CLAUDE_ADAPTER_REL):
-        value = common.min_server_version(common.load_json(root / rel))
+        container = "metadata" if rel == common.CLAUDE_ADAPTER_REL else "extensions"
+        value = common.min_server_version(
+            common.load_json(root / rel), claude=rel == common.CLAUDE_ADAPTER_REL
+        )
         if not isinstance(value, str) or not common.SEMVER.match(value):
             raise common.RepoError(
-                f"{rel}: extensions[{common.TAHOE_EXTENSION_NAMESPACE!r}]"
+                f"{rel}: {container}[{common.TAHOE_EXTENSION_NAMESPACE!r}]"
                 f"[{common.MIN_SERVER_VERSION_FIELD!r}] must be a semver string"
             )
         declared.append((rel, value))

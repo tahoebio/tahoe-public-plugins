@@ -1,13 +1,13 @@
 {
   "name": "tara",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "license": "Apache-2.0",
   "description": "Explore how drugs change gene expression, pathways and cell states in Tahoe's single-cell perturbation data. Look up drugs, doses, cell lines, genes and drug annotations (targets, mechanism of action, approval status); retrieve expression, drug-versus-vehicle differential expression, perturbation markers, pathway scores and embedding distance from vehicle. Where available, use a validated signature readout for a cancer process, with its evidence and caveats. Compare responses with annotated mechanism classes or between genotype- or lineage-defined groups of cell lines; explore associations with baseline expression or driver-gene status; and rank relative depletion and cell-cycle effects per cell line across three doses. Capabilities depend on the selected dataset and account. Includes guarded read-only SQL, data queries and scientific guidance. For research, not patient treatment. Sign in with your email address or Google.",
   "author": {
     "name": "Tahoe Bio"
   },
   "icon": "./assets/tahoe-logo.png",
-  "extensions": {
+  "metadata": {
     "com.tahoebio": {
       "minServerVersion": "0.3.9"
     }

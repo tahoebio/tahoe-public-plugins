@@ -29,8 +29,7 @@ MCP_SERVER_NAME = "tahoe-public"
 MCP_ENDPOINT = "https://tara.tahoebio.io/mcp"
 
 #: Tahoe's own manifest extension: the minimum public server version the plugin
-#: is frozen against. Named in the Agent Plugins ``extensions`` map, so no
-#: schema change is needed and the field is the same in both host manifests.
+#: is frozen against. Stored in portable ``extensions`` and Claude ``metadata``.
 TAHOE_EXTENSION_NAMESPACE = "com.tahoebio"
 MIN_SERVER_VERSION_FIELD = "minServerVersion"
 
@@ -47,7 +46,14 @@ PLUGIN_README_REL = f"plugins/{PLUGIN_NAME}/README.md"
 # A file extension is not approval. Only these exact reviewed bytes at this
 # exact path may be treated as a known binary brand asset.
 APPROVED_BINARY_ASSETS = {
-    LOGO_REL: "4de2eae11a4a73cfd38117772ea51e94f1a3ef61f5ad336e2949782d95239219",
+    LOGO_REL: "8e3fa2b0fba44e3a0cc49b4d1e1aabd9da25a82986f7b2a31247631a84e07ab7",
+}
+
+# Previously reviewed bytes are accepted only in history, never a new package.
+APPROVED_HISTORICAL_BINARY_ASSETS = {
+    LOGO_REL: frozenset({
+        "4de2eae11a4a73cfd38117772ea51e94f1a3ef61f5ad336e2949782d95239219",
+    }),
 }
 
 #: Repository catalogs. The two hosts use different shapes, so these are not
@@ -161,7 +167,9 @@ LICENSE_PATHS = (LICENSE_REL, CC_LICENSE_REL, NOTICE_REL)
 #: installs only the plugin folder, so the copies are what an installed plugin
 #: carries. Plugin-folder copy -> repository-root source.
 PLUGIN_LICENSE_COPIES = {
-    f"plugins/{PLUGIN_NAME}/{rel}": rel for rel in LICENSE_PATHS
+    f"{PLUGIN_DIR_REL}/LICENSE": LICENSE_REL,
+    f"{PLUGIN_DIR_REL}/LICENSE-CC-BY-4.0.txt": CC_LICENSE_REL,
+    f"{PLUGIN_DIR_REL}/NOTICE.md": NOTICE_REL,
 }
 
 #: The exact files that make up the release archive. An explicit list, not a
@@ -322,13 +330,14 @@ def load_json(path: Path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def min_server_version(manifest: dict) -> str | None:
+def min_server_version(manifest: dict, *, claude: bool = False) -> str | None:
     """The minimum public server version a manifest declares, if any.
 
-    Read from ``extensions["com.tahoebio"]["minServerVersion"]``; ``None`` when
-    the extension or the field is absent.
+    Read the host-specific custom-data container; ``None`` when absent.
+    Claude uses its documented ``metadata`` object, portable clients ``extensions``.
     """
-    extension = manifest.get("extensions", {}).get(TAHOE_EXTENSION_NAMESPACE, {})
+    container = "metadata" if claude else "extensions"
+    extension = manifest.get(container, {}).get(TAHOE_EXTENSION_NAMESPACE, {})
     return extension.get(MIN_SERVER_VERSION_FIELD)
 
 
@@ -833,6 +842,7 @@ def _approved_asset_change(root: Path, path: str, commit: str) -> bool:
     expected = APPROVED_BINARY_ASSETS.get(path)
     if expected is None:
         return False
+    approved = APPROVED_HISTORICAL_BINARY_ASSETS.get(path, frozenset()) | {expected}
     revisions = _git_output(root, "rev-list", "--parents", "-n", "1", commit)
     if revisions.returncode:
         return False
@@ -852,7 +862,7 @@ def _approved_asset_change(root: Path, path: str, commit: str) -> bool:
             stderr=subprocess.PIPE,
             check=False,
         )
-        if blob.returncode or hashlib.sha256(blob.stdout).hexdigest() != expected:
+        if blob.returncode or hashlib.sha256(blob.stdout).hexdigest() not in approved:
             return False
         found = True
     return found

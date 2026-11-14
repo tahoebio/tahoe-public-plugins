@@ -17,8 +17,9 @@ and Claude Code; prepared instructions alone do not establish tested support.
 
 ## Plugin and server versions
 
-Both manifests retain `extensions["com.tahoebio"]["minServerVersion"]` at
-0.3.9 for existing Tahoe use. Compare versions numerically. A version check
+Both manifests retain the minimum server version 0.3.9 for existing Tahoe use.
+The portable manifest uses `extensions["com.tahoebio"]["minServerVersion"]`;
+the Claude adapter uses its supported `metadata["com.tahoebio"]["minServerVersion"]`. Compare versions numerically. A version check
 alone never establishes a dataset's availability or numeric correctness.
 
 | Plugin / route | Server requirement | Evidence / behavior |

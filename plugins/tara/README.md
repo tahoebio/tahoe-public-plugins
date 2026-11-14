@@ -53,6 +53,7 @@ Report problems at <https://github.com/tahoebio/tahoe-public-plugins/issues>
 or email tara@tahoebio.ai.
 
 Code and manifests are Apache-2.0; skill text and documentation are CC BY 4.0.
-The included licence files and `NOTICE` give the details. Tahoe-100M data is
+The included [Apache licence](LICENSE), [CC BY licence](LICENSE-CC-BY-4.0.txt)
+and [licence notice](NOTICE.md) give the details. Tahoe-100M data is
 CC0; Emerald Bay source data is CC BY 4.0 and requires attribution.
 The Tahoe logo and the names "Tahoe" and "Tara" are not licensed.

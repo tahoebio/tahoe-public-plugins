@@ -3,7 +3,18 @@
 All notable changes to this repository are recorded here. This project adheres
 to semantic versioning.
 
-## 0.5.3 — unreleased
+## 0.5.4 — unreleased
+
+- Store the Claude minimum-server-version declaration in its documented metadata
+  object, with the same floor enforced across both hosts.
+- Give installed legal documents explicit text extensions so directory validation
+  can recognize them as documentation. Preserve their full terms and attribution.
+- Compress the existing Tahoe PNG losslessly, preserving the decoded image and
+  color metadata. Pin the optimized digest; accept the original reviewed digest
+  only when scanning historical commits.
+- Preserve the Tara identity and scientific guidance.
+
+## 0.5.3 — 2026-11-13
 
 - Correct the README's earlier claim that every tool is read-only: dataset
   queries cannot change the data, while cancellation stops an owned query and
