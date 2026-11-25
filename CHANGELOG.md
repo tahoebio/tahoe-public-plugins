@@ -15,6 +15,10 @@ to semantic versioning.
   color metadata. Pin the optimized digest; accept the original reviewed digest
   only when scanning historical commits.
 - Preserve the Tara identity and scientific guidance.
+- Set the public guide in Tahoe's brand typefaces and add the Tahoe wordmark.
+  The guide self-hosts Lato, Inter Tight and IBM Plex Mono under the SIL Open
+  Font License 1.1. Pin each font file and the wordmark by digest, and record
+  both in the licence map.
 
 ## 0.5.3 — 2026-11-13
 

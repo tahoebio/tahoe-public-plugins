@@ -44,10 +44,44 @@ LOGO_REL = f"plugins/{PLUGIN_NAME}/assets/tahoe-logo.png"
 #: The plugin's own README. Both directories show it as the listing text, and
 #: an installed plugin carries it.
 PLUGIN_README_REL = f"plugins/{PLUGIN_NAME}/README.md"
+#: The public guide (served by GitHub Pages from ``docs/``) and the brand files
+#: it loads: the Tahoe wordmark and the brand typefaces. Pages serves only
+#: ``docs/``, so the guide cannot reach the plugin's own logo.
+GUIDE_DIR_REL = "docs/tara"
+GUIDE_STYLESHEET_REL = f"{GUIDE_DIR_REL}/guide.css"
+GUIDE_PAGES = tuple(
+    f"{GUIDE_DIR_REL}/{name}" for name in ("index.html", "examples.html", "reference.html")
+)
+GUIDE_WORDMARK_REL = f"{GUIDE_DIR_REL}/logo-tahoe-wordmark-navy.png"
+GUIDE_FONTS_DIR_REL = f"{GUIDE_DIR_REL}/fonts"
+#: Third-party typefaces under SIL OFL 1.1, unmodified upstream releases.
+GUIDE_FONT_DIGESTS = {
+    f"{GUIDE_FONTS_DIR_REL}/IBMPlexMono-Regular.ttf": (
+        "ab08018ccd276b79fb2c636bb95b9c543598f9d50505fe92506fcb4dae7810cd"
+    ),
+    f"{GUIDE_FONTS_DIR_REL}/InterTight-VariableFont_wght.ttf": (
+        "4b8ef9ed255ebe7341aa566554c0f3e87ee10ce06d2085f07ccf66f41ef96c28"
+    ),
+    f"{GUIDE_FONTS_DIR_REL}/Lato-Bold.ttf": (
+        "d7f0b7f2570f2f28b504da1181b4d71b1420b10be2c4fd690927f1c8ee3b19c3"
+    ),
+    f"{GUIDE_FONTS_DIR_REL}/Lato-Regular.ttf": (
+        "e82542aed8293f49fc83c4aaea566b1f6b4fc7a9ab5da11e6fb9bc0973b5324b"
+    ),
+}
+#: Each family's upstream copyright notice and licence text, kept beside the
+#: font files as the OFL requires.
+GUIDE_FONT_LICENSES = tuple(
+    f"{GUIDE_FONTS_DIR_REL}/OFL-{family}.txt"
+    for family in ("IBMPlexMono", "InterTight", "Lato")
+)
+
 # A file extension is not approval. Only these exact reviewed bytes at this
-# exact path may be treated as a known binary brand asset.
+# exact path may be treated as a known binary asset.
 APPROVED_BINARY_ASSETS = {
     LOGO_REL: "8e3fa2b0fba44e3a0cc49b4d1e1aabd9da25a82986f7b2a31247631a84e07ab7",
+    GUIDE_WORDMARK_REL: "15aba4e4a9f17bf69629f61695d6ebc782495998c0a77dc259f53280637741a9",
+    **GUIDE_FONT_DIGESTS,
 }
 
 # Previously reviewed bytes are accepted only in history, never a new package.

@@ -11,13 +11,14 @@ attribution and the path map.
 |------|------------|----------------|
 | Plugin code | Manifests, scripts, tests, CI, configuration, the eval pack and root Markdown | `Apache-2.0` |
 | Skill text | `plugins/tara/skills/**` and its references | `CC-BY-4.0` |
-| Documentation | `docs/**` | `CC-BY-4.0` |
+| Documentation | `docs/**`, other than the bundled typefaces and the wordmark | `CC-BY-4.0` |
+| Bundled typefaces | `docs/tara/fonts/*.ttf` — Lato, Inter Tight and IBM Plex Mono | `OFL-1.1` (upstream) |
 | Tahoe-100M source data | The Tahoe-100M dataset | `CC0-1.0` |
 | Emerald Bay source data | The EmeraldBay dataset | `CC-BY-4.0` |
 | Service guidance | Server instructions, tool descriptions, any guide the service returns | Not licensed for redistribution |
 | Gene-set names | Names from the source collections | The source collection's terms |
 | Vendored schemas | `schemas/plugin.schema.json`, `schemas/mcp.schema.json` (from agent-plugins.org) | `Apache-2.0` (upstream; `schemas/provenance.json`) |
-| Brand assets | `plugins/tara/assets/tahoe-logo.png` — the Tahoe brand mark | Not licensed (all rights reserved) |
+| Brand assets | `plugins/tara/assets/tahoe-logo.png` — the Tahoe brand mark — and `docs/tara/logo-tahoe-wordmark-navy.png` — the Tahoe wordmark | Not licensed (all rights reserved) |
 | Trademarks | "Tahoe", "Tara" | Not licensed |
 
 ## Plugin code — Apache-2.0
@@ -81,6 +82,24 @@ Apache-2.0 upstream — they are not covered by this repository's CC BY 4.0
 grant. `schemas/provenance.json` records each source, its licence and its
 checksum.
 
+## Bundled typefaces
+
+The public guide in `docs/tara/` loads Tahoe's brand typefaces from
+`docs/tara/fonts/`. They are third-party files, unmodified upstream releases,
+licensed under the SIL Open Font License 1.1. The documentation's CC BY 4.0
+grant does not cover them. Each family's copyright notice and licence text is
+beside the files.
+
+| File | Typeface | Copyright | Licence text |
+|------|----------|-----------|--------------|
+| `Lato-Regular.ttf`, `Lato-Bold.ttf` | Lato 1.104 | tyPoland Lukasz Dziedzic | `OFL-Lato.txt` |
+| `InterTight-VariableFont_wght.ttf` | Inter Tight 3.004 | The Inter Project Authors | `OFL-InterTight.txt` |
+| `IBMPlexMono-Regular.ttf` | IBM Plex Mono 2.3 | IBM Corp. | `OFL-IBMPlexMono.txt` |
+
+"Lato" and "Plex" are reserved font names. A modified version of those fonts
+must use a different name. The repository validator pins each file by its
+SHA-256 digest.
+
 ## Brand assets
 
 `plugins/tara/assets/tahoe-logo.png` is the Tahoe brand mark, used for the
@@ -88,6 +107,11 @@ plugin's listing logo and composer icon. It ships in the release archive but is
 not licensed for reuse: it is all rights reserved and is a trademark of Tahoe
 Bio, and neither licence in this repository covers it. It is not swept into the
 Apache-2.0 grant that covers Tahoe's code.
+
+`docs/tara/logo-tahoe-wordmark-navy.png` is the Tahoe wordmark shown in the
+public guide's header. The same terms apply: it is all rights reserved, it is a
+trademark of Tahoe Bio, and the documentation's CC BY 4.0 grant does not cover
+it.
 
 ## Trademarks
 
