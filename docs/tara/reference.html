@@ -12,7 +12,10 @@
   <header>
     <div class="top">
       <a class="brand" href="index.html"><strong>Tara</strong><span>Documentation</span></a>
-      <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      <div class="header-links">
+        <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a>
+        <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      </div>
     </div>
   </header>
   <div class="shell">
@@ -59,8 +62,10 @@
         <dl>
           <dt>Release and population</dt>
           <dd>Retain the dataset, release, measurement, cell lines, doses and control group with any result. For a signature score, also record the readout name, validation status and direction.</dd>
+          <dt>Inspect the request</dt>
+          <dd>Completed analysis results identify their release and record the request. For a custom question, Tara can run guarded read-only SQL against approved data. The result includes the exact SQL so you can inspect or repeat it.</dd>
           <dt>Pending or incomplete queries</dt>
-          <dd>Some queries return a handle while they run. Tara can poll that query or cancel it on request. A truncated table is partial. Ask for a narrower slice or an aggregate with its denominator.</dd>
+          <dd>Some queries return a handle while they run. Tara can poll that query or cancel it on request. A truncated table is partial. Ask for a narrower slice or an aggregate with its denominator. See the <a href="https://tara.tahoebio.io/#limits-h">current preview limits</a> for per-account quotas, result size and handle lifetime.</dd>
           <dt>Research interpretation</dt>
           <dd>Drug annotations identify reported targets. Observed expression and growth describe responses in the measured cells. Patient treatment decisions are outside Tara’s research scope.</dd>
         </dl>

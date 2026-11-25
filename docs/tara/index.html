@@ -12,7 +12,10 @@
   <header>
     <div class="top">
       <a class="brand" href="index.html"><strong>Tara</strong><span>Documentation</span></a>
-      <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      <div class="header-links">
+        <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a>
+        <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      </div>
     </div>
   </header>
   <div class="shell">
@@ -38,11 +41,13 @@
       <div class="intro hero">
         <span class="caption">Tahoe Bio</span>
         <h1>Get started with Tara</h1>
-        <p class="lead">Ask how a drug changes gene expression, pathway activity or cell growth. Tara connects your AI client to Tahoe Bio’s single-cell perturbation data and helps it choose a measurement for your question.</p>
+        <p class="lead">Query Tahoe’s Frontier Scale Datasets in plain language from your AI agent. Explore how drugs change gene expression, pathways and cell growth across cell lines. The Tara plugin connects to <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a> so you can work with the data without downloading them.</p>
       </div>
       <section id="install">
         <h2>Install and sign in</h2>
-        <p>Choose your client and run its commands in a terminal. The plugin installs a scientific skill and connects it to Tahoe’s hosted data service. Sign in with your email address or Google in the browser your client opens.</p>
+        <p>In a desktop agent that can install plugins and show sign-in prompts, paste the setup request below. The agent installs Tara and starts the sign-in flow. Complete it in your browser with a verified email address or Google.</p>
+        <blockquote>Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara</blockquote>
+        <p>If you use a terminal, choose the commands for your client.</p>
         <div class="hosts">
           <div>
             <h3>Claude Code</h3>
@@ -58,7 +63,7 @@ codex mcp login tahoe-public</code></pre>
             <p>After signing in, start a new Codex session so it loads the tools.</p>
           </div>
         </div>
-        <p class="fine">These are Tara’s documented installation paths. For Antigravity listing availability, check <a href="https://antigravity.google/docs/marketplace/">Google’s marketplace</a>. See Tahoe’s <a href="https://tara.tahoebio.io/install.md">current setup instructions</a> for connection details.</p>
+        <p class="fine">For the advanced direct-server connection, open <a href="https://tara.tahoebio.io/#install-h">Install on Tahoe Public MCP</a> and choose <strong>Advanced</strong>. For Antigravity listing availability, check <a href="https://antigravity.google/docs/marketplace/">Google’s marketplace</a>. See Tahoe’s <a href="https://tara.tahoebio.io/install.md">current setup instructions</a> for connection details.</p>
       </section>
       <section id="first-query">
         <h2>Run a first query</h2>
@@ -66,7 +71,7 @@ codex mcp login tahoe-public</code></pre>
         <blockquote>List my available Tahoe dataset releases and the measurements available in each.</blockquote>
         <p>Your agent should call <code>list_releases</code> and return the release names. If Tahoe-100M appears, try a drug lookup.</p>
         <blockquote>Which MEK and RAF inhibitors are in Tahoe-100M? Group them by annotated target and name the release you used.</blockquote>
-        <p>Look for binimetinib under MEK and dabrafenib under RAF. These are drug annotations. To measure a response, <a href="examples.html#expression">compare DUSP6 expression with matched vehicle controls</a>.</p>
+        <p>The <a href="https://tara.tahoebio.io/#demo-h">public lookup example</a> returns four MEK inhibitors and three RAF inhibitors. Select <strong>Tool calls</strong> there to see how Tara queried the drug annotations. To measure a response, <a href="examples.html#expression">compare DUSP6 expression with matched vehicle controls</a>.</p>
       </section>
       <section id="connection">
         <h2>Connection help</h2>
