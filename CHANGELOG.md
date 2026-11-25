@@ -19,6 +19,9 @@ to semantic versioning.
   The guide self-hosts Lato, Inter Tight and IBM Plex Mono under the SIL Open
   Font License 1.1. Pin each font file and the wordmark by digest, and record
   both in the licence map.
+- Explain in the public guide what Tahoe's Frontier Scale Datasets are, for
+  readers new to Tahoe: single-cell RNA sequencing of drug-treated cancer cell
+  lines, with the size and scope of Tahoe-100M and Emerald Bay.
 
 ## 0.5.3 — 2026-11-13
 

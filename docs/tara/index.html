@@ -31,6 +31,7 @@
         <div class="local">
           <p class="nav-label">On this page</p>
           <nav aria-label="On this page">
+            <a href="#data">What the data are</a>
             <a href="#install">Install and sign in</a>
             <a href="#antigravity">Google Antigravity</a>
             <a href="#first-query">Run a first query</a>
@@ -43,8 +44,20 @@
       <div class="intro hero">
         <span class="caption">Tahoe Bio</span>
         <h1>Get started with Tara</h1>
-        <p class="lead">Query Tahoe’s Frontier Scale Datasets in plain language from your AI agent. Explore how drugs change gene expression, pathways and cell growth across cell lines. The Tara plugin connects to <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a> so you can work with the data without downloading them.</p>
+        <p class="lead">Tahoe’s Frontier Scale Datasets are large single-cell RNA sequencing atlases of how drugs change cancer cells. Tara lets you query them in plain language from your AI agent. Explore how drugs change gene expression, pathways and cell growth across cell lines. The Tara plugin connects to <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a> so you can work with the data without downloading them.</p>
       </div>
+      <section id="data">
+        <h2>What the data are</h2>
+        <p>Tahoe Bio measures how drugs change human cancer cells, one cell at a time. Pools of cancer cell lines are treated with a drug. Single-cell RNA sequencing then reads which genes are active in each cell. Comparing treated cells with vehicle controls, which receive the solvent without the drug, shows what the drug did in each cell line.</p>
+        <p>These collections are Tahoe’s Frontier Scale Datasets. Tara currently serves two of them.</p>
+        <dl>
+          <dt>Tahoe-100M</dt>
+          <dd>A single-cell perturbation atlas of more than 100 million single-cell profiles, from 50 cancer cell lines exposed to 1,100 small-molecule drug treatments. A treatment is one drug at one dose. Tahoe released it in 2025 as the largest single-cell dataset then available. Use it to ask how a drug changes gene expression and pathway activity, and how that differs between cell lines. <a href="https://huggingface.co/datasets/tahoebio/Tahoe-100M">Dataset card</a> · <a href="https://www.biorxiv.org/content/10.1101/2025.02.20.639398v1">Preprint</a> · <a href="https://www.tahoebio.ai/news/open-sourcing-tahoe-100m">Release announcement</a>.</dd>
+          <dt>Emerald Bay</dt>
+          <dd>More than 1.8 million single-cell profiles from 52 cell lines and 91 drug treatments, including drug combinations at several doses. It pairs single-cell gene expression with a five-day growth-response measurement for each cell line and treatment. Use it to relate what a drug does to gene expression with how well the cells grow. <a href="https://huggingface.co/datasets/tahoebio/EmeraldBay">Dataset card</a>.</dd>
+        </dl>
+        <p>You do not need to download either dataset or write code. Ask a question in plain language. Tara finds the matching drugs, cell lines and genes, runs the query on Tahoe’s service and returns the result with the release it used. <a href="reference.html#measurements">Compare what each dataset measures</a>.</p>
+      </section>
       <section id="install">
         <h2>Install and sign in</h2>
         <p>For Google Antigravity, follow the <a href="#antigravity">Antigravity setup</a> below. In a supported Claude or Codex app that can install plugins and show sign-in prompts, paste this setup request. The agent installs Tara and starts the sign-in flow. Complete it in your browser with a verified email address or Google.</p>
