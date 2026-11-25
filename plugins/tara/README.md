@@ -1,7 +1,7 @@
 # Tara
 
 Explore how drugs change gene expression, pathways and cell states with
-Tahoe Bio's single-cell perturbation data, directly in Claude and Codex.
+Tahoe Bio's single-cell perturbation data, in Antigravity, Claude and Codex.
 Tara combines access to a remote MCP server with a skill for choosing
 measurements, checking coverage and interpreting results.
 
@@ -15,6 +15,8 @@ Emerald Bay provides expression, five-day in-vitro growth response and
 differential VISION scores. Available datasets and tools depend on your account.
 These measurements do not establish a drug's mechanism or patient benefit.
 
+Read the [Tara documentation](https://tahoebio.github.io/tahoe-public-plugins/tara/) for setup, worked examples, and dataset coverage.
+
 ## Install and sign in
 
 Follow <https://tara.tahoebio.io/install.md>. Install the `tara` plugin from
@@ -24,6 +26,8 @@ in the browser your client opens. This creates or uses your Tahoe account.
 In Claude Code, run
 `claude plugin marketplace add tahoebio/tahoe-public-plugins`, then
 `claude plugin install tara@tahoe-public`.
+
+For [Google Antigravity](https://tahoebio.github.io/tahoe-public-plugins/tara/#antigravity), install from the GitHub plugin folder.
 
 ## Example prompts
 

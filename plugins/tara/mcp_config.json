@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "tahoe-public": {
+      "url": "https://tara.tahoebio.io/mcp"
+    }
+  }
+}

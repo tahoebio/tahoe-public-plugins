@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore Tara demo questions and learn how controls, validated signatures and measurement coverage affect the answer.">
+  <title>Worked examples · Tara documentation · Tahoe Bio</title>
+  <link rel="icon" href="logo-tahoe-wordmark-navy.png">
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <div class="top">
+      <a class="brand" href="index.html"><img src="logo-tahoe-wordmark-navy.png" alt="Tahoe" width="152" height="26"><span>Tara documentation</span></a>
+      <div class="header-links">
+        <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a>
+        <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+    <aside>
+      <div class="rail">
+        <p class="nav-label">User guide</p>
+        <nav class="pages" aria-label="User guide">
+          <a href="index.html">Get started</a>
+          <a href="examples.html" aria-current="page">Worked examples</a>
+          <a href="reference.html">Data reference</a>
+        </nav>
+        <div class="local">
+          <p class="nav-label">On this page</p>
+          <nav aria-label="On this page">
+            <a href="#expression">Drug and gene expression</a>
+            <a href="#pathway">Compare pathway readouts</a>
+            <a href="#apoptosis">Check a missing readout</a>
+            <a href="#growth">Explore growth response</a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+    <main id="content" tabindex="-1">
+      <div class="intro">
+        <h1>Worked examples</h1>
+        <p class="lead">Start with a biological question. Follow the measurement from the original prompt through to a result you can interpret.</p>
+        <p>To see the underlying queries, open the <a href="https://tara.tahoebio.io/#demo-h">six interactive examples on Tahoe Public MCP</a>. Select a question, then switch between <strong>Answer</strong> and <strong>Tool calls</strong>. Try the trametinib and DUSP6 example for a single melanoma line before comparing a different MEK inhibitor across lines below.</p>
+      </div>
+      <section id="expression">
+        <h2>How does binimetinib change DUSP6 expression?</h2>
+        <blockquote>In Tahoe-100M, compare DUSP6 expression after binimetinib with matched vehicle. Show the direction and size of the change by cell line and dose. Flag missing comparisons.</blockquote>
+        <p>Ask Tara to resolve DUSP6 and the drug conditions, then pair each treated cell line with vehicle controls from the same plate. The demo showed a broad decrease in DUSP6 expression. Inspect the individual lines and doses before describing how consistent that decrease was.</p>
+        <p>If Tara returns a table, check which expression measure it used. A difference in normalized expression and a DESeq2 log₂ fold change have different units. For a partial result, narrow to one line or dose before summarizing.</p>
+      </section>
+      <section id="pathway">
+        <h2>Do capivasertib and alpelisib lower PI3K/AKT output?</h2>
+        <blockquote>Compare capivasertib and alpelisib in Tahoe-100M at 5 µM. Which readout is validated for PI3K/AKT? How many cell lines score below vehicle for each drug? Repeat with the similarly named Hallmark set.</blockquote>
+        <p>When discovery advertises the signatures panel, Tara can look up the validated readout with <code>get_validated_signatures</code> before requesting scores. The v02 panel selected <code>PROGENY_PI3K_B</code> for this process. A lower score is consistent with reduced transcriptional output.</p>
+        <figure>
+          <figcaption>Cell lines with a validated PI3K/AKT score below vehicle</figcaption>
+          <div class="figline"><span>Capivasertib</span><span class="track" aria-hidden="true"><span style="width: 74%"></span></span><b>37 / 50</b></div>
+          <div class="figline"><span>Alpelisib</span><span class="track" aria-hidden="true"><span style="width: 98%"></span></span><b>49 / 50</b></div>
+          <p class="fine">Recorded example · Tahoe-100M v1 · Tahoe Signatures v02 · 5 µM. Each cell line contributes one score per drug. The counts describe direction.</p>
+        </figure>
+        <p>The choice of readout changes the interpretation. For capivasertib, <code>HALLMARK_PI3K_AKT_MTOR_SIGNALING</code> scored <em>above</em> vehicle in 42 of the same 50 lines. That set failed validation for this process. Report it as an exploratory comparison and keep the validated score as the primary readout.</p>
+        <p>These are expression-based scores in cultured cell lines. A biochemical assay would be needed to measure kinase target engagement directly.</p>
+      </section>
+      <section id="apoptosis">
+        <h2>What if a process has no validated readout?</h2>
+        <blockquote>Does the Tahoe Signatures panel have a validated readout for apoptosis? Tell me what the registry found before scoring anything.</blockquote>
+        <p>In v02 the tested apoptosis readout failed validation. Tara should report that outcome and stop before scoring. The absence of a validated score leaves the biological question open.</p>
+      </section>
+      <section id="growth">
+        <h2>What does Emerald Bay measure?</h2>
+        <blockquote>In Emerald Bay, list the available cell lines and explain the released growth-response measurement. Include the dataset release and attribution.</blockquote>
+        <p>First confirm that <code>emerald-bay</code> appears in your release list. Tara should keep that dataset selected when looking up cell lines and measurement definitions. The released value, <code>growth_rate_released</code>, describes five-day growth in vitro. Expression and growth can cover different samples, so ask which lines have both before comparing them.</p>
+        <p>See the <a href="reference.html#measurements">dataset comparison</a> for other measurements and <a href="reference.html#attribution">how to cite Emerald Bay</a>.</p>
+      </section>
+    </main>
+  </div>
+  <footer>
+    <span>Tahoe Bio · Tara documentation</span>
+    <a href="https://tara.tahoebio.io/privacy">Privacy</a>
+    <a href="https://tara.tahoebio.io/terms">Terms</a>
+    <a href="https://github.com/tahoebio/tahoe-public-plugins/issues">Support</a>
+  </footer>
+</body>
+</html>

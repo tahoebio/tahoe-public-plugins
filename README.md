@@ -4,6 +4,8 @@ The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
 plugin is **Tara**, which connects your own agent to Tahoe's public dataset
 service. The signed-in account's `list_releases()` response determines access.
 
+Read the [Tara documentation](https://tahoebio.github.io/tahoe-public-plugins/tara/) for setup, worked examples, and dataset coverage.
+
 ## Install
 
 The plugin is the way in. It connects your agent to the `tahoe-public` MCP
@@ -129,19 +131,22 @@ licence below, and the full texts are in `LICENSE` (Apache-2.0),
 | Path | Licence (SPDX) |
 |------|----------------|
 | `plugins/tara/skills/**` — the `tara` skill and its references | `CC-BY-4.0` |
-| `docs/**` — the public documentation | `CC-BY-4.0` |
+| `docs/**` — the public documentation, other than the two rows below | `CC-BY-4.0` |
+| `docs/tara/fonts/*.ttf` — Lato, Inter Tight and IBM Plex Mono, bundled for the guide | `OFL-1.1` (upstream) |
 | `schemas/**` — third-party schemas vendored from agent-plugins.org | `Apache-2.0` (upstream) |
-| `plugins/tara/assets/tahoe-logo.png` — the Tahoe brand mark | Not licensed (all rights reserved) |
+| `plugins/tara/assets/tahoe-logo.png` and `docs/tara/logo-tahoe-wordmark-navy.png` — the Tahoe brand mark and wordmark | Not licensed (all rights reserved) |
 | Tahoe's plugin code, manifests, tooling, tests, CI, `evals/**` and root Markdown — every other path | `Apache-2.0` |
 
 The **skill text and the documentation are CC BY 4.0**: reuse them, including
 commercially, with attribution to Tahoe Bio. Tahoe's **code is Apache-2.0**:
 reuse it under the same terms, with the patent grant that licence carries. The
 vendored `schemas/**` are the third party's own files, licensed Apache-2.0
-upstream; `schemas/provenance.json` records each source.
+upstream; `schemas/provenance.json` records each source. The guide's typefaces
+under `docs/tara/fonts/` are third-party files under the SIL Open Font License
+1.1, with each family's licence text beside them.
 
 The datasets have separate grants: Tahoe-100M is **CC0-1.0** and Emerald Bay
 is **CC-BY-4.0**. Neither dataset is stored in this repository. The service's
-runtime guidance, the gene-set names, the `tahoe-logo.png` brand mark and the "Tahoe" and "Tara"
-trademarks are not covered by either licence here; see
+runtime guidance, the gene-set names, the `tahoe-logo.png` brand mark, the guide's Tahoe wordmark
+and the "Tahoe" and "Tara" trademarks are not covered by either licence here; see
 `docs/data-and-licensing.md`.

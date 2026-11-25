@@ -1,12 +1,12 @@
 # Compatibility
 
-Only tested combinations are claimed. The install workflows target Codex CLI
-and Claude Code; prepared instructions alone do not establish tested support.
+The install workflows cover Codex CLI, Claude Code and Google Antigravity. Installation and authenticated dataset access are recorded separately.
 
 ## Hosts and requirements
 
 - Codex CLI or Claude Code, a Google account for the recorded sign-in route,
   and a browser for sign-in.
+- Antigravity uses its own Google sign-in and a separate Tahoe authorization for the plugin.
 - No Databricks account or credentials are required.
 - See `docs/install-verification.md` for recorded Tahoe runs, their failures and
   limitations. No fresh Emerald host run has been recorded yet.
@@ -14,6 +14,23 @@ and Claude Code; prepared instructions alone do not establish tested support.
   [install guide](https://tara.tahoebio.io/install.md). Email sign-in has no
   recorded end-to-end run in this repository; it is not claimed as tested here.
 - Other hosts and offline data access are not claimed by this compatibility matrix.
+
+## Google Antigravity
+
+On November 24, 2026, Antigravity CLI 1.5.16 on macOS arm64 installed the
+public Tara plugin from its GitHub folder URL. The original package loaded
+only the skill. With native `mcp_config.json`, the installer registered one
+skill and one MCP server. Both appeared on the enabled Tara plugin in
+`agy plugin list --json`. Antigravity App 2.35.1 showed the skill and public endpoint under
+**Customizations → Installed → tara**. After Tahoe OAuth, the MCP tab
+reported 18 enabled tools. In a fresh desktop conversation, `list_releases`
+returned `tahoe-100m/v1` and `emerald-bay/v1` for the tested account
+(two releases, untruncated). The CLI independently returned the same two
+identifiers in its structured tool output. A CLI `get_drug_info` lookup in
+Tahoe-100M v1 returned MAP2K1 and MAP2K2 as binimetinib’s annotated targets.
+The desktop `health` call reported server 0.5.7. The
+[Antigravity setup guide](https://tahoebio.github.io/tahoe-public-plugins/tara/#antigravity)
+includes the commands and the first-query check.
 
 ## Plugin and server versions
 

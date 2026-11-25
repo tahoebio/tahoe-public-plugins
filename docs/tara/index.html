@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Install Tara, connect your Tahoe account and run a first query against single-cell drug-response data.">
+  <title>Get started · Tara documentation · Tahoe Bio</title>
+  <link rel="icon" href="logo-tahoe-wordmark-navy.png">
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <div class="top">
+      <a class="brand" href="index.html"><img src="logo-tahoe-wordmark-navy.png" alt="Tahoe" width="152" height="26"><span>Tara documentation</span></a>
+      <div class="header-links">
+        <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a>
+        <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+      </div>
+    </div>
+  </header>
+  <div class="shell">
+    <aside>
+      <div class="rail">
+        <p class="nav-label">User guide</p>
+        <nav class="pages" aria-label="User guide">
+          <a href="index.html" aria-current="page">Get started</a>
+          <a href="examples.html">Worked examples</a>
+          <a href="reference.html">Data reference</a>
+        </nav>
+        <div class="local">
+          <p class="nav-label">On this page</p>
+          <nav aria-label="On this page">
+            <a href="#install">Install and sign in</a>
+            <a href="#antigravity">Google Antigravity</a>
+            <a href="#first-query">Run a first query</a>
+            <a href="#connection">Connection help</a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+    <main id="content" tabindex="-1">
+      <div class="intro hero">
+        <span class="caption">Tahoe Bio</span>
+        <h1>Get started with Tara</h1>
+        <p class="lead">Query Tahoe’s Frontier Scale Datasets in plain language from your AI agent. Explore how drugs change gene expression, pathways and cell growth across cell lines. The Tara plugin connects to <a href="https://tara.tahoebio.io/">Tahoe Public MCP</a> so you can work with the data without downloading them.</p>
+      </div>
+      <section id="install">
+        <h2>Install and sign in</h2>
+        <p>For Google Antigravity, follow the <a href="#antigravity">Antigravity setup</a> below. In a supported Claude or Codex app that can install plugins and show sign-in prompts, paste this setup request. The agent installs Tara and starts the sign-in flow. Complete it in your browser with a verified email address or Google.</p>
+        <blockquote>Use curl to read https://tara.tahoebio.io/install.md and perform the setup to install Tara</blockquote>
+        <p>If you use a terminal, choose the commands for your client.</p>
+        <div class="hosts">
+          <div>
+            <h3>Claude Code</h3>
+            <pre tabindex="0" aria-label="Claude Code install commands"><code>claude plugin marketplace add tahoebio/tahoe-public-plugins
+claude plugin install tara@tahoe-public</code></pre>
+            <p>In Claude Code, enter <code>/mcp</code>, choose <code>tahoe-public</code>, then select <strong>Authenticate</strong>. Return to the session after signing in.</p>
+          </div>
+          <div>
+            <h3>Codex CLI</h3>
+            <pre tabindex="0" aria-label="Codex CLI install commands"><code>codex plugin marketplace add tahoebio/tahoe-public-plugins
+codex plugin add tara@tahoe-public
+codex mcp login tahoe-public</code></pre>
+            <p>After signing in, start a new Codex session so it loads the tools.</p>
+          </div>
+        </div>
+        <p class="fine">For the advanced direct-server connection, open <a href="https://tara.tahoebio.io/#install-h">Install on Tahoe Public MCP</a> and choose <strong>Advanced</strong>. See Tahoe’s <a href="https://tara.tahoebio.io/install.md">current setup instructions</a> for connection details.</p>
+      </section>
+      <section id="antigravity">
+        <h2>Google Antigravity</h2>
+        <p>Install the <a href="https://antigravity.google/download">Antigravity desktop app</a> if you want the graphical client. Install <code>agy</code> using <a href="https://antigravity.google/docs/getting-started?tab=cli">Google’s CLI setup instructions</a>. Open Antigravity and sign in to Google with the account you want to use.</p>
+        <h3>Install Tara from GitHub</h3>
+        <p>Run these commands in a terminal. Use the full plugin-folder URL so Antigravity installs Tara from Tahoe’s catalog.</p>
+        <pre tabindex="0" aria-label="Antigravity install commands"><code>agy plugin install https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara
+agy plugin list --json</code></pre>
+        <p>The install summary should show one skill (<code>tara</code>) and one MCP server (<code>tahoe-public</code>). In the JSON output, check both <code>skills</code> and <code>mcpServers</code> on the enabled Tara plugin. In the desktop app, you can inspect plugins under <strong>Customizations → Installed</strong>. <a href="https://antigravity.google/docs/marketplace/">Google’s plugin manager guide</a>.</p>
+        <details><summary>Older install shows only the skill</summary>
+        <p>Re-run the install command to fetch the current plugin. If your copy still lists only the skill, you can register the public server separately:</p>
+        <pre tabindex="0" aria-label="Register and check the Tahoe data server"><code>agy mcp add --type http tahoe-public https://tara.tahoebio.io/mcp
+agy mcp list</code></pre>
+        <p>The manual entry should show <code>tahoe-public</code>, type <code>http</code>, enabled at <code>https://tara.tahoebio.io/mcp</code>. Use <code>agy plugin list --json</code> to check servers bundled with a plugin.</p></details>
+        <h3>Verify data access</h3>
+        <p>In the desktop app, open <strong>Customizations → Installed → tara → Accounts</strong> and select <strong>Sign in</strong> for <code>tahoe-public</code>. In the CLI, open <code>/plugin</code>, expand <strong>tara</strong> under <strong>Installed</strong>, and choose <strong>Sign in</strong> if prompted. In the browser, review Tahoe’s access request and complete sign-in. If the browser displays an authorization code, paste it into the plugin’s <strong>Accounts</strong> tab and select <strong>Submit</strong>. Check for <strong>Connected</strong> under Accounts and enabled tools on the <strong>MCP</strong> tab. Start a new conversation and ask the <a href="#first-query">first query</a> below. If Antigravity asks to use <code>list_releases</code>, choose <strong>Yes, allow this time</strong>. The release names in the result show what your account can access.</p>
+      </section>
+      <section id="first-query">
+        <h2>Run a first query</h2>
+        <p>Start by asking which releases your account can use.</p>
+        <blockquote>List my available Tahoe dataset releases and the measurements available in each.</blockquote>
+        <p>Your agent should call <code>list_releases</code> and return the release names. If Tahoe-100M appears, try a drug lookup.</p>
+        <blockquote>Which MEK and RAF inhibitors are in Tahoe-100M? Group them by annotated target and name the release you used.</blockquote>
+        <p>The <a href="https://tara.tahoebio.io/#demo-h">public lookup example</a> returns four MEK inhibitors and three RAF inhibitors. Select <strong>Tool calls</strong> there to see how Tara queried the drug annotations. To measure a response, <a href="examples.html#expression">compare DUSP6 expression with matched vehicle controls</a>.</p>
+      </section>
+      <section id="connection">
+        <h2>Connection help</h2>
+        <dl>
+          <dt>The tools are missing after sign-in</dt>
+          <dd>In Codex, run <code>codex mcp list</code>. If <code>tahoe-public</code> needs authentication, run the login command above and start a new session. In Claude Code, check the connection in <code>/mcp</code>.</dd>
+          <dt>A dataset or signature panel is missing</dt>
+          <dd>Ask for the full release list again. Each signed-in account has its own capabilities. If the release or measurement is absent, Tara should tell you it is unavailable for this account.</dd>
+        </dl>
+        <p><a href="reference.html#privacy">Contact support</a> if sign-in succeeds and you still cannot list releases.</p>
+      </section>
+    </main>
+  </div>
+  <footer>
+    <span>Tahoe Bio · Tara documentation</span>
+    <a href="https://tara.tahoebio.io/privacy">Privacy</a>
+    <a href="https://tara.tahoebio.io/terms">Terms</a>
+    <a href="https://github.com/tahoebio/tahoe-public-plugins/issues">Support</a>
+  </footer>
+</body>
+</html>

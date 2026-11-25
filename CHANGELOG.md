@@ -5,6 +5,8 @@ to semantic versioning.
 
 ## 0.5.4 — unreleased
 
+- Add the native Antigravity MCP configuration and installation guide so the
+  plugin brings in both its scientific skill and Tahoe’s hosted data server.
 - Store the Claude minimum-server-version declaration in its documented metadata
   object, with the same floor enforced across both hosts.
 - Give installed legal documents explicit text extensions so directory validation
@@ -13,6 +15,10 @@ to semantic versioning.
   color metadata. Pin the optimized digest; accept the original reviewed digest
   only when scanning historical commits.
 - Preserve the Tara identity and scientific guidance.
+- Set the public guide in Tahoe's brand typefaces and add the Tahoe wordmark.
+  The guide self-hosts Lato, Inter Tight and IBM Plex Mono under the SIL Open
+  Font License 1.1. Pin each font file and the wordmark by digest, and record
+  both in the licence map.
 
 ## 0.5.3 — 2026-11-13
 

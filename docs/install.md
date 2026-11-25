@@ -6,13 +6,11 @@ using it.
 
 ## Tested hosts
 
-**Codex CLI** and **Claude Code** are the only hosts claimed (see
-`docs/compatibility.md`).
+For **Codex CLI** and **Claude Code**, follow the marketplace commands below. For **Google Antigravity**, use the [Antigravity setup guide](https://tahoebio.github.io/tahoe-public-plugins/tara/#antigravity). The [compatibility record](compatibility.md) describes what was verified in each host.
 
 ## Install the plugin
 
-This is the primary path: install the plugin from Tahoe's own marketplace. Run
-the commands in a terminal — not through an agent, which cannot sign you in.
+Choose the commands for your client. Run them in a terminal and complete sign-in in your browser.
 
 ### Codex CLI
 
@@ -34,6 +32,21 @@ claude plugin install tara@tahoe-public
 ```
 
 Then **restart Claude Code** and sign in with `/mcp` (or on first use).
+
+### Google Antigravity
+
+Install the Antigravity CLI from [Google’s setup guide](https://antigravity.google/docs/getting-started?tab=cli).
+In your terminal, install Tara from the plugin subdirectory and check the result:
+
+```sh
+agy plugin install https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara
+agy plugin list --json
+```
+
+The enabled Tara entry should contain the `tara` skill and the `tahoe-public`
+MCP server. In an Antigravity CLI session, open `/plugin`, expand **tara** under
+**Installed**, and select **Sign in** when offered. Complete Tahoe sign-in in
+the browser, then ask Tara to list the dataset releases available to you.
 
 ### Ask your agent instead
 
@@ -130,6 +143,7 @@ Connection manifests and one skill:
 - `plugins/tara/plugin.json` and `plugins/tara/mcp.json` — the portable
   Codex pair: one `streamable-http` server named `tahoe-public` at
   `https://tara.tahoebio.io/mcp`.
+- `plugins/tara/mcp_config.json` — the Antigravity native configuration for the same public HTTPS endpoint.
 - `plugins/tara/.claude-plugin/plugin.json` — the native Claude manifest, with
   the same server inline as type `http`.
 - `plugins/tara/skills/tara/SKILL.md` — the `tara` skill: when to use it, the

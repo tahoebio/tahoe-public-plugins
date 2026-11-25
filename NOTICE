@@ -10,7 +10,8 @@ LICENSE-CC-BY-4.0.txt, with this notice as NOTICE.md.
     — every path except the groups below.
     Licence: Apache-2.0 (see LICENSE).
 
-  - Skill text and documentation — plugins/tara/skills/** and docs/**.
+  - Skill text and documentation — plugins/tara/skills/** and docs/**, other
+    than the bundled typefaces and the wordmark listed below.
     Licence: CC BY 4.0 (see LICENSE-CC-BY-4.0).
 
   - Vendored third-party schemas — schemas/** (plugin.schema.json and
@@ -18,9 +19,15 @@ LICENSE-CC-BY-4.0.txt, with this notice as NOTICE.md.
     Licence: Apache-2.0 (upstream); their sources and checksums are recorded in
     schemas/provenance.json.
 
-  - The Tahoe brand mark — plugins/tara/assets/tahoe-logo.png.
-    Licence: not licensed (all rights reserved); it is a trademark of Tahoe Bio
-    and neither licence in this repository covers it.
+  - Bundled third-party typefaces — docs/tara/fonts/*.ttf (Lato, Inter Tight
+    and IBM Plex Mono), loaded by the public guide.
+    Licence: SIL Open Font License 1.1 (upstream). Each family's copyright
+    notice and licence text is beside the files as docs/tara/fonts/OFL-*.txt.
+
+  - The Tahoe brand mark — plugins/tara/assets/tahoe-logo.png — and the Tahoe
+    wordmark — docs/tara/logo-tahoe-wordmark-navy.png.
+    Licence: not licensed (all rights reserved); they are trademarks of Tahoe
+    Bio and neither licence in this repository covers them.
 
   - The Tahoe-100M dataset served by the Tara service.
     Licence: CC0-1.0 (https://huggingface.co/datasets/tahoebio/Tahoe-100M).
