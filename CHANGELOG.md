@@ -22,6 +22,8 @@ to semantic versioning.
 - Explain in the public guide what Tahoe's Frontier Scale Datasets are, for
   readers new to Tahoe: single-cell RNA sequencing of drug-treated cancer cell
   lines, with the size and scope of Tahoe-100M and Emerald Bay.
+- Redirect the documentation site root to the guide, so the root address no
+  longer shows a "not found" page.
 
 ## 0.5.3 — 2026-11-13
 

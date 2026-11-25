@@ -139,3 +139,35 @@ def test_licence_map_entry_for_the_wordmark_reserves_all_rights(rel):
     assert entries, f"{rel} has no licence entry for the guide wordmark"
     for entry in entries:
         assert "all rights reserved" in entry.lower(), entry
+
+
+class _RootRedirect(HTMLParser):
+    """Collect the refresh targets and links of the site root page."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.refresh: list[str] = []
+        self.links: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == "meta" and (values.get("http-equiv") or "").lower() == "refresh":
+            self.refresh.append(values.get("content") or "")
+        elif tag == "a":
+            self.links.append(values.get("href") or "")
+
+
+def test_site_root_sends_readers_to_the_guide():
+    # Pages serves docs/ as the site root; the guide is one folder below it.
+    page = _RootRedirect()
+    page.feed(_read(common.GUIDE_ROOT_REDIRECT_REL))
+    assert len(page.refresh) == 1, page.refresh
+    delay, _, target = page.refresh[0].partition(";")
+    assert delay.strip() == "0"
+    target = target.strip().removeprefix("url=")
+    root = PurePosixPath(common.GUIDE_ROOT_REDIRECT_REL).parent
+    assert (root / target / "index.html").as_posix() == common.GUIDE_PAGES[0]
+    # A browser that ignores the refresh still shows a working link.
+    assert page.links == [target]
+    loaded = _loaded(common.GUIDE_ROOT_REDIRECT_REL)
+    assert not loaded.images and not loaded.others

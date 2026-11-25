@@ -52,6 +52,9 @@ GUIDE_STYLESHEET_REL = f"{GUIDE_DIR_REL}/guide.css"
 GUIDE_PAGES = tuple(
     f"{GUIDE_DIR_REL}/{name}" for name in ("index.html", "examples.html", "reference.html")
 )
+#: GitHub Pages serves ``docs/`` as the site root. This page sends a reader who
+#: opens the root to the guide instead of a "not found" page.
+GUIDE_ROOT_REDIRECT_REL = "docs/index.html"
 GUIDE_WORDMARK_REL = f"{GUIDE_DIR_REL}/logo-tahoe-wordmark-navy.png"
 GUIDE_FONTS_DIR_REL = f"{GUIDE_DIR_REL}/fonts"
 #: Third-party typefaces under SIL OFL 1.1, unmodified upstream releases.
