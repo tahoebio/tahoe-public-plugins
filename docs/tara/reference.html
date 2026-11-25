@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Compare the available Tahoe-100M and Emerald Bay measurements, understand result limits, and find dataset licenses, privacy and support.">
+  <title>Data reference · Tara documentation · Tahoe Bio</title>
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <div class="top">
+      <a class="brand" href="index.html"><strong>Tara</strong><span>Documentation</span></a>
+      <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+    </div>
+  </header>
+  <div class="shell">
+    <aside>
+      <div class="rail">
+        <p class="nav-label">User guide</p>
+        <nav class="pages" aria-label="User guide">
+          <a href="index.html">Get started</a>
+          <a href="examples.html">Worked examples</a>
+          <a href="reference.html" aria-current="page">Data reference</a>
+        </nav>
+        <div class="local">
+          <p class="nav-label">On this page</p>
+          <nav aria-label="On this page">
+            <a href="#measurements">Dataset coverage</a>
+            <a href="#results">Read a result</a>
+            <a href="#privacy">Privacy and support</a>
+            <a href="#attribution">Cite the data</a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+    <main id="content" tabindex="-1">
+      <div class="intro">
+        <h1>Data reference</h1>
+        <p class="lead">Tahoe-100M and Emerald Bay answer different questions. Check the signed-in release list, then choose a dataset and a measurement.</p>
+      </div>
+      <section id="measurements">
+        <h2>Dataset coverage</h2>
+        <table>
+          <thead><tr><th scope="col">Measurement</th><th scope="col">Tahoe-100M</th><th scope="col">Emerald Bay</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Expression</th><td><span class="dataset-label" aria-hidden="true">Tahoe-100M</span>Expression and drug-versus-vehicle differential expression.</td><td><span class="dataset-label" aria-hidden="true">Emerald Bay</span>Raw counts and pseudobulk CPM or log1p(CPM). Differential expression is unavailable.</td></tr>
+            <tr><th scope="row">Pathways</th><td><span class="dataset-label" aria-hidden="true">Tahoe-100M</span>Differential pathway scores. Use a validated readout where the signatures panel supports the process.</td><td><span class="dataset-label" aria-hidden="true">Emerald Bay</span>Differential VISION scores already include the matched endpoint-control subtraction.</td></tr>
+            <tr><th scope="row">Cell response</th><td><span class="dataset-label" aria-hidden="true">Tahoe-100M</span>Relative depletion, cell-cycle effects, perturbation markers and distance from the vehicle centroid.</td><td><span class="dataset-label" aria-hidden="true">Emerald Bay</span>Released five-day in-vitro growth response.</td></tr>
+            <tr><th scope="row">Annotations</th><td><span class="dataset-label" aria-hidden="true">Tahoe-100M</span>Drug targets, mechanism classes, doses and cell-line identities.</td><td><span class="dataset-label" aria-hidden="true">Emerald Bay</span>Sample, condition and cell-line identities. Preserve full labels for combination treatments.</td></tr>
+          </tbody>
+        </table>
+        <p>CPM means counts per million across the whole measured expression profile. Keep missing measurements separate from measured zeros. Use <code>get_guide</code> for the selected dataset’s units, controls and coverage.</p>
+        <p><a href="https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/public-tool-contract.md">Full tool reference and dataset-specific behavior</a></p>
+      </section>
+      <section id="results">
+        <h2>Read a result</h2>
+        <dl>
+          <dt>Release and population</dt>
+          <dd>Retain the dataset, release, measurement, cell lines, doses and control group with any result. For a signature score, also record the readout name, validation status and direction.</dd>
+          <dt>Pending or incomplete queries</dt>
+          <dd>Some queries return a handle while they run. Tara can poll that query or cancel it on request. A truncated table is partial. Ask for a narrower slice or an aggregate with its denominator.</dd>
+          <dt>Research interpretation</dt>
+          <dd>Drug annotations identify reported targets. Observed expression and growth describe responses in the measured cells. Patient treatment decisions are outside Tara’s research scope.</dd>
+        </dl>
+      </section>
+      <section id="privacy">
+        <h2>Privacy and support</h2>
+        <p>Your client sends tool arguments to Tahoe’s remote service. Tahoe logs tool arguments, including SQL, and usage metadata. Keep credentials, patient information and confidential material out of queries. Scientific datasets are read-only. Sending feedback shares your text with Tahoe when you request it.</p>
+        <p>Read the <a href="https://tara.tahoebio.io/privacy">privacy policy</a> and <a href="https://tara.tahoebio.io/terms">terms of service</a>. For help, <a href="https://github.com/tahoebio/tahoe-public-plugins/issues">open a GitHub issue</a> or email <a href="mailto:tara@tahoebio.ai">tara@tahoebio.ai</a>. Include the client, the release, and the error with sensitive details removed.</p>
+      </section>
+      <section id="attribution">
+        <h2>Cite the data</h2>
+        <p><strong>Tahoe-100M</strong> is released under CC0 1.0. Keep the data release in your methods so others can repeat the analysis. <a href="https://huggingface.co/datasets/tahoebio/Tahoe-100M">Tahoe-100M dataset card</a>.</p>
+        <p><strong>Emerald Bay</strong> is released under CC BY 4.0. Credit Tahoe Bio, link the dataset and license, record the revision, and describe any transformations you applied. <a href="https://huggingface.co/datasets/tahoebio/EmeraldBay">Emerald Bay dataset card</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+        <p>The plugin code uses Apache-2.0 and these docs use CC BY 4.0. Gene-set collections carry their own terms. See the <a href="https://github.com/tahoebio/tahoe-public-plugins/blob/main/docs/data-and-licensing.md">full licensing guide</a> for scope and exceptions.</p>
+      </section>
+    </main>
+  </div>
+  <footer>
+    <span>Tahoe Bio · Tara documentation</span>
+    <a href="https://tara.tahoebio.io/privacy">Privacy</a>
+    <a href="https://tara.tahoebio.io/terms">Terms</a>
+    <a href="https://github.com/tahoebio/tahoe-public-plugins/issues">Support</a>
+  </footer>
+</body>
+</html>

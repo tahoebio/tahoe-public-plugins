@@ -4,6 +4,8 @@ The Git-based plugin catalog for Tahoe Bio's public agent plugins. Its first
 plugin is **Tara**, which connects your own agent to Tahoe's public dataset
 service. The signed-in account's `list_releases()` response determines access.
 
+Read the [Tara documentation](https://tahoebio.github.io/tahoe-public-plugins/tara/) for setup, worked examples, and dataset coverage.
+
 ## Install
 
 The plugin is the way in. It connects your agent to the `tahoe-public` MCP

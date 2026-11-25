@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Install Tara, connect your Tahoe account and run a first query against single-cell drug-response data.">
+  <title>Get started · Tara documentation · Tahoe Bio</title>
+  <link rel="stylesheet" href="guide.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <header>
+    <div class="top">
+      <a class="brand" href="index.html"><strong>Tara</strong><span>Documentation</span></a>
+      <a href="https://github.com/tahoebio/tahoe-public-plugins/tree/main/plugins/tara">GitHub</a>
+    </div>
+  </header>
+  <div class="shell">
+    <aside>
+      <div class="rail">
+        <p class="nav-label">User guide</p>
+        <nav class="pages" aria-label="User guide">
+          <a href="index.html" aria-current="page">Get started</a>
+          <a href="examples.html">Worked examples</a>
+          <a href="reference.html">Data reference</a>
+        </nav>
+        <div class="local">
+          <p class="nav-label">On this page</p>
+          <nav aria-label="On this page">
+            <a href="#install">Install and sign in</a>
+            <a href="#first-query">Run a first query</a>
+            <a href="#connection">Connection help</a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+    <main id="content" tabindex="-1">
+      <div class="intro hero">
+        <span class="caption">Tahoe Bio</span>
+        <h1>Get started with Tara</h1>
+        <p class="lead">Ask how a drug changes gene expression, pathway activity or cell growth. Tara connects your AI client to Tahoe Bio’s single-cell perturbation data and helps it choose a measurement for your question.</p>
+      </div>
+      <section id="install">
+        <h2>Install and sign in</h2>
+        <p>Choose your client and run its commands in a terminal. The plugin installs a scientific skill and connects it to Tahoe’s hosted data service. Sign in with your email address or Google in the browser your client opens.</p>
+        <div class="hosts">
+          <div>
+            <h3>Claude Code</h3>
+            <pre tabindex="0" aria-label="Claude Code install commands"><code>claude plugin marketplace add tahoebio/tahoe-public-plugins
+claude plugin install tara@tahoe-public</code></pre>
+            <p>In Claude Code, enter <code>/mcp</code>, choose <code>tahoe-public</code>, then select <strong>Authenticate</strong>. Return to the session after signing in.</p>
+          </div>
+          <div>
+            <h3>Codex CLI</h3>
+            <pre tabindex="0" aria-label="Codex CLI install commands"><code>codex plugin marketplace add tahoebio/tahoe-public-plugins
+codex plugin add tara@tahoe-public
+codex mcp login tahoe-public</code></pre>
+            <p>After signing in, start a new Codex session so it loads the tools.</p>
+          </div>
+        </div>
+        <p class="fine">These are Tara’s documented installation paths. For Antigravity listing availability, check <a href="https://antigravity.google/docs/marketplace/">Google’s marketplace</a>. See Tahoe’s <a href="https://tara.tahoebio.io/install.md">current setup instructions</a> for connection details.</p>
+      </section>
+      <section id="first-query">
+        <h2>Run a first query</h2>
+        <p>Start by asking which releases your account can use.</p>
+        <blockquote>List my available Tahoe dataset releases and the measurements available in each.</blockquote>
+        <p>Your agent should call <code>list_releases</code> and return the release names. If Tahoe-100M appears, try a drug lookup.</p>
+        <blockquote>Which MEK and RAF inhibitors are in Tahoe-100M? Group them by annotated target and name the release you used.</blockquote>
+        <p>Look for binimetinib under MEK and dabrafenib under RAF. These are drug annotations. To measure a response, <a href="examples.html#expression">compare DUSP6 expression with matched vehicle controls</a>.</p>
+      </section>
+      <section id="connection">
+        <h2>Connection help</h2>
+        <dl>
+          <dt>The tools are missing after sign-in</dt>
+          <dd>In Codex, run <code>codex mcp list</code>. If <code>tahoe-public</code> needs authentication, run the login command above and start a new session. In Claude Code, check the connection in <code>/mcp</code>.</dd>
+          <dt>A dataset or signature panel is missing</dt>
+          <dd>Ask for the full release list again. Each signed-in account has its own capabilities. If the release or measurement is absent, Tara should tell you it is unavailable for this account.</dd>
+        </dl>
+        <p><a href="reference.html#privacy">Contact support</a> if sign-in succeeds and you still cannot list releases.</p>
+      </section>
+    </main>
+  </div>
+  <footer>
+    <span>Tahoe Bio · Tara documentation</span>
+    <a href="https://tara.tahoebio.io/privacy">Privacy</a>
+    <a href="https://tara.tahoebio.io/terms">Terms</a>
+    <a href="https://github.com/tahoebio/tahoe-public-plugins/issues">Support</a>
+  </footer>
+</body>
+</html>

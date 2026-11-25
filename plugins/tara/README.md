@@ -15,6 +15,8 @@ Emerald Bay provides expression, five-day in-vitro growth response and
 differential VISION scores. Available datasets and tools depend on your account.
 These measurements do not establish a drug's mechanism or patient benefit.
 
+Read the [Tara documentation](https://tahoebio.github.io/tahoe-public-plugins/tara/) for setup, worked examples, and dataset coverage.
+
 ## Install and sign in
 
 Follow <https://tara.tahoebio.io/install.md>. Install the `tara` plugin from
