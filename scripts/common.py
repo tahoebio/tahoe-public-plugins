@@ -38,6 +38,7 @@ MIN_SERVER_VERSION_FIELD = "minServerVersion"
 PLUGIN_DIR_REL = f"plugins/{PLUGIN_NAME}"
 PLUGIN_MANIFEST_REL = f"plugins/{PLUGIN_NAME}/plugin.json"
 MCP_CONFIG_REL = f"plugins/{PLUGIN_NAME}/mcp.json"
+ANTIGRAVITY_MCP_REL = f"{PLUGIN_DIR_REL}/mcp_config.json"
 CLAUDE_ADAPTER_REL = f"plugins/{PLUGIN_NAME}/.claude-plugin/plugin.json"
 LOGO_REL = f"plugins/{PLUGIN_NAME}/assets/tahoe-logo.png"
 #: The plugin's own README. Both directories show it as the listing text, and
@@ -180,6 +181,7 @@ ARCHIVE_ALLOWLIST = (
     *LICENSE_PATHS,
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
+    ANTIGRAVITY_MCP_REL,
     CLAUDE_ADAPTER_REL,
     PLUGIN_README_REL,
     *SKILL_FILES,
@@ -188,7 +190,7 @@ ARCHIVE_ALLOWLIST = (
 
 #: The directory ZIP: the plugin folder's own files, written with the plugin
 #: root at the ZIP root (``DIRECTORY_PREFIX`` is stripped from each name). The
-#: Claude adapter is not listed: the ZIP is the portable plugin only.
+#: host-specific adapters are omitted from this portable directory submission.
 DIRECTORY_PREFIX = f"plugins/{PLUGIN_NAME}/"
 DIRECTORY_ALLOWLIST = (
     *PLUGIN_LICENSE_COPIES,
@@ -225,6 +227,7 @@ REQUIRED_LAYOUT = (
     ".claude-plugin/marketplace.json",
     PLUGIN_MANIFEST_REL,
     MCP_CONFIG_REL,
+    ANTIGRAVITY_MCP_REL,
     CLAUDE_ADAPTER_REL,
     LOGO_REL,
     PLUGIN_README_REL,

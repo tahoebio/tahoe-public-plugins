@@ -151,7 +151,17 @@ def test_rejects_missing_layout_path(tmp_path):
 
 def test_accepts_the_real_mcp_config(root):
     _write(root, common.MCP_CONFIG_REL, _real(common.MCP_CONFIG_REL))
+    _write(root, common.ANTIGRAVITY_MCP_REL, _real(common.ANTIGRAVITY_MCP_REL))
     validate.validate_mcp_config(root)
+
+
+def test_rejects_drift_in_antigravity_server(root):
+    _write(root, common.MCP_CONFIG_REL, _real(common.MCP_CONFIG_REL))
+    config = _real(common.ANTIGRAVITY_MCP_REL)
+    config["mcpServers"][common.MCP_SERVER_NAME]["url"] += "/other"
+    _write(root, common.ANTIGRAVITY_MCP_REL, config)
+    with pytest.raises(common.RepoError, match="mcp_config.json"):
+        validate.validate_mcp_config(root)
 
 
 def test_rejects_wrong_mcp_server_name(root):

@@ -186,6 +186,12 @@ def validate_mcp_config(root: Path = common.REPO_ROOT) -> None:
     if "headers" in server or "env" in server:
         raise common.RepoError("mcp.json must not carry credentials")
 
+    native = common.load_json(root / common.ANTIGRAVITY_MCP_REL)
+    if native != {"mcpServers": {common.MCP_SERVER_NAME: {"url": server["url"]}}}:
+        raise common.RepoError(
+            f"{common.ANTIGRAVITY_MCP_REL} must declare only the public HTTPS server URL"
+        )
+
 
 def validate_min_server_version(root: Path = common.REPO_ROOT) -> None:
     """The minimum public server version each manifest declares.

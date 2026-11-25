@@ -5,6 +5,8 @@ to semantic versioning.
 
 ## 0.5.4 — unreleased
 
+- Add the native Antigravity MCP configuration and installation guide so the
+  plugin brings in both its scientific skill and Tahoe’s hosted data server.
 - Store the Claude minimum-server-version declaration in its documented metadata
   object, with the same floor enforced across both hosts.
 - Give installed legal documents explicit text extensions so directory validation

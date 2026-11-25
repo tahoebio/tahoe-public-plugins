@@ -1,7 +1,6 @@
 # Compatibility
 
-Only tested combinations are claimed. The install workflows target Codex CLI
-and Claude Code; prepared instructions alone do not establish tested support.
+The install workflows cover Codex CLI, Claude Code and Google Antigravity. Installation and authenticated dataset access are recorded separately.
 
 ## Hosts and requirements
 
@@ -14,6 +13,18 @@ and Claude Code; prepared instructions alone do not establish tested support.
   [install guide](https://tara.tahoebio.io/install.md). Email sign-in has no
   recorded end-to-end run in this repository; it is not claimed as tested here.
 - Other hosts and offline data access are not claimed by this compatibility matrix.
+
+## Google Antigravity
+
+On November 24, 2026, Antigravity CLI 1.5.16 on macOS arm64 installed the
+public Tara plugin from its GitHub folder URL. The original package loaded
+only the skill. With native `mcp_config.json`, the installer registered one
+skill and one MCP server. Both appeared on the enabled Tara plugin in
+`agy plugin list --json`. Antigravity App 2.35.1 showed the skill and the public endpoint under
+**Customizations → Installed → tara** and opened the Tahoe consent page.
+An authenticated release query remains unverified. The
+[Antigravity setup guide](https://tahoebio.github.io/tahoe-public-plugins/tara/#antigravity)
+includes the commands and the first-query check.
 
 ## Plugin and server versions
 

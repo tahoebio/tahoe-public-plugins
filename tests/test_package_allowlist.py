@@ -13,6 +13,7 @@ MANIFESTS = {
     "LICENSE-CC-BY-4.0": "Attribution 4.0 International\n",
     "NOTICE": "Tahoe Bio Plugins\nCopyright 2026 Tahoe Bio\n",
     "plugins/tara/plugin.json": '{"name": "tara", "version": "1.0.0"}\n',
+    common.ANTIGRAVITY_MCP_REL: '{"mcpServers": {}}\n',
     "plugins/tara/mcp.json": '{"mcpServers": {}}\n',
     "plugins/tara/.claude-plugin/plugin.json": '{"name": "tara"}\n',
     "plugins/tara/README.md": "# Tara\n",
